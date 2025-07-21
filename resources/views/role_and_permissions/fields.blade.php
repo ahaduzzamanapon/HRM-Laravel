@@ -31,7 +31,7 @@
             <div class="accordion-item">
                 <h2 class="accordion-header" id="heading{{ $permission->id }}">
                     <button style="width: 100%;text-align-last: left;border-radius: 10px;background: white;border: none;box-shadow: 0px 0px 3px 1px #b1b1b1;padding: 8px;" class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $permission->id }}" aria-expanded="false" aria-controls="collapse{{ $permission->id }}">
-                        <input type="checkbox" name="permission[]" {{(isset($permission_have) && in_array($permission->id,$permission_have)) ? 'checked' : '', }} value="{{ $permission->id }}" onchange="editper(this,$permission->id)" id="perm-{{ $permission->id }}" class="me-2">
+                        <input type="checkbox" name="permission[]" {{(isset($permission_have) && in_array($permission->id,$permission_have)) ? 'checked' : '' }} value="{{ $permission->id }}" onchange="editper(this,$permission->id)" id="perm-{{ $permission->id }}" class="me-2">
                         {{ $permission->name }}
                     </button>
                 </h2>
@@ -41,7 +41,7 @@
                             <ul class="list-group">
                                 @foreach ($permission->subdata as $subpermission)
                                     <li class="list-group-item">
-                                        <input type="checkbox" name="permission[]" {{(isset($permission_have) && in_array($subpermission->id,$permission_have)) ? 'checked' : '', }} value="{{ $subpermission->id }}" onchange="editper(this,$subpermission->id)" id="subperm-{{ $subpermission->id }}" data-parent="{{ $permission->id }}" class="me-2 per_data cat_{{ $permission->id }}">
+                                        <input type="checkbox" name="permission[]" {{(isset($permission_have) && in_array($subpermission->id,$permission_have)) ? 'checked' : '' }} value="{{ $subpermission->id }}" onchange="editper(this,$subpermission->id)" id="subperm-{{ $subpermission->id }}" data-parent="{{ $permission->id }}" class="me-2 per_data cat_{{ $permission->id }}">
                                         {{ $subpermission->name }}
                                     </li>
                                 @endforeach
