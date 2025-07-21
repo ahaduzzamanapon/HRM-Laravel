@@ -305,15 +305,7 @@ const resizePlugins = () => {
 /*---------------------------------------------------------------------
               LoaderInit
 -----------------------------------------------------------------------*/
-const loaderInit = () => {
-  const loader = document.querySelector('.loader')
-  setTimeout(() => {
-    loader.classList.add('animate__animated', 'animate__fadeOut')
-    setTimeout(() => {
-      loader.classList.add('d-none')
-    }, 500)
-  }, 500)
-}
+
 /*---------------------------------------------------------------------
               Sidebar Toggle
 -----------------------------------------------------------------------*/
@@ -371,7 +363,6 @@ if (backToTop !== null && backToTop !== undefined) {
 -----------------------------------------------------------------------*/
 document.addEventListener('DOMContentLoaded', (event) => {
   resizePlugins()
-  loaderInit()
 });
 /*---------------------------------------------------------------------
               Window Resize
