@@ -1,0 +1,16 @@
+<!-- $FIELD_NAME_TITLE$ Field -->
+<div class="col-md-3">
+    <div class="form-group">
+        {!! Form::label('$FIELD_NAME$', '$FIELD_NAME_TITLE$:',['class'=>'control-label']) !!}
+        {!! Form::text('$FIELD_NAME$', null, ['class' => 'form-control','id'=>'$FIELD_NAME$']) !!}
+    </div>
+</div>
+@section('footer_scripts')
+<script type="text/javascript">
+    $('#$FIELD_NAME$').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm:ss',
+            useCurrent: true,
+            sideBySide: true
+        })
+</script>
+@endsection

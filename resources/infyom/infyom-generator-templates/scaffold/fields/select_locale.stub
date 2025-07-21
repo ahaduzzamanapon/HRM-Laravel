@@ -1,0 +1,7 @@
+<!-- $FIELD_NAME_TITLE$ Field -->
+<div class="col-md-3">
+    <div class="form-group">
+        {!! Form::label('$FIELD_NAME$', __('models/$TABLE_NAME$.fields.$FIELD_NAME$').':',['class'=>'control-label']) !!}
+        {!! Form::select('$FIELD_NAME$', $INPUT_ARR$, null, ['class' => 'form-control']) !!}
+    </div>
+</div>

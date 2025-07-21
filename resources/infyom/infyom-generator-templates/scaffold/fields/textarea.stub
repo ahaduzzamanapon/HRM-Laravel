@@ -1,0 +1,7 @@
+<!-- $FIELD_NAME_TITLE$ Field -->
+<div class="col-md-12">
+    <div class="form-group ">
+        {!! Form::label('$FIELD_NAME$', '$FIELD_NAME_TITLE$:',['class'=>'control-label']) !!}
+        {!! Form::textarea('$FIELD_NAME$', null, ['class' => 'form-control'$SIZE$]) !!}
+    </div>
+</div>
