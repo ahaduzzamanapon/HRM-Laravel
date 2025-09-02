@@ -60,4 +60,9 @@ class Branch extends Model
     {
         return $this->hasMany(Holyday::class);
     }
+
+    public function shifts()
+    {
+        return $this->hasMany(Shift::class);
+    }
 }

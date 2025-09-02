@@ -46,5 +46,11 @@ class RoleAndPermission extends Model
         'key' => 'required'
     ];
 
-    
+    /**
+     * The permissions that belong to the role.
+     */
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'roll_has', 'roll_id', 'permission_id');
+    }
 }

@@ -28,5 +28,7 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'settings', 'key' => 'settings']); // For the Settings menu
         Permission::create(['name' => 'site_settings', 'key' => 'site_settings']); // For the Site Settings sub-menu
         Permission::create(['name' => 'designations', 'key' => 'designations']); // For the Designations sub-menu
+        Permission::create(['name' => 'attendance_file_uploads', 'key' => 'attendance_file_uploads']);
+        Permission::create(['name' => 'leave_types', 'key' => 'leave_types']);
     }
 }

@@ -78,8 +78,34 @@
             </a>
         </li>
         @endif
-      
-    </ul>
+        @if(can('shifts'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('shifts*') ? 'active' : '' !!}" href="{{ route('shifts.index') }}">
+                <i class="icon im im-icon-Time-Window"></i>
+                <i class="sidenav-mini-icon"> SM </i>
+                <span class="item-name">Shift Management</span>
+            </a>
+        </li>
+        @endif
+        @if(can('attendance_file_uploads'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('attendanceFileUploads*') ? 'active' : '' !!}" href="{{ route('attendanceFileUploads.index') }}">
+                <i class="icon im im-icon-Upload-toCloud"></i>
+                <i class="sidenav-mini-icon"> AF </i>
+                <span class="item-name">Attendance File Upload</span>
+            </a>
+        </li>
+        @endif
+        @if(can('leave_types'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('leaveTypes*') ? 'active' : '' !!}" href="{{ route('leaveTypes.index') }}">
+                <i class="icon im im-icon-Calendar-4"></i>
+                <i class="sidenav-mini-icon"> LT </i>
+                <span class="item-name">Leave Types</span>
+            </a>
+        </li>
+        @endif
+        </ul>
 </li>
 
 

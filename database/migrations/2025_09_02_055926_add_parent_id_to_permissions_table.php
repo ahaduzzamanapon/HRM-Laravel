@@ -13,12 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('shifts', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('shift_name');
-            $table->unsignedInteger('branch_id')->nullable();
-            $table->foreign('branch_id')->references('id')->on('branchs')->onDelete('set null');
-            $table->timestamps();
+        Schema::table('permissions', function (Blueprint $table) {
+            //
         });
     }
 
@@ -29,6 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('shifts');
+        Schema::table('permissions', function (Blueprint $table) {
+            //
+        });
     }
 };

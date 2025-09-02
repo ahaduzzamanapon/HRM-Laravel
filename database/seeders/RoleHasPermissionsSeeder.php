@@ -36,6 +36,9 @@ class RoleHasPermissionsSeeder extends Seeder
         $designationsPermission = Permission::where('name', 'designations')->first();
 
 
+        $attendanceFileUploadsPermission = Permission::where('name', 'attendance_file_uploads')->first();
+        $leaveTypesPermission = Permission::where('name', 'leave_types')->first();
+
         // Assign permissions to Admin role
         $adminRole->permissions()->attach([
             $viewUsersPermission->id,
@@ -50,6 +53,8 @@ class RoleHasPermissionsSeeder extends Seeder
             $settingsPermission->id,
             $siteSettingsPermission->id,
             $designationsPermission->id,
+            $attendanceFileUploadsPermission->id, // Added
+            $leaveTypesPermission->id, // Added
         ]);
 
         // Assign permissions to HR role

@@ -13,11 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('shifts', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('shift_name');
-            $table->unsignedInteger('branch_id')->nullable();
-            $table->foreign('branch_id')->references('id')->on('branchs')->onDelete('set null');
+        Schema::create('att_machine_data', function (Blueprint $table) {
+            $table->id();
+            $table->string('punch_id');
+            $table->dateTime('date_time');
+            $table->string('device_id')->nullable(); // Assuming Location ID maps to device_id
             $table->timestamps();
         });
     }
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('shifts');
+        Schema::dropIfExists('att_machine_data');
     }
 };

@@ -13,11 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('shifts', function (Blueprint $table) {
+        Schema::create('leave_types', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('shift_name');
-            $table->unsignedInteger('branch_id')->nullable();
-            $table->foreign('branch_id')->references('id')->on('branchs')->onDelete('set null');
+            $table->string('name');
+            $table->integer('total_days_per_year');
+            $table->string('gender_criteria')->nullable(); // e.g., 'All', 'Male', 'Female'
             $table->timestamps();
         });
     }
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('shifts');
+        Schema::dropIfExists('leave_types');
     }
 };

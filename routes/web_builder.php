@@ -15,3 +15,9 @@ Route::resource('departments', 'DepartmentController');
 Route::resource('branches', 'BranchController');
 
 Route::resource('holydays', 'HolydayController');
+
+Route::resource('shifts', 'ShiftController');
+
+Route::resource('attendanceFileUploads', 'AttendanceFileUploadController');
+
+Route::resource('leaveTypes', 'LeaveTypeController');
