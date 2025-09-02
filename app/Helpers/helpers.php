@@ -36,17 +36,32 @@ if (!function_exists('can')) {
 
     function can($key)
     {
-        // $group_id = auth()->user()->group_id;
-        // $permissions = \App\Models\RollHas::where('roll_id', $group_id)
-        //     ->join('permissions', 'roll_has.permission_id', '=', 'permissions.id')
-        //     ->select('permissions.key')
-        //     ->get()
-        //     ->pluck('key')
-        //     ->toArray();
-        // if (in_array($key, $permissions)) {
+        if (!auth()->check()) {
+            return false;
+        }
+
+        $user = auth()->user();
+        $role = $user->role; // Assuming user has a 'role' relationship or property
+
+        if (!$role) {
+            return false;
+        }
+
+        // Check if the role has the permission directly
+        if ($role->permissions->contains('key', $key)) {
             return true;
-        // }
-        // return false;
+        }
+
+        // If the permission is a child, check if its parent is granted
+        $permission = \App\Models\Permission::where('key', $key)->first();
+        if ($permission && $permission->parent_id) {
+            $parentPermission = \App\Models\Permission::find($permission->parent_id);
+            if ($parentPermission && $role->permissions->contains('key', $parentPermission->key)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

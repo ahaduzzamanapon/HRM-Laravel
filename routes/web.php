@@ -7,7 +7,7 @@ use App\Http\Controllers\AttendenceController;
 use App\Http\Controllers\SalesController;
 
 
-include 'bulder_route.php';
+include 'web_builder.php';
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -25,7 +25,7 @@ Route::get('/', function () {
     return view('index');
 })->middleware('auth');
 
-Route::get('/employee-details', [App\Http\Controllers\EmployeeController::class, 'index'])->name('employeeDetails.index');
+
 
 Route::resource('trainingDetails', App\Http\Controllers\TrainingDetailController::class);
 Route::resource('jobExperiences', App\Http\Controllers\JobExperienceController::class);

@@ -7,7 +7,7 @@
 </li>
 
 {{-- Users Management --}}
-@if(can('user_management'))
+@if(can('staff_management'))
 <li class="nav-item">
     <a class="nav-link {!! (Request::is('users*')? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#users_menu" role="button" aria-expanded="false" aria-controls="users_menu">
         <i class="icon im im-icon-User"></i>
@@ -15,7 +15,7 @@
         <i class="right-icon im im-icon-Arrow-Right"></i>
     </a>
     <ul class="sub-nav collapse {!! (Request::is('users*') ? 'show' : '') !!}" id="users_menu" data-bs-parent="#sidebar-menu">
-        @if(can('user'))
+        @if(can('view_employees'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('users*') ? 'active' : '' !!}" href="{{ route('users.index') }}">
                 <i class="icon im im-icon-User"></i>
@@ -102,6 +102,15 @@
                 <i class="icon im im-icon-Calendar-4"></i>
                 <i class="sidenav-mini-icon"> LT </i>
                 <span class="item-name">Leave Types</span>
+            </a>
+        </li>
+        @endif
+        @if(can('leave_applications'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('leaveApplications*') ? 'active' : '' !!}" href="{{ route('leaveApplications.index') }}">
+                <i class="icon im im-icon-File-Edit"></i>
+                <i class="sidenav-mini-icon"> LA </i>
+                <span class="item-name">Leave Applications</span>
             </a>
         </li>
         @endif

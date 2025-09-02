@@ -58,8 +58,7 @@ class LeaveApplicationController extends Controller
 
         $leaveType = LeaveType::find($input['leave_type_id']);
 
-        // Check leave balance (simplified logic for now)
-        // This needs to be more robust, considering approved leaves, current year, etc.
+        // Check leave balance
         $user = User::find(Auth::id());
         $userGender = $user->gender;
 
@@ -68,23 +67,19 @@ class LeaveApplicationController extends Controller
             return redirect(route('leaveApplications.create'));
         }
 
-        // For simplicity, let's assume initial leave balance is total_days_per_year
-        // A more complex system would track used leaves.
         $availableLeave = $leaveType->total_days_per_year;
 
-        // Deduct already approved leaves for the current year
         $usedLeaves = LeaveApplication::where('user_id', Auth::id())
             ->where('leave_type_id', $leaveType->id)
             ->where('status', 'Approved')
             ->whereYear('start_date', Carbon::now()->year)
-            ->sum('requested_days'); // You'll need to add 'requested_days' column to leave_applications table
+            ->sum('requested_days');
 
         if (($usedLeaves + $requestedDays) > $availableLeave) {
             Flash::error('Insufficient leave balance for this leave type.');
             return redirect(route('leaveApplications.create'));
         }
 
-        // Add requested_days to input for later use in balance calculation
         $input['requested_days'] = $requestedDays;
 
         LeaveApplication::create($input);
@@ -159,6 +154,34 @@ class LeaveApplicationController extends Controller
         }
         $input['requested_days'] = $requestedDays;
 
+        $leaveType = LeaveType::find($input['leave_type_id']);
+
+        // Check leave balance (only if status is Approved or becoming Approved)
+        if (isset($input['status']) && $input['status'] === 'Approved') {
+            $user = User::find($leaveApplication->user_id); // Get the applicant's gender
+            $userGender = $user->gender;
+
+            if ($leaveType->gender_criteria !== 'All' && $leaveType->gender_criteria !== $userGender) {
+                Flash::error('This leave type is not available for the applicant\'s gender.');
+                return redirect(route('leaveApplications.edit', $id));
+            }
+
+            $availableLeave = $leaveType->total_days_per_year;
+
+            // Deduct already approved leaves for the current year, excluding the current application if it was already approved
+            $usedLeaves = LeaveApplication::where('user_id', $leaveApplication->user_id)
+                ->where('leave_type_id', $leaveType->id)
+                ->where('status', 'Approved')
+                ->whereYear('start_date', Carbon::now()->year)
+                ->where('id', '!=', $leaveApplication->id) // Exclude current application's previously approved days
+                ->sum('requested_days');
+
+            if (($usedLeaves + $requestedDays) > $availableLeave) {
+                Flash::error('Insufficient leave balance for this leave type for the applicant.');
+                return redirect(route('leaveApplications.edit', $id));
+            }
+        }
+
         // Handle approval
         if (isset($input['status']) && $input['status'] === 'Approved' && $leaveApplication->status !== 'Approved') {
             $input['approved_by'] = Auth::id();
@@ -193,6 +216,52 @@ class LeaveApplicationController extends Controller
         $leaveApplication->delete();
 
         Flash::success('Leave Application deleted successfully.');
+        return redirect(route('leaveApplications.index'));
+    }
+
+    public function approve($id)
+    {
+        if (!Auth::user()->can('approve_leave')) {
+            Flash::error('You do not have permission to approve leaves.');
+            return redirect(route('leaveApplications.index'));
+        }
+
+        $leaveApplication = LeaveApplication::find($id);
+
+        if (empty($leaveApplication)) {
+            Flash::error('Leave Application not found');
+            return redirect(route('leaveApplications.index'));
+        }
+
+        $leaveApplication->status = 'Approved';
+        $leaveApplication->approved_by = Auth::id();
+        $leaveApplication->approved_at = Carbon::now();
+        $leaveApplication->save();
+
+        Flash::success('Leave Application approved successfully.');
+        return redirect(route('leaveApplications.index'));
+    }
+
+    public function reject($id)
+    {
+        if (!Auth::user()->can('approve_leave')) {
+            Flash::error('You do not have permission to reject leaves.');
+            return redirect(route('leaveApplications.index'));
+        }
+
+        $leaveApplication = LeaveApplication::find($id);
+
+        if (empty($leaveApplication)) {
+            Flash::error('Leave Application not found');
+            return redirect(route('leaveApplications.index'));
+        }
+
+        $leaveApplication->status = 'Rejected';
+        $leaveApplication->approved_by = Auth::id(); // Still record who rejected
+        $leaveApplication->approved_at = Carbon::now();
+        $leaveApplication->save();
+
+        Flash::success('Leave Application rejected successfully.');
         return redirect(route('leaveApplications.index'));
     }
 }

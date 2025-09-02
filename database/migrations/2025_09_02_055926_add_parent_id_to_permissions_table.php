@@ -14,7 +14,8 @@ return new class extends Migration
     public function up()
     {
         Schema::table('permissions', function (Blueprint $table) {
-            //
+            $table->unsignedInteger('parent_id')->nullable()->after('id');
+            $table->foreign('parent_id')->references('id')->on('permissions')->onDelete('set null');
         });
     }
 
@@ -26,7 +27,8 @@ return new class extends Migration
     public function down()
     {
         Schema::table('permissions', function (Blueprint $table) {
-            //
+            $table->dropForeign(['parent_id']);
+            $table->dropColumn('parent_id');
         });
     }
 };

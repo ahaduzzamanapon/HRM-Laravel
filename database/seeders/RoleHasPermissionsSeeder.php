@@ -16,62 +16,39 @@ class RoleHasPermissionsSeeder extends Seeder
      */
     public function run()
     {
+        // Clear existing role-permission attachments
+        \DB::table('roll_has')->truncate();
+
         // Get roles
         $adminRole = RoleAndPermission::where('name', 'Admin')->first();
         $hrRole = RoleAndPermission::where('name', 'HR')->first();
         $employeeRole = RoleAndPermission::where('name', 'Employee')->first();
 
-        // Get permissions
-        $viewUsersPermission = Permission::where('name', 'view_users')->first();
-        $addUsersPermission = Permission::where('name', 'add_users')->first();
-        $editUsersPermission = Permission::where('name', 'edit_users')->first();
-        $deleteUsersPermission = Permission::where('name', 'delete_users')->first();
-        $manageRolesPermission = Permission::where('name', 'manage_roles')->first();
-        $managePermissionsPermission = Permission::where('name', 'manage_permissions')->first();
-        $userManagementPermission = Permission::where('name', 'user_management')->first();
-        $userPermission = Permission::where('name', 'user')->first();
-        $rollAndPermissionPermission = Permission::where('name', 'roll_and_permission')->first();
-        $settingsPermission = Permission::where('name', 'settings')->first();
-        $siteSettingsPermission = Permission::where('name', 'site_settings')->first();
-        $designationsPermission = Permission::where('name', 'designations')->first();
+        // Get all permissions
+        $allPermissions = Permission::all();
 
+        // Assign all permissions to Admin role
+        if ($adminRole) {
+            $adminRole->permissions()->attach($allPermissions->pluck('id')->toArray());
+        }
 
-        $attendanceFileUploadsPermission = Permission::where('name', 'attendance_file_uploads')->first();
-        $leaveTypesPermission = Permission::where('name', 'leave_types')->first();
+        // Assign specific permissions to HR role
+        if ($hrRole) {
+            $hrPermissions = [
+                'staff_management', 'view_employees', 'add_employee', 'edit_employee',
+                'organization', 'manage_designations', 'manage_departments', 'manage_branches',
+                'hr', 'manage_holidays', 'manage_shifts', 'upload_attendance_files', 'manage_leave_types', 'apply_leave', 'approve_leave', 'leave_applications', // Added
+                'settings', 'manage_site_settings', 'manage_roles_and_permissions'
+            ];
+            $hrRole->permissions()->attach(Permission::whereIn('key', $hrPermissions)->pluck('id')->toArray());
+        }
 
-        // Assign permissions to Admin role
-        $adminRole->permissions()->attach([
-            $viewUsersPermission->id,
-            $addUsersPermission->id,
-            $editUsersPermission->id,
-            $deleteUsersPermission->id,
-            $manageRolesPermission->id,
-            $managePermissionsPermission->id,
-            $userManagementPermission->id,
-            $userPermission->id,
-            $rollAndPermissionPermission->id,
-            $settingsPermission->id,
-            $siteSettingsPermission->id,
-            $designationsPermission->id,
-            $attendanceFileUploadsPermission->id, // Added
-            $leaveTypesPermission->id, // Added
-        ]);
-
-        // Assign permissions to HR role
-        $hrRole->permissions()->attach([
-            $viewUsersPermission->id,
-            $addUsersPermission->id,
-            $editUsersPermission->id,
-            $userManagementPermission->id,
-            $userPermission->id,
-            $settingsPermission->id,
-            $siteSettingsPermission->id,
-            $designationsPermission->id,
-        ]);
-
-        // Assign permissions to Employee role
-        $employeeRole->permissions()->attach([
-            $viewUsersPermission->id,
-        ]);
+        // Assign specific permissions to Employee role
+        if ($employeeRole) {
+            $employeePermissions = [
+                'staff_management', 'view_employees', 'apply_leave', 'leave_applications' // Added
+            ];
+            $employeeRole->permissions()->attach(Permission::whereIn('key', $employeePermissions)->pluck('id')->toArray());
+        }
     }
 }

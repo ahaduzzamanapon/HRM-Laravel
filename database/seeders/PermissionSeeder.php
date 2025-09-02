@@ -15,20 +15,37 @@ class PermissionSeeder extends Seeder
      */
     public function run()
     {
-        // Create permissions
-        Permission::create(['name' => 'view_users', 'key' => 'view_users']);
-        Permission::create(['name' => 'add_users', 'key' => 'add_users']);
-        Permission::create(['name' => 'edit_users', 'key' => 'edit_users']);
-        Permission::create(['name' => 'delete_users', 'key' => 'delete_users']);
-        Permission::create(['name' => 'manage_roles', 'key' => 'manage_roles']);
-        Permission::create(['name' => 'manage_permissions', 'key' => 'manage_permissions']);
-        Permission::create(['name' => 'user_management', 'key' => 'user_management']); // For the sidebar menu
-        Permission::create(['name' => 'user', 'key' => 'user']); // For the Users sub-menu
-        Permission::create(['name' => 'roll_and_permission', 'key' => 'roll_and_permission']); // For the Role Management sub-menu
-        Permission::create(['name' => 'settings', 'key' => 'settings']); // For the Settings menu
-        Permission::create(['name' => 'site_settings', 'key' => 'site_settings']); // For the Site Settings sub-menu
-        Permission::create(['name' => 'designations', 'key' => 'designations']); // For the Designations sub-menu
-        Permission::create(['name' => 'attendance_file_uploads', 'key' => 'attendance_file_uploads']);
-        Permission::create(['name' => 'leave_types', 'key' => 'leave_types']);
+        // Clear existing permissions to avoid duplicates on re-seeding
+        Permission::truncate();
+
+        // Main Categories (Parents)
+        $staffManagement = Permission::create(['name' => 'Staff Management', 'key' => 'staff_management']);
+        $organization = Permission::create(['name' => 'Organization', 'key' => 'organization']);
+        $hr = Permission::create(['name' => 'HR', 'key' => 'hr']);
+        $settings = Permission::create(['name' => 'Settings', 'key' => 'settings']);
+
+        // Staff Management Sub-permissions
+        Permission::create(['name' => 'View Employees', 'key' => 'view_employees', 'parent_id' => $staffManagement->id]);
+        Permission::create(['name' => 'Add Employee', 'key' => 'add_employee', 'parent_id' => $staffManagement->id]);
+        Permission::create(['name' => 'Edit Employee', 'key' => 'edit_employee', 'parent_id' => $staffManagement->id]);
+        Permission::create(['name' => 'Delete Employee', 'key' => 'delete_employee', 'parent_id' => $staffManagement->id]);
+
+        // Organization Sub-permissions
+        Permission::create(['name' => 'Manage Designations', 'key' => 'manage_designations', 'parent_id' => $organization->id]);
+        Permission::create(['name' => 'Manage Departments', 'key' => 'manage_departments', 'parent_id' => $organization->id]);
+        Permission::create(['name' => 'Manage Branches', 'key' => 'manage_branches', 'parent_id' => $organization->id]);
+
+        // HR Sub-permissions
+        Permission::create(['name' => 'Manage Holidays', 'key' => 'manage_holidays', 'parent_id' => $hr->id]);
+        Permission::create(['name' => 'Manage Shifts', 'key' => 'manage_shifts', 'parent_id' => $hr->id]);
+        Permission::create(['name' => 'Upload Attendance Files', 'key' => 'upload_attendance_files', 'parent_id' => $hr->id]);
+        Permission::create(['name' => 'Manage Leave Types', 'key' => 'manage_leave_types', 'parent_id' => $hr->id]);
+        Permission::create(['name' => 'Apply Leave', 'key' => 'apply_leave', 'parent_id' => $hr->id]);
+        Permission::create(['name' => 'Approve Leave', 'key' => 'approve_leave', 'parent_id' => $hr->id]);
+        Permission::create(['name' => 'Leave Applications', 'key' => 'leave_applications', 'parent_id' => $hr->id]);
+
+        // Settings Sub-permissions
+        Permission::create(['name' => 'Manage Site Settings', 'key' => 'manage_site_settings', 'parent_id' => $settings->id]);
+        Permission::create(['name' => 'Manage Roles and Permissions', 'key' => 'manage_roles_and_permissions', 'parent_id' => $settings->id]);
     }
 }

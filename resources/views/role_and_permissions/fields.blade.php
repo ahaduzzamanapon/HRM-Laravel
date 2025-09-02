@@ -12,50 +12,12 @@
         {!! Form::text('key', null, ['class' => 'form-control']) !!}
     </div>
 </div>
-@php
-    $permissions = DB::table('permissions')->whereNull('cat_id')->get();
-
-    $per = [];
-
-    foreach ($permissions as $value) {
-        $ker_per = $value->key;
-        $per_data = DB::table('permissions')->where('cat_id', $ker_per)->get();
-        $value->subdata = $per_data;
-        $per[] = $value;
-    }
-@endphp
 
 <div class="col-md-12">
     <div class="accordion" id="permissionsAccordion" style="display: flex;gap: 10px;flex-direction: column;margin-bottom: 16px;">
-        @foreach ($per as $permission)
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="heading{{ $permission->id }}">
-                    <button style="width: 100%;text-align-last: left;border-radius: 10px;background: white;border: none;box-shadow: 0px 0px 3px 1px #b1b1b1;padding: 8px;" class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $permission->id }}" aria-expanded="false" aria-controls="collapse{{ $permission->id }}">
-                        <input type="checkbox" name="permission[]" {{(isset($permission_have) && in_array($permission->id,$permission_have)) ? 'checked' : '' }} value="{{ $permission->id }}" onchange="editper(this,$permission->id)" id="perm-{{ $permission->id }}" class="me-2">
-                        {{ $permission->name }}
-                    </button>
-                </h2>
-                <div id="collapse{{ $permission->id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ $permission->id }}" data-bs-parent="#permissionsAccordion" >
-                    <div class="accordion-body">
-                        @if ($permission->subdata->count() > 0)
-                            <ul class="list-group">
-                                @foreach ($permission->subdata as $subpermission)
-                                    <li class="list-group-item">
-                                        <input type="checkbox" name="permission[]" {{(isset($permission_have) && in_array($subpermission->id,$permission_have)) ? 'checked' : '' }} value="{{ $subpermission->id }}" onchange="editper(this,$subpermission->id)" id="subperm-{{ $subpermission->id }}" data-parent="{{ $permission->id }}" class="me-2 per_data cat_{{ $permission->id }}">
-                                        {{ $subpermission->name }}
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @else
-                            <p class="text-muted">No sub-permissions available.</p>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        @endforeach
+        @include('role_and_permissions.partials.permission_tree', ["permissions" => $permissions, "permission_have" => $permission_have])
     </div>
 </div>
-
 
 <!-- Submit Field -->
 <div class="form-group col-sm-12" style="text-align-last: right;">
@@ -64,19 +26,29 @@
 </div>
 
 @section('scripts')
+    @parent
     <script>
         $(document).ready(function () {
-            $('.per_data').change(function () {
-                const $parentCheckbox = $(`#perm-${$(this).data('parent')}`);
-                const parentChecked = $parentCheckbox.is(':checked');
-                if (this.checked) {
-                    $parentCheckbox.prop('checked', true);
-                } else {
-                    const hasCheckedChild = $(`.cat_${$(this).data('parent')}`).get().some(el => el.checked);
-                    if (!hasCheckedChild) {
-                        $parentCheckbox.prop('checked', false);
-                    }
-                }
+            // Function to handle parent checkbox change
+            $(".parent-permission-checkbox").change(function () {
+                const parentId = $(this).val();
+                const isChecked = $(this).is(':checked');
+                $(".child-permission-checkbox[data-parent=\"${parentId}\"]").prop('checked', isChecked);
+            });
+
+            // Function to handle child checkbox change
+            $(".child-permission-checkbox").change(function () {
+                const parentId = $(this).data('parent');
+                const $parentCheckbox = $("#permission-" + parentId);
+                const hasCheckedChild = $(".child-permission-checkbox[data-parent=\"${parentId}\"]:checked").length > 0;
+                $parentCheckbox.prop('checked', hasCheckedChild);
+            });
+
+            // Initial state setup
+            $(".parent-permission-checkbox").each(function() {
+                const parentId = $(this).val();
+                const hasCheckedChild = $(".child-permission-checkbox[data-parent=\"${parentId}\"]:checked").length > 0;
+                $(this).prop('checked', hasCheckedChild);
             });
         });
     </script>
