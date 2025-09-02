@@ -25,7 +25,7 @@ Upload Attendance File @parent
         </div>
         <div class="card-footer">
             {!! Form::submit('Upload and Process', ['class' => 'btn btn-primary']) !!}
-            <a href="{{ route('attendanceFileUploads.index') }}" class="btn btn-default">Cancel</a>
+            <a href="{{ route('attendanceFileUploads.index') }}" class="btn btn-primary">Cancel</a>
         </div>
         {!! Form::close() !!}
     </div>

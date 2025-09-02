@@ -41,8 +41,8 @@ Leave Types @parent
                                 <td>{{ $leaveType->gender_criteria ?? 'All' }}</td>
                                 <td>
                                     <div class='btn-group'>
-                                        <a href="{{ route('leaveTypes.show', [$leaveType->id]) }}" class='btn btn-default btn-xs'>View</a>
-                                        <a href="{{ route('leaveTypes.edit', [$leaveType->id]) }}" class='btn btn-default btn-xs'>Edit</a>
+                                        <a href="{{ route('leaveTypes.show', [$leaveType->id]) }}" class='btn btn-primary btn-xs'>View</a>
+                                        <a href="{{ route('leaveTypes.edit', [$leaveType->id]) }}" class='btn btn-primary btn-xs'>Edit</a>
                                         {!! Form::open(['route' => ['leaveTypes.destroy', $leaveType->id], 'method' => 'delete', 'class' => 'd-inline']) !!}
                                         <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Are you sure you want to delete this leave type?')">Delete</button>
                                         {!! Form::close() !!}

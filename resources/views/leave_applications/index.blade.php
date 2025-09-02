@@ -55,9 +55,9 @@ Leave Applications @parent
                                 <td>{{ $application->approved_at ? $application->approved_at->format('Y-m-d H:i') : 'N/A' }}</td>
                                 <td>
                                     <div class='btn-group'>
-                                        <a href="{{ route('leaveApplications.show', [$application->id]) }}" class='btn btn-default btn-xs'>View</a>
+                                        <a href="{{ route('leaveApplications.show', [$application->id]) }}" class='btn btn-primary btn-xs'>View</a>
                                         @if($application->status === 'Pending')
-                                            <a href="{{ route('leaveApplications.edit', [$application->id]) }}" class='btn btn-default btn-xs'>Edit</a>
+                                            <a href="{{ route('leaveApplications.edit', [$application->id]) }}" class='btn btn-primary btn-xs'>Edit</a>
                                             {!! Form::open(['route' => ['leaveApplications.destroy', $application->id], 'method' => 'delete', 'class' => 'd-inline']) !!}
                                             <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Are you sure you want to delete this leave application?')">Delete</button>
                                             {!! Form::close() !!}

@@ -26,7 +26,7 @@ Training Detail @parent
             </div>
         </div>
         <div class="card-footer">
-            <a href="{{ route('trainingDetails.index') }}" class="btn btn-default">Back</a>
+            <a href="{{ route('trainingDetails.index') }}" class="btn btn-primary">Back</a>
         </div>
     </div>
 </div>

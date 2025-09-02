@@ -172,7 +172,7 @@
             <div class="sidebar-list">
                 <!-- Sidebar Menu Start -->
                 <ul class="navbar-nav iq-main-menu" id="sidebar-menu">
-                    @include('layouts/leftmenu')
+                    @include('layouts/sidemenu')
                 </ul>
                 <!-- Sidebar Menu End -->
             </div>

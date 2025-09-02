@@ -41,7 +41,7 @@ Site Setting @parent
             </div>
         </div>
         <div class="card-footer">
-            <a href="{{ route('siteSettings.index') }}" class="btn btn-default">Back</a>
+            <a href="{{ route('siteSettings.index') }}" class="btn btn-primary">Back</a>
         </div>
     </div>
 </div>

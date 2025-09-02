@@ -20,7 +20,7 @@ Apply for Leave @parent
         </div>
         <div class="card-footer">
             {!! Form::submit('Apply', ['class' => 'btn btn-primary']) !!}
-            <a href="{{ route('leaveApplications.index') }}" class="btn btn-default">Cancel</a>
+            <a href="{{ route('leaveApplications.index') }}" class="btn btn-primary">Cancel</a>
         </div>
         {!! Form::close() !!}
     </div>

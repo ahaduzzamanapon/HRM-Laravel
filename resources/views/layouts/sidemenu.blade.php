@@ -1,3 +1,13 @@
+{{-- User Info Section --}}
+@auth
+<div class="user-info text-center py-3" style="background: #0177bc; color: white;">
+    <img src="{{ asset(Auth::user()->image ?? 'assets/images/avatars/01.png') }}" alt="User Image" class="img-fluid rounded-circle mb-2" style="width: 80px; height: 80px; object-fit: cover;">
+    <h5 class="mb-0">{{ Auth::user()->name }} {{ Auth::user()->last_name }}</h5>
+    <p class="mb-0">{{ Auth::user()->email }}</p>
+    <p class="mb-0"><small>{{ Auth::user()->role->name ?? 'N/A' }}</small></p>
+</div>
+@endauth
+
 {{-- Dashboard --}}
 <li class="nav-item">
     <a class="nav-link {!! Request::is('/') ? 'active' : '' !!}" aria-current="page" href="{{ url('/') }}" >
@@ -32,14 +42,15 @@
 
 
 
+@if(can('organization'))
 <li class="nav-item">
-    <a class="nav-link {!! (Request::is('designations*') || Request::is('departments*') ? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#organization_menu" role="button" aria-expanded="false" aria-controls="settings_menu">
+    <a class="nav-link {!! (Request::is('designations*') || Request::is('departments*') || Request::is('branches*') ? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#organization_menu" role="button" aria-expanded="false" aria-controls="settings_menu">
         <i class="icon im im-icon-Gear"></i>
         <span class="item-name">Organization</span>
         <i class="right-icon im im-icon-Arrow-Right"></i>
     </a>
-    <ul class="sub-nav collapse  {!!  Request::is('designations*') || Request::is('departments*') ? 'show' : ''  !!}" id="organization_menu" data-bs-parent="#sidebar-menu">
-        @if(can('designations'))
+    <ul class="sub-nav collapse  {!!  Request::is('designations*') || Request::is('departments*') || Request::is('branches*') ? 'show' : ''  !!}" id="organization_menu" data-bs-parent="#sidebar-menu">
+        @if(can('manage_designations'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('designations*') ? 'active' : '' !!}" href="{{ route('designations.index') }}">
                 <i class="icon im im-icon-Teacher"></i>
@@ -48,28 +59,38 @@
             </a>
         </li>
         @endif
-        @if(can('departments'))
+        @if(can('manage_departments'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('departments*') ? 'active' : '' !!}" href="{{ route('departments.index') }}">
                 <i class="icon im im-icon-Teacher"></i>
                 <i class="sidenav-mini-icon"> D </i>
-                <span class="item-name">departments</span>
+                <span class="item-name">Departments</span>
+            </a>
+        </li>
+        @endif
+        @if(can('manage_branches'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('branches*') ? 'active' : '' !!}" href="{{ route('branches.index') }}">
+                <i class="icon im im-icon-Security-Settings"></i>
+                <i class="sidenav-mini-icon"> B </i>
+                <span class="item-name">Branch Management</span>
             </a>
         </li>
         @endif
     </ul>
 </li>
+@endif
 
 
 
 <li class="nav-item">
-    <a class="nav-link {!! (Request::is('holydays*')  ? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#hr_menu" role="button" aria-expanded="false" aria-controls="settings_menu">
+    <a class="nav-link {!! (Request::is('holydays*') || Request::is('shifts*') || Request::is('attendanceFileUploads*') || Request::is('leaveTypes*') || Request::is('leaveApplications*') ? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#hr_menu" role="button" aria-expanded="false" aria-controls="settings_menu">
         <i class="icon im im-icon-Gear"></i>
         <span class="item-name">HR</span>
         <i class="right-icon im im-icon-Arrow-Right"></i>
     </a>
-    <ul class="sub-nav collapse  {!!  Request::is('holydays*')  ? 'show' : ''  !!}" id="hr_menu" data-bs-parent="#sidebar-menu">
-        @if(can('designations'))
+    <ul class="sub-nav collapse  {!!  Request::is('holydays*') || Request::is('shifts*') || Request::is('attendanceFileUploads*') || Request::is('leaveTypes*') || Request::is('leaveApplications*') ? 'show' : ''  !!}" id="hr_menu" data-bs-parent="#sidebar-menu">
+        @if(can('manage_holidays'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('holydays*') ? 'active' : '' !!}" href="{{ route('holydays.index') }}">
                 <i class="icon im im-icon-Teacher"></i>
@@ -78,7 +99,7 @@
             </a>
         </li>
         @endif
-        @if(can('shifts'))
+        @if(can('manage_shifts'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('shifts*') ? 'active' : '' !!}" href="{{ route('shifts.index') }}">
                 <i class="icon im im-icon-Time-Window"></i>
@@ -87,7 +108,7 @@
             </a>
         </li>
         @endif
-        @if(can('attendance_file_uploads'))
+        @if(can('upload_attendance_files'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('attendanceFileUploads*') ? 'active' : '' !!}" href="{{ route('attendanceFileUploads.index') }}">
                 <i class="icon im im-icon-Upload-toCloud"></i>
@@ -96,7 +117,7 @@
             </a>
         </li>
         @endif
-        @if(can('leave_types'))
+        @if(can('manage_leave_types'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('leaveTypes*') ? 'active' : '' !!}" href="{{ route('leaveTypes.index') }}">
                 <i class="icon im im-icon-Calendar-4"></i>
@@ -129,7 +150,7 @@
         <i class="right-icon im im-icon-Arrow-Right"></i>
     </a>
     <ul class="sub-nav collapse {!! (Request::is('siteSettings*')  || Request::is('roleAndPermissions*') || Request::is('branches*')  ? 'show' : '' ) !!}" id="settings_menu" data-bs-parent="#sidebar-menu">
-        @if(can('site_settings'))
+        @if(can('manage_site_settings'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('siteSettings*') ? 'active' : '' !!}" href="{{ route('siteSettings.index') }}">
                 <i class="icon im im-icon-Settings-Window"></i>
@@ -138,7 +159,7 @@
             </a>
         </li>
         @endif
-        @if(can('branches'))
+        @if(can('manage_branches'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('branches*') ? 'active' : '' !!}" href="{{ route('branches.index') }}">
                 <i class="icon im im-icon-Security-Settings"></i>
@@ -146,9 +167,8 @@
                 <span class="item-name">Branch Management</span>
             </a>
         </li>
-        
         @endif
-        @if(can('roll_and_permission'))
+        @if(can('manage_roles_and_permissions'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('roleAndPermissions*') ? 'active' : '' !!}" href="{{ route('roleAndPermissions.index') }}">
                 <i class="icon im im-icon-Security-Settings"></i>
@@ -156,7 +176,6 @@
                 <span class="item-name">Role Management</span>
             </a>
         </li>
-        
         @endif
     </ul>
 </li>

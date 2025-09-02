@@ -27,7 +27,7 @@
             <td>{{ $users->email }}</td>
                 <td>
                     <div class='btn-group'>
-                        <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-bs-toggle="dropdown" data-bs-boundary="window" aria-expanded="false">
+                        <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-bs-toggle="dropdown" data-bs-boundary="window" aria-expanded="false">
                             Action <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu">

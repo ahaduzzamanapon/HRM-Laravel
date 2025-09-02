@@ -214,7 +214,7 @@ Crud Builder @parent
                                     </button>
                                 </div>
                                 <div class="form-group" style="border-color: transparent;padding-left: 10px">
-                                    <button type="button" class="btn btn-default btn-flat" id="btnReset"
+                                    <button type="button" class="btn btn-primary btn-flat" id="btnReset"
                                         data-toggle="modal" data-target="#confirm-delete"> Reset
                                     </button>
                                 </div>
@@ -241,7 +241,7 @@ Crud Builder @parent
                                     </div>
 
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-flat btn-default" data-dismiss="modal">No
+                                        <button type="button" class="btn btn-flat btn-primary" data-dismiss="modal">No
                                         </button>
                                         <a id="btnModelReset" class="btn btn-flat btn-danger btn-ok"
                                             data-dismiss="modal">Yes</a>

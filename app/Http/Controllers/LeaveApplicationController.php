@@ -44,7 +44,20 @@ class LeaveApplicationController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'leave_type_id' => 'required|exists:leave_types,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'reason' => 'required|string',
+        ]);
+
         $input = $request->all();
+        
+        if (!Auth::check()) {
+            Flash::error('You must be logged in to apply for leave.');
+            return redirect(route('login')); // Redirect to login page
+        }
+
         $input['user_id'] = Auth::id(); // Automatically set the current user as the applicant
 
         // Calculate leave days
@@ -59,7 +72,7 @@ class LeaveApplicationController extends Controller
         $leaveType = LeaveType::find($input['leave_type_id']);
 
         // Check leave balance
-        $user = User::find(Auth::id());
+        $user = Auth::user(); // Get the authenticated user
         $userGender = $user->gender;
 
         if ($leaveType->gender_criteria !== 'All' && $leaveType->gender_criteria !== $userGender) {
@@ -135,6 +148,14 @@ class LeaveApplicationController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'leave_type_id' => 'required|exists:leave_types,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'reason' => 'required|string',
+            'status' => 'required|in:Pending,Approved,Rejected',
+        ]);
+
         $leaveApplication = LeaveApplication::find($id);
 
         if (empty($leaveApplication)) {
@@ -184,6 +205,10 @@ class LeaveApplicationController extends Controller
 
         // Handle approval
         if (isset($input['status']) && $input['status'] === 'Approved' && $leaveApplication->status !== 'Approved') {
+            if (!Auth::check()) { // Ensure approver is logged in
+                Flash::error('You must be logged in to approve leaves.');
+                return redirect(route('login'));
+            }
             $input['approved_by'] = Auth::id();
             $input['approved_at'] = Carbon::now();
         } elseif (isset($input['status']) && $input['status'] !== 'Approved' && $leaveApplication->status === 'Approved') {

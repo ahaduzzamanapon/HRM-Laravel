@@ -20,7 +20,7 @@ Edit Shift @parent
         </div>
         <div class="card-footer">
             {!! Form::submit('Save', ['class' => 'btn btn-primary']) !!}
-            <a href="{{ route('shifts.index') }}" class="btn btn-default">Cancel</a>
+            <a href="{{ route('shifts.index') }}" class="btn btn-primary">Cancel</a>
         </div>
         {!! Form::close() !!}
     </div>

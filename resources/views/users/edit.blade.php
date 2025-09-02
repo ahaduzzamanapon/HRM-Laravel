@@ -36,7 +36,7 @@ User @parent
                                     </div>
                                     <div class="form-group col-sm-12" style="text-align-last: right;">
                                         {!! Form::submit('Save', ['class' => 'btn btn-primary']) !!}
-                                        <a href="{{ route('users.index') }}" class="btn btn-default">Cancel</a>
+                                        <a href="{{ route('users.index') }}" class="btn btn-primary">Cancel</a>
                                     </div>
                                 {!! Form::close() !!}
                             </div>
