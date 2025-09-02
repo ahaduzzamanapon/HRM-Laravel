@@ -1,27 +1,28 @@
 @extends('layouts.default')
 
-{{-- Page title --}}
 @section('title')
-Site Settings @parent
+Create Site Setting @parent
 @stop
 
 @section('content')
-    <section class="content-header">
-    {{--<div aria-label="breadcrumb" class="card-breadcrumb">
-        <h1>{{ __('Create New') }} Site Settings</h1>
-    </div>
-    <div class="separator-breadcrumb border-top"></div>--}}
-    </section>
-    <div class="content">
-        @include('adminlte-templates::common.errors')
-        <div class="card">
-            <div class="card-body">
-                {!! Form::open(['route' => 'siteSettings.store', 'files' => true,'class' => 'form-horizontal']) !!}
+<section class="content-header">
+    <h1>Create Site Setting</h1>
+</section>
 
-                    @include('site_settings.fields')
-
-                {!! Form::close() !!}
+<div class="content">
+    @include('adminlte-templates::common.errors')
+    <div class="card">
+        {!! Form::open(['route' => 'siteSettings.store', 'files' => true]) !!}
+        <div class="card-body">
+            <div class="row">
+                @include('site_settings.fields')
             </div>
         </div>
+        <div class="card-footer">
+            {!! Form::submit('Save', ['class' => 'btn btn-primary']) !!}
+            <a href="{{ route('siteSettings.index') }}" class="btn btn-default">Cancel</a>
+        </div>
+        {!! Form::close() !!}
     </div>
+</div>
 @endsection

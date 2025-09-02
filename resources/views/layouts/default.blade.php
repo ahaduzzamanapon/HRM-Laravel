@@ -12,8 +12,8 @@
         $setting = DB::table('sitesettings')->first();
     @endphp
 
-    <title>{{ !empty($setting) ? $setting->name : 'Title' }} -
-        {{ !empty($setting) ? $setting->slogan : 'Slogan' }}
+    <title>{{ !empty($setting) ? $setting->site_name : 'Title' }} -
+        {{ !empty($setting) ? $setting->site_description : 'Slogan' }}
     </title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -38,14 +38,105 @@
     <link rel="stylesheet" href="{{ asset('fonts/iconmind.css') }}">
 
     <style>
+        body {
+            font-size: 0.8rem !important;
+        }
+
+        .btn {
+            padding: 3px 6px !important;
+            font-size: 12px;
+        }
+
         .btn:hover {
             color: #ffffff !important;
-            background-color: #2962ff !important;
-            border-color: #2962ff !important;
+            background-color: #0177bc !important;
+            border-color: #0177bc !important;
+        }
+
+        .nav {
+            background: #0177bc;
+            padding: 4px;
         }
 
         .nav-item {
             margin-top: 7px !important;
+        }
+
+        /* Custom styles for side tabs */
+        .nav-pills.flex-column .nav-link {
+            text-align: left;
+            padding: 10px 15px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            color: #495057;
+            transition: all 0.3s ease;
+        }
+
+        .nav-pills.flex-column .nav-link.active {
+            background-color: #007bff;
+            color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
+        }
+
+        .nav-pills.flex-column .nav-link:hover {
+            background-color: #e9ecef;
+            color: #0056b3;
+        }
+
+        .nav-pills.flex-column .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1em;
+        }
+
+        .tab-content {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 20px;
+            background-color: #fff;
+        }
+
+        .accordion-item {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .accordion-button {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: bold;
+        }
+
+        .accordion-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        /* .table-responsive {
+            margin-top: 20px;
+        } */
+
+        .avatar-20 {
+            height: 27px;
+            width: 27px;
+            min-width: 29px;
+            -webkit-border-radius: .125rem;
+            border-radius: .125rem;
+        }
+
+        .logo-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+            text-transform: uppercase;
+
+        }
+
+        .sidebar .sidebar-toggle {
+            top: 9px;
         }
     </style>
 
@@ -54,12 +145,17 @@
 <body>
 
     <aside class="sidebar sidebar-default sidebar-white sidebar-base navs-rounded-all">
-        <div class="sidebar-header d-flex align-items-center justify-content-start">
-            <a href="{{ url('/') }}" class="navbar-brand">
+        <div class="sidebar-header d-flex align-items-center justify-content-start" style="background: #0177bc;">
+            <a href="{{ url('/') }}" class="navbar-brand" style="padding: 6px;">
                 <div class="logo-main">
-                    LOGO
+                    @if(!empty($setting) && $setting->site_logo)
+                        <img src="{{ asset($setting->site_logo) }}" alt="{{ $setting->site_name }}" height="30">
+                    @else
+                        LOGO
+                    @endif
                 </div>
-                <h4 class="logo-title">{{ !empty($setting) ? $setting->name : 'Title' }}</h4>
+                <span class="logo-title"
+                    style="color: white;">{{ !empty($setting) ? $setting->site_name : 'Title' }}</span>
             </a>
             <div class="sidebar-toggle" data-toggle="sidebar" data-active="true">
                 <i class="icon">
@@ -88,9 +184,7 @@
             <!--Nav Start-->
             <nav class="nav navbar navbar-expand-xl navbar-light iq-navbar">
                 <div class="container-fluid navbar-inner">
-                    <a href="../dashboard/index.html" class="navbar-brand">
-                        <h4 class="logo-title">Hope UI</h4>
-                    </a>
+
                     <div class="sidebar-toggle" data-toggle="sidebar" data-active="true">
                         <i class="icon">
                             <svg width="20px" class="icon-20" viewBox="0 0 24 24">
@@ -117,15 +211,7 @@
                                 <a class="py-0 nav-link d-flex align-items-center" href="#" id="navbarDropdown"
                                     role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <img src="{{ asset('assets/images/avatars/01.png') }}" alt="User-Profile"
-                                        class="theme-color-default-img img-fluid avatar avatar-50 avatar-rounded" />
-                                    <div class="caption ms-3 d-none d-md-block">
-                                        <h6 class="mb-0 caption-title">
-                                            {{ Auth::user()->name ?? 'Guest' }}
-                                        </h6>
-                                        <p class="mb-0 caption-sub-title">
-                                            {{ Auth::user()->role ?? 'User' }}
-                                        </p>
-                                    </div>
+                                        class="theme-color-default-img img-fluid avatar avatar-20 avatar-rounded" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                     <li>
@@ -191,6 +277,17 @@
 
     <!-- App Script -->
     <script src="{{ asset('assets/js/hope-ui.js') }}" defer></script>
+    <script>
+        $(document).ready(function () {
+            $('.table-responsive').on('show.bs.dropdown', function () {
+                $('.btn-group').css('position', 'static');
+            });
+
+            $('.table-responsive').on('hide.bs.dropdown', function () {
+                $('.btn-group').css('position', 'relative');
+            });
+        });
+    </script>
 </body>
 
 </html>

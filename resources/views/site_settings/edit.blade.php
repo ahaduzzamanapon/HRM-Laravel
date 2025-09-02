@@ -1,27 +1,28 @@
 @extends('layouts.default')
 
-{{-- Page title --}}
 @section('title')
-Site Settings @parent
+Edit Site Setting @parent
 @stop
 
 @section('content')
-   <section class="content-header">
-    {{--<div aria-label="breadcrumb" class="card-breadcrumb">
-        <h1>{{ __('Edit') }} Site Settings</h1>
+<section class="content-header">
+    <h1>Edit Site Setting</h1>
+</section>
+
+<div class="content">
+    @include('adminlte-templates::common.errors')
+    <div class="card">
+        {!! Form::model($siteSetting, ['route' => ['siteSettings.update', $siteSetting->id], 'method' => 'patch', 'files' => true]) !!}
+        <div class="card-body">
+            <div class="row">
+                @include('site_settings.fields')
+            </div>
+        </div>
+        <div class="card-footer">
+            {!! Form::submit('Save', ['class' => 'btn btn-primary']) !!}
+            <a href="{{ route('siteSettings.index') }}" class="btn btn-default">Cancel</a>
+        </div>
+        {!! Form::close() !!}
     </div>
-    <div class="separator-breadcrumb border-top"></div>--}}
-    </section>
-   <div class="content">
-       @include('adminlte-templates::common.errors')
-       <div class="card">
-           <div class="card-body">
-                {!! Form::model($siteSetting, ['route' => ['siteSettings.update', $siteSetting->id], 'method' => 'patch', 'files' => true,'class' => 'form-horizontal']) !!}
-
-                    @include('site_settings.fields')
-
-                {!! Form::close() !!}
-           </div>
-       </div>
-   </div>
+</div>
 @endsection

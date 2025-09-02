@@ -25,4 +25,18 @@ Route::get('/', function () {
     return view('index');
 })->middleware('auth');
 
+Route::get('/employee-details', [App\Http\Controllers\EmployeeController::class, 'index'])->name('employeeDetails.index');
+
+Route::resource('trainingDetails', App\Http\Controllers\TrainingDetailController::class);
+Route::resource('jobExperiences', App\Http\Controllers\JobExperienceController::class);
+Route::resource('educationalQualifications', App\Http\Controllers\EducationalQualificationController::class);
+Route::resource('nomineeInformation', App\Http\Controllers\NomineeInformationController::class);
+Route::resource('promotionDetails', App\Http\Controllers\PromotionDetailController::class);
+Route::resource('salaryIncrements', App\Http\Controllers\SalaryIncrementController::class);
+Route::resource('transferDetails', App\Http\Controllers\TransferDetailController::class);
+Route::resource('personalDocuments', App\Http\Controllers\PersonalDocumentController::class);
+
+
+
+
 

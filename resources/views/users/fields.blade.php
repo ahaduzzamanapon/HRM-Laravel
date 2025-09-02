@@ -71,6 +71,39 @@
     </div>
 </div>
 
+@php
+    $branches = \App\Models\Branch::all()->pluck('branch_name','id')->prepend('Select Branch', '')->toArray();
+@endphp
+<!-- Branch Id Field -->
+<div class="col-md-3">
+    <div class="form-group">
+        {!! Form::label('branch_id', 'Branch:',['class'=>'control-label']) !!}
+        {!! Form::select('branch_id',$branches, null, ['class' => 'form-control','required']) !!}
+    </div>
+</div>
+
+@php
+    $departments = \App\Models\Department::all()->pluck('name','id')->prepend('Select Department', '')->toArray();
+@endphp
+<!-- Department Id Field -->
+<div class="col-md-3">
+    <div class="form-group">
+        {!! Form::label('department_id', 'Department:',['class'=>'control-label']) !!}
+        {!! Form::select('department_id',$departments, null, ['class' => 'form-control','required']) !!}
+    </div>
+</div>
+
+@php
+    $roles = \App\Models\RoleAndPermission::all()->pluck('name','id')->toArray();
+@endphp
+<!-- Group Id Field -->
+<div class="col-md-3">
+    <div class="form-group">
+        {!! Form::label('group_id', 'Roll:',['class'=>'control-label']) !!}
+        {!! Form::select('group_id',$roles, null, ['class' => 'form-control']) !!}
+    </div>
+</div>
+
 
 <!-- Address Field -->
 <div class="col-md-3">
@@ -86,52 +119,6 @@
     <div class="form-group">
         {!! Form::label('phone_number', 'Phone Number:',['class'=>'control-label']) !!}
         {!! Form::number('phone_number', null, ['class' => 'form-control','required']) !!}
-    </div>
-</div>
-
-
-
-
-
-
-
-<!-- Salary Field -->
-<div class="col-md-3  d-none">
-    <div class="form-group">
-        {!! Form::label('salary', 'Salary:',['class'=>'control-label']) !!}
-        {!! Form::number('salary', null, ['class' => 'form-control']) !!}
-    </div>
-</div>
-
-
-<!-- Nid Field -->
-<div class="col-md-3  d-none">
-    <div class="form-group">
-        {!! Form::label('nid', 'Nid:',['class'=>'control-label']) !!}
-        {!! Form::text('nid', null, ['class' => 'form-control']) !!}
-    </div>
-</div>
-
-
-@php
-    $roles = \App\Models\RoleAndPermission::all()->pluck('name','id')->toArray();
-@endphp
-
-
-<!-- Group Id Field -->
-<div class="col-md-3">
-    <div class="form-group">
-        {!! Form::label('group_id', 'Roll:',['class'=>'control-label']) !!}
-        {!! Form::select('group_id',$roles, null, ['class' => 'form-control']) !!}
-    </div>
-</div>
-
-
-<!-- Education Field -->
-<div class="col-md-3  d-none">
-    <div class="form-group">
-        {!! Form::label('education', 'Education:',['class'=>'control-label']) !!}
-        {!! Form::text('education', null, ['class' => 'form-control']) !!}
     </div>
 </div>
 
@@ -172,32 +159,11 @@
     </div>
 </div>
 
-
 <!-- Punch Id Field -->
-<div class="col-md-3  d-none">
+<div class="col-md-3">
     <div class="form-group">
         {!! Form::label('punch_id', 'Punch Id:',['class'=>'control-label']) !!}
         {!! Form::text('punch_id', null, ['class' => 'form-control']) !!}
-    </div>
-</div>
-
-
-
-
-<!-- Experience Field -->
-<div class="col-md-3  d-none">
-    <div class="form-group">
-        {!! Form::label('experience', 'Experience:',['class'=>'control-label']) !!}
-        {!! Form::text('experience', null, ['class' => 'form-control']) !!}
-    </div>
-</div>
-
-
-<!-- Email Verified At Field -->
-<div class="col-md-3  d-none">
-    <div class="form-group">
-        {!! Form::label('email_verified_at', 'Email Verified At:',['class'=>'control-label']) !!}
-        {!! Form::text('email_verified_at', null, ['class' => 'form-control']) !!}
     </div>
 </div>
 
@@ -211,13 +177,6 @@
 </div>
 
 
-<!-- Remember Token Field -->
-<div class="col-md-3  d-none">
-    <div class="form-group">
-        {!! Form::label('remember_token', 'Remember Token:',['class'=>'control-label']) !!}
-        {!! Form::text('remember_token', null, ['class' => 'form-control']) !!}
-    </div>
-</div>
 <!-- Image Field -->
 <div class="col-md-3">
     <div class="form-group">
@@ -229,33 +188,3 @@
 <div class="clearfix"></div>
 
 
-<!-- Submit Field -->
-<div class="form-group col-sm-12" style="text-align-last: right;">
-    {!! Form::submit('Save', ['class' => 'btn btn-primary']) !!}
-    <a href="{{ route('users.index') }}" class="btn btn-danger">Cancel</a>
-</div>
-
-@section('footer_scripts')
-<script>
-    $(document).ready(function () {
-        var d = new Date();
-        var emp_id = $('#emp_id').val()
-        if (emp_id=='') {
-            $('#emp_id').val('EMP-'+d.getTime());
-        }
-    });
-</script>
-<script type="text/javascript">
-    function previewImage(event) {
-        var reader = new FileReader();
-        reader.onload = function(){
-            var output = document.getElementById('imagePreview');
-            output.src = reader.result;
-            output.style.display = 'block';
-        };
-        reader.readAsDataURL(event.target.files[0]);
-    }
-</script>
-
-
-@endsection

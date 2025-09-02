@@ -28,3 +28,15 @@ User @parent
         </div>
     </div>
 @endsection
+
+@section('footer_scripts')
+<script>
+    $(document).ready(function () {
+        var d = new Date();
+        var emp_id = $('#emp_id').val()
+        if (emp_id=='') {
+            $('#emp_id').val('EMP-'+d.getTime());
+        }
+    });
+</script>
+@endsection
