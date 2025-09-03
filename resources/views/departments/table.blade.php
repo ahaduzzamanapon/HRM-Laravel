@@ -2,7 +2,7 @@
     <table class="table" id="departments-table">
         <thead>
             <tr>
-                <th><Select:d></Select:d></th>
+                <th>Sl</th>
         <th>Name</th>
         <th>Status</th>
        

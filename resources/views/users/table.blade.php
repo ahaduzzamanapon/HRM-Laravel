@@ -33,6 +33,7 @@
                         <ul class="dropdown-menu">
                             <li><a href="{{ route('users.show', [$users->id]) }}" class='dropdown-item'>View</a></li>
                             <li><a href="{{ route('users.edit', [$users->id]) }}" class='dropdown-item'>Edit</a></li>
+                            <li><a href="#" class='dropdown-item transfer-employee' onclick="openTransferModal('{{ $users->id }}', '{{ $users->name }} {{ $users->last_name }}', '{{ $users->branch->id ?? '' }}', '{{ $users->branch->branch_name ?? '' }}')">Transfer</a></li>
                             <li>
                                 {!! Form::open(['route' => ['users.destroy', $users->id], 'method' => 'delete']) !!}
                                 <button type="submit" class="dropdown-item" onclick="return confirm('Are you sure?')">Delete</button>

@@ -18,6 +18,7 @@ use App\Models\SalaryIncrement; // Import the SalaryIncrement model
 use App\Models\TransferDetail; // Import the TransferDetail model
 use App\Models\PersonalDocument; // Import the PersonalDocument model
 use App\Models\Branch; // Import the Branch model
+use App\Models\UserAllowance; // Import the UserAllowance model
 
 
 class User extends Authenticatable
@@ -47,7 +48,9 @@ class User extends Authenticatable
         'religion',
         'marital_status',
         'punch_id',
-        'password'
+        'password',
+        'basic_salary',
+        'gross_salary'
     ];
 
     protected $dates = []; // Laravel will automatically cast 'updated_at'
@@ -150,5 +153,10 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(RoleAndPermission::class, 'group_id');
+    }
+
+    public function userAllowances()
+    {
+        return $this->hasMany(UserAllowance::class);
     }
 }

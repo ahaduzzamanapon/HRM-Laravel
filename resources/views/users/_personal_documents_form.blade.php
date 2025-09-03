@@ -9,11 +9,7 @@
         <!-- Accordion Form for Add/Edit (moved to top) -->
         <div class="accordion mb-4" id="personalDocumentsAccordion">
             <div class="accordion-item">
-                <h2 class="accordion-header" id="headingEight">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEight" aria-expanded="false" aria-controls="collapseEight">
-                        Personal Documents Form
-                    </button>
-                </h2>
+               
                 <div id="collapseEight" class="accordion-collapse collapse" aria-labelledby="headingEight" data-bs-parent="#personalDocumentsAccordion">
                     <div class="accordion-body">
                         <form id="personal-document-form" enctype="multipart/form-data">

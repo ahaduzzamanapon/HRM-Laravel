@@ -26,7 +26,8 @@ class Branch extends Model
         'branch_name',
         'Address',
         'status',
-        'description'
+        'description',
+        'ta_rate_per_km', // Added
     ];
 
     /**

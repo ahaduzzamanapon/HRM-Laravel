@@ -1,10 +1,27 @@
 {{-- User Info Section --}}
 @auth
-<div class="user-info text-center py-3" style="background: #0177bc; color: white;">
-    <img src="{{ asset(Auth::user()->image ?? 'assets/images/avatars/01.png') }}" alt="User Image" class="img-fluid rounded-circle mb-2" style="width: 80px; height: 80px; object-fit: cover;">
-    <h5 class="mb-0">{{ Auth::user()->name }} {{ Auth::user()->last_name }}</h5>
-    <p class="mb-0">{{ Auth::user()->email }}</p>
-    <p class="mb-0"><small>{{ Auth::user()->role->name ?? 'N/A' }}</small></p>
+<style>
+.user-panel {
+    background-image: url("{{ asset('assets/images/user-panel-img.jpg') }}");
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.user-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+</style>
+<div class="user-info text-center py-3 user-panel">
+    <img src="{{ asset(Auth::user()->image ?? 'assets/images/avatars/01.png') }}" alt="User Image" class="img-fluid rounded-circle mb-2" style="width: 60px;height: 60px;bject-fit: cover;">
+    <h5 style="color: white;" class="mb-0">{{ Auth::user()->name }} {{ Auth::user()->last_name }}</h5>
+    <p  style="color: white;"class="mb-0">{{ Auth::user()->email }}</p>
+    <p style="color: white;" class="mb-0"><small>{{ Auth::user()->role->name ?? 'N/A' }}</small></p>
 </div>
 @endauth
 
@@ -135,6 +152,15 @@
             </a>
         </li>
         @endif
+        @if(can('movements'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('movements*') ? 'active' : '' !!}" href="{{ route('movements.index') }}">
+                <i class="icon im im-icon-Location-2"></i>
+                <i class="sidenav-mini-icon"> M </i>
+                <span class="item-name">Movements</span>
+            </a>
+        </li>
+        @endif
         </ul>
 </li>
 
@@ -144,12 +170,12 @@
 {{-- Settings --}}
 @if(can('settings'))
 <li class="nav-item">
-    <a class="nav-link {!! (Request::is('siteSettings*') || Request::is('roleAndPermissions*') || Request::is('branches*')  ? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#settings_menu" role="button" aria-expanded="false" aria-controls="settings_menu">
+    <a class="nav-link {!! (Request::is('siteSettings*') || Request::is('roleAndPermissions*')  ? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#settings_menu" role="button" aria-expanded="false" aria-controls="settings_menu">
         <i class="icon im im-icon-Gear"></i>
         <span class="item-name">Settings</span>
         <i class="right-icon im im-icon-Arrow-Right"></i>
     </a>
-    <ul class="sub-nav collapse {!! (Request::is('siteSettings*')  || Request::is('roleAndPermissions*') || Request::is('branches*')  ? 'show' : '' ) !!}" id="settings_menu" data-bs-parent="#sidebar-menu">
+    <ul class="sub-nav collapse {!! (Request::is('siteSettings*')  || Request::is('roleAndPermissions*')   ? 'show' : '' ) !!}" id="settings_menu" data-bs-parent="#sidebar-menu">
         @if(can('manage_site_settings'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('siteSettings*') ? 'active' : '' !!}" href="{{ route('siteSettings.index') }}">
@@ -159,21 +185,23 @@
             </a>
         </li>
         @endif
-        @if(can('manage_branches'))
-        <li class="nav-item">
-            <a class="nav-link {!! Request::is('branches*') ? 'active' : '' !!}" href="{{ route('branches.index') }}">
-                <i class="icon im im-icon-Security-Settings"></i>
-                <i class="sidenav-mini-icon"> B </i>
-                <span class="item-name">Branch Management</span>
-            </a>
-        </li>
-        @endif
+     
         @if(can('manage_roles_and_permissions'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('roleAndPermissions*') ? 'active' : '' !!}" href="{{ route('roleAndPermissions.index') }}">
                 <i class="icon im im-icon-Security-Settings"></i>
                 <i class="sidenav-mini-icon"> R </i>
                 <span class="item-name">Role Management</span>
+            </a>
+        </li>
+        @endif
+        @if(can('manage_allowance_settings'))
+        {{-- Allowance Settings --}}
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('allowanceSettings*') ? 'active' : '' !!}" href="{{ route('allowanceSettings.index') }}">
+                <i class="icon im im-icon-Money-Bag"></i>
+                <i class="sidenav-mini-icon"> AS </i>
+                <span class="item-name">Allowance Settings</span>
             </a>
         </li>
         @endif

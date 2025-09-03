@@ -36,6 +36,8 @@ Route::resource('salaryIncrements', App\Http\Controllers\SalaryIncrementControll
 Route::resource('transferDetails', App\Http\Controllers\TransferDetailController::class);
 Route::resource('personalDocuments', App\Http\Controllers\PersonalDocumentController::class);
 
+Route::resource('allowanceSettings', App\Http\Controllers\AllowanceSettingController::class);
+
 
 
 

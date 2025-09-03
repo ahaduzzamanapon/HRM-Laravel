@@ -33,6 +33,14 @@
     </div>
 </div>
 
+<!-- TA Rate Per KM Field -->
+<div class="col-md-3">
+    <div class="form-group">
+        {!! Form::label('ta_rate_per_km', 'TA Rate Per KM:',['class'=>'control-label']) !!}
+        {!! Form::number('ta_rate_per_km', null, ['class' => 'form-control', 'step' => '0.01']) !!}
+    </div>
+</div>
+
 
 <!-- Submit Field -->
 <div class="form-group col-sm-12" style="text-align-last: right;">

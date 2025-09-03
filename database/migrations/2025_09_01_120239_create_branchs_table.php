@@ -19,6 +19,7 @@ class CreateBranchsTable extends Migration
             $table->string('Address');
             $table->string('status');
             $table->string('description');
+            $table->decimal('ta_rate_per_km', 8, 2)->nullable(); // Added
             $table->timestamps();
         });
     }

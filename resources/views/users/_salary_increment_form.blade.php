@@ -1,21 +1,13 @@
 <div class="row">
     <div class="col-md-12">
-        <h4>Salary Increment Details</h4>
-        <hr>
-
-        <!-- Add New Salary Increment Button (moved to top right) -->
-        <div class="d-flex justify-content-end mb-3">
-            <button type="button" class="btn btn-primary" id="add-new-salary-increment-btn">Add New Increment</button>
+        <div class="d-flex justify-content-between align-items-center">
+            <h4>Salary Increment Details</h4>
+            <button type="button" class="btn btn-primary btn-sm" id="add-new-salary-increment-btn" data-toggle="collapse" data-target="#collapseOne">Add New Increment</button>
         </div>
 
         <!-- Accordion Form for Add/Edit (moved to top) -->
         <div class="accordion mb-4" id="salaryIncrementsAccordion">
             <div class="accordion-item">
-                <h2 class="accordion-header" id="headingSix">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
-                        Salary Increment Form
-                    </button>
-                </h2>
                 <div id="collapseSix" class="accordion-collapse collapse" aria-labelledby="headingSix" data-bs-parent="#salaryIncrementsAccordion">
                     <div class="accordion-body">
                         <form id="salary-increment-form" enctype="multipart/form-data">

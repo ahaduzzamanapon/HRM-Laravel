@@ -55,12 +55,10 @@
 
         .nav {
             background: #0177bc;
-            padding: 4px;
+            padding: 11px;
         }
 
-        .nav-item {
-            margin-top: 7px !important;
-        }
+        
 
         /* Custom styles for side tabs */
         .nav-pills.flex-column .nav-link {
@@ -138,16 +136,18 @@
         .sidebar .sidebar-toggle {
             top: 9px;
         }
+
+     
     </style>
 
-</head>
+    </head>
 
 <body>
 
     <aside class="sidebar sidebar-default sidebar-white sidebar-base navs-rounded-all">
-        <div class="sidebar-header d-flex align-items-center justify-content-start" style="background: #0177bc;">
-            <a href="{{ url('/') }}" class="navbar-brand" style="padding: 6px;">
-                <div class="logo-main">
+        <div class="sidebar-header d-flex align-items-center justify-content-start" style="background: #0177bc;margin: 0px;margin-bottom: -1px;">
+            <a href="{{ url('/') }}" class="navbar-brand" style="padding: 9.4px;">
+                <div class="logo-main" style="width: 51px;">
                     @if(!empty($setting) && $setting->site_logo)
                         <img src="{{ asset($setting->site_logo) }}" alt="{{ $setting->site_name }}" height="30">
                     @else
@@ -168,7 +168,7 @@
                 </i>
             </div>
         </div>
-        <div class="sidebar-body pt-0 data-scrollbar">
+        <div class="sidebar-body pt-0 data-scrollbar" style="overflow: hidden;outline: none;padding: 0;">
             <div class="sidebar-list">
                 <!-- Sidebar Menu Start -->
                 <ul class="navbar-nav iq-main-menu" id="sidebar-menu">
@@ -287,7 +287,9 @@
                 $('.btn-group').css('position', 'relative');
             });
         });
+        
     </script>
+    @yield('scripts')
 </body>
 
 </html>

@@ -1,21 +1,12 @@
 <div class="row">
     <div class="col-md-12">
-        <h4>Transfer Details</h4>
-        <hr>
-
-        <!-- Add New Transfer Button (moved to top right) -->
-        <div class="d-flex justify-content-end mb-3">
-            <button type="button" class="btn btn-primary" id="add-new-transfer-btn">Add New Transfer</button>
+        <div class="d-flex justify-content-between align-items-center">
+            <h4>Transfer Details</h4>
+            <button type="button" class="btn btn-primary btn-sm" id="add-new-transfer-btn" data-toggle="collapse" data-target="#collapseOne">Add New Transfer</button>
         </div>
-
         <!-- Accordion Form for Add/Edit (moved to top) -->
         <div class="accordion mb-4" id="transferDetailsAccordion">
             <div class="accordion-item">
-                <h2 class="accordion-header" id="headingSeven">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven" aria-expanded="false" aria-controls="collapseSeven">
-                        Transfer Details Form
-                    </button>
-                </h2>
                 <div id="collapseSeven" class="accordion-collapse collapse" aria-labelledby="headingSeven" data-bs-parent="#transferDetailsAccordion">
                     <div class="accordion-body">
                         <form id="transfer-detail-form" enctype="multipart/form-data">
@@ -33,7 +24,8 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="old_branch">Old Branch:</label>
-                                        <input type="text" name="old_branch" id="old_branch" class="form-control">
+                                        <input type="text" id="old_branch_display" class="form-control" value="{{ $users->branch->branch_name ?? '' }}" readonly>
+                                        <input type="hidden" name="old_branch" id="old_branch" value="{{ $users->branch->branch_name ?? '' }}">
                                     </div>
                                 </div>
                             </div>
@@ -41,7 +33,12 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="new_branch">New Branch:</label>
-                                        <input type="text" name="new_branch" id="new_branch" class="form-control">
+                                        <select name="new_branch" id="new_branch" class="form-control">
+                                            <option value="">Select New Branch</option>
+                                            @foreach(\App\Models\Branch::all() as $branch)
+                                                <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -84,16 +81,15 @@
                         <th>Reason</th>
                         <th>Status</th>
                         <th>Document</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="transfer-details-table-body">
                     @if(isset($users) && $users->transferDetails->count() > 0)
                         @foreach($users->transferDetails as $transferDetail)
                             <tr data-id="{{ $transferDetail->id }}">
-                                <td>{{ $transferDetail->transfer_date }}</td>
-                                <td>{{ $transferDetail->old_branch }}</td>
-                                <td>{{ $transferDetail->new_branch }}</td>
+                                <td>{{ $transferDetail->transfer_date->format('Y-m-d') }}</td>
+                                <td>{{ $transferDetail->oldBranchName->branch_name ?? 'N/A' }}</td>
+                                <td>{{ $transferDetail->newBranchName->branch_name ?? 'N/A' }}</td>
                                 <td>{{ $transferDetail->reason }}</td>
                                 <td>{{ $transferDetail->status }}</td>
                                 <td>
@@ -102,10 +98,6 @@
                                     @else
                                         N/A
                                     @endif
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-info edit-transfer-detail" data-id="{{ $transferDetail->id }}">Edit</button>
-                                    <button type="button" class="btn btn-sm btn-danger delete-transfer-detail" data-id="{{ $transferDetail->id }}">Delete</button>
                                 </td>
                             </tr>
                         @endforeach
@@ -120,8 +112,7 @@
     </div>
 </div>
 
-@section('footer_scripts')
-@parent
+@section('scripts')
 <script>
     $(document).ready(function() {
         const transferForm = $('#transfer-detail-form');
@@ -152,6 +143,9 @@
                 formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
             }
 
+            console.log('Form Data:', formData); // Debugging statement
+            console.log('Transfer Date from FormData:', formData.get('transfer_date')); // Debugging transfer_date
+
             $.ajax({
                 url: url,
                 type: method,
@@ -159,66 +153,19 @@
                 processData: false,
                 contentType: false,
                 success: function(response) {
+                    console.log('Success Response:', response); // Debugging statement
                     alert(response.message);
                     transferAccordionCollapse.hide();
                     location.reload(); // For simplicity, reload page. In production, update table dynamically.
                 },
                 error: function(xhr) {
+                    console.error('Error XHR:', xhr); // Debugging statement
                     alert('Error saving transfer detail: ' + xhr.responseText);
                 }
             });
         });
 
-        // Edit Transfer Detail
-        $(document).on('click', '.edit-transfer-detail', function() {
-            const transferDetailId = $(this).data('id');
-            $.ajax({
-                url: `/transferDetails/${transferDetailId}/edit`, // Laravel's edit route returns data for form
-                type: 'GET',
-                success: function(response) {
-                    $('#transfer-detail-id').val(response.id);
-                    $('#transfer_date').val(response.transfer_date);
-                    $('#old_branch').val(response.old_branch);
-                    $('#new_branch').val(response.new_branch);
-                    $('#reason').val(response.reason);
-                    $('#status').val(response.status);
-                    if (response.document) {
-                        $('#current-document-link').html(`<a href="${response.document}" target="_blank">View Current Document</a>`);
-                    } else {
-                        $('#current-document-link').html('');
-                    }
-                    transferAccordionCollapse.show(); // Show accordion
-                },
-                error: function(xhr) {
-                    alert('Error fetching transfer detail: ' + xhr.responseText);
-                }
-            });
-        });
-
-        // Delete Transfer Detail
-        $(document).on('click', '.delete-transfer-detail', function() {
-            if (confirm('Are you sure you want to delete this transfer detail?')) {
-                const transferDetailId = $(this).data('id');
-                $.ajax({
-                    url: `/transferDetails/${transferDetailId}`,
-                    type: 'POST', // Laravel uses POST for DELETE with _method field
-                    data: {
-                        _method: 'DELETE',
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        alert(response.message);
-                        $(`tr[data-id="${transferDetailId}"]`).remove();
-                        if ($('#transfer-details-table-body tr').length === 0) {
-                            $('#transfer-details-table-body').html('<tr><td colspan="7" class="text-center">No transfer details found.</td></tr>');
-                        }
-                    },
-                    error: function(xhr) {
-                        alert('Error deleting transfer detail: ' + xhr.responseText);
-                    }
-                });
-            }
-        });
+        
     });
 </script>
 @endsection

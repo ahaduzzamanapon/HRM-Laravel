@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\AppBaseController;
 use App\Models\User;
+use App\Models\AllowanceSetting;
+use App\Models\UserAllowance;
+use App\Services\SalaryCalculator; // Import SalaryCalculator
 use Flash;
 use Response;
 
@@ -17,8 +20,11 @@ class UserController extends Controller
             ->leftjoin('designations', 'users.designation_id', '=', 'designations.id')
             ->paginate(10);
 
+        $branches = \App\Models\Branch::pluck('branch_name', 'id'); // Get branches for dropdown
+
         return view('users.index')
-            ->with('users', $users);
+            ->with('users', $users)
+            ->with('branches', $branches);
     }
 
     /**
@@ -154,7 +160,8 @@ class UserController extends Controller
             'promotionDetails',
             'salaryIncrements',
             'transferDetails',
-            'personalDocuments'
+            'personalDocuments',
+            'userAllowances' // Add this line
         ])->find($id);
 
         if (empty($users)) {
@@ -163,7 +170,10 @@ class UserController extends Controller
             return redirect(route('users.index'));
         }
 
-        return view('users.edit')->with('users', $users);
+        $allowanceSettings = AllowanceSetting::all();
+        return view('users.edit')
+            ->with('users', $users)
+            ->with('allowanceSettings', $allowanceSettings);
     }
 
 
@@ -323,6 +333,49 @@ class UserController extends Controller
                 }
             }
         }
+
+        // Save basic_salary
+        $users->basic_salary = $request->input('basic_salary', 0);
+
+        // Update or Create User Allowances
+        if ($request->has('user_allowances') && is_array($request->user_allowances)) {
+            foreach ($request->user_allowances as $allowanceId => $allowanceData) {
+                $isEnabled = isset($allowanceData['is_enabled']) && $allowanceData['is_enabled'] == '1';
+                $customValue = isset($allowanceData['custom_value']) ? $allowanceData['custom_value'] : null;
+
+                $userAllowance = $users->userAllowances()->where('allowance_setting_id', $allowanceId)->first();
+
+                if ($isEnabled) {
+                    if ($userAllowance) {
+                        // Update existing user allowance
+                        $userAllowance->update([
+                            'is_enabled' => true,
+                            'custom_value' => $customValue,
+                        ]);
+                    } else {
+                        // Create new user allowance
+                        $users->userAllowances()->create([
+                            'allowance_setting_id' => $allowanceId,
+                            'is_enabled' => true,
+                            'custom_value' => $customValue,
+                        ]);
+                    }
+                } else {
+                    // If not enabled, delete the user allowance if it exists
+                    if ($userAllowance) {
+                        $userAllowance->delete();
+                    }
+                }
+            }
+        } else {
+            // If no user_allowances are submitted, delete all existing user allowances for this user
+            $users->userAllowances()->delete();
+        }
+
+        // Calculate and save gross_salary
+        $salaryCalculator = new \App\Services\SalaryCalculator();
+        $users->gross_salary = $salaryCalculator->calculateGrossSalary($users);
+        $users->save(); // Save the user model after updating basic and gross salary
 
         Flash::success('User updated successfully.');
         return redirect(route('users.index'));

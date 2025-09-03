@@ -40,19 +40,32 @@ class TransferDetailController extends Controller
      */
     public function store(Request $request)
     {
-        $input = $request->all();
+        $input = $request->except(['_token']); // Exclude _token
 
         if ($request->hasFile('document')) {
             $file = $request->file('document');
             $folder = 'documents/transfer';
-            $customName = 'transfer-document-'.time();
+            $customName = 'transfer-document-' . time();
             $input['document'] = uploadFile($file, $folder, $customName);
         }
 
-        TransferDetail::create($input);
+        // Get the user's current branch ID for old_branch
+        $user = User::find($input['user_id']);
+        $input['old_branch'] = $user->branch_id ?? null; // Set old_branch to user's current branch ID
+
+        // Save transfer details
+        $transferDetail = TransferDetail::create($input);
+
+        // Update user's branch only if status is Approved
+        if (isset($input['status']) && $input['status'] === 'Approved') {
+            if ($user) {
+                $user->branch_id = $input['new_branch'];
+                $user->save();
+            }
+        }
 
         Flash::success('Transfer Detail saved successfully.');
-        return redirect(route('transferDetails.index'));
+        return redirect()->back();
     }
 
     /**
@@ -108,21 +121,31 @@ class TransferDetailController extends Controller
             return redirect(route('transferDetails.index'));
         }
 
-        $input = $request->all();
+        $input = $request->except(['_token']); // Exclude _token
 
         if ($request->hasFile('document')) {
             $file = $request->file('document');
             $folder = 'documents/transfer';
-            $customName = 'transfer-document-'.time();
+            $customName = 'transfer-document-' . time();
             $input['document'] = uploadFile($file, $folder, $customName);
         } else {
             unset($input['document']); // Don't update document if not provided
         }
 
+        // Update transfer details
         $transferDetail->update($input);
 
+        // Update user's branch only if status is Approved and new_branch is provided and different
+        if (isset($input['status']) && $input['status'] === 'Approved') {
+            $user = User::find($input['user_id']);
+            if ($user && $user->branch_id != $input['new_branch']) {
+                $user->branch_id = $input['new_branch'];
+                $user->save();
+            }
+        }
+
         Flash::success('Transfer Detail updated successfully.');
-        return redirect(route('transferDetails.index'));
+        return redirect()->back();
     }
 
     /**
@@ -148,6 +171,6 @@ class TransferDetailController extends Controller
         $transferDetail->delete();
 
         Flash::success('Transfer Detail deleted successfully.');
-        return redirect(route('transferDetails.index'));
+        return redirect()->back();
     }
 }
