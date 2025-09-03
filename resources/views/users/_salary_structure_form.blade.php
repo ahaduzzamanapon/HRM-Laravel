@@ -1,3 +1,4 @@
+{!! Form::model($users, ['route' => ['users.updateSalary', $users->id], 'method' => 'patch']) !!}
 <div class="row">
     <div class="col-md-12">
         <h3>Salary Structure</h3>
@@ -64,6 +65,7 @@
         </div>
     </div>
 </div>
+{!! Form::close() !!}
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -72,54 +74,57 @@
         const customValueInputs = document.querySelectorAll('input[name^="user_allowances"][name$="[custom_value]"]');
         const grossSalaryDisplay = document.getElementById('gross_salary_display');
         const grossSalaryHidden = document.getElementById('gross_salary_hidden');
+        const allowanceSettings = @json($allowanceSettings);
 
+        /**
+         * Calculates the gross salary based on the basic salary and enabled allowances.
+         */
         function calculateGrossSalary() {
             let basicSalary = parseFloat(basicSalaryInput.value) || 0;
             let grossSalary = basicSalary;
 
-            // Get global allowance settings (you might need to fetch these via AJAX or pass them from PHP)
-            // For now, I'll use a simplified approach assuming allowanceSettings is available in JS
-            const allowanceSettings = @json($allowanceSettings);
-
             allowanceSettings.forEach(function(setting) {
-                const allowanceId = setting.id;
-                const isEnabledCheckbox = document.getElementById(`allowance_${allowanceId}`);
-                const customValueInput = document.querySelector(`input[name="user_allowances[${allowanceId}][custom_value]"]`);
-
+                const isEnabledCheckbox = document.getElementById(`allowance_${setting.id}`);
                 if (isEnabledCheckbox && isEnabledCheckbox.checked) {
-                    let allowanceAmount = 0;
-                    let valueToUse = setting.value;
-
-                    if (customValueInput && customValueInput.value !== '') {
-                        valueToUse = parseFloat(customValueInput.value);
-                    }
-
-                    if (setting.type === 'percentage') {
-                        // Simplified HRA for client-side, actual city logic is server-side
-                        if (setting.name === 'HRA' && setting.city_specific) {
-                            // This client-side calculation won't know the user's city.
-                            // It will use the default percentage.
-                            // The server-side calculation will be the authoritative one.
-                            allowanceAmount = (basicSalary * (valueToUse / 100));
-                        } else {
-                            allowanceAmount = (basicSalary * (valueToUse / 100));
-                        }
-                    } else if (setting.type === 'fixed') {
-                        allowanceAmount = valueToUse;
-                    }
-
-                    // Client-side tax-free limit for Medical Allowance (simplified)
-                    if (setting.name === 'Medical Allowance' && setting.tax_free_limit !== null) {
-                        const monthlyTaxFreeLimit = setting.tax_free_limit / 12;
-                        allowanceAmount = Math.min(allowanceAmount, monthlyTaxFreeLimit);
-                    }
-
-                    grossSalary += allowanceAmount;
+                    grossSalary += getAllowanceAmount(setting, basicSalary);
                 }
             });
 
             grossSalaryDisplay.textContent = grossSalary.toFixed(2);
             grossSalaryHidden.value = grossSalary.toFixed(2);
+        }
+
+        /**
+         * Calculates the amount for a single allowance.
+         * @param {object} setting - The allowance setting object.
+         * @param {number} basicSalary - The basic salary.
+         * @returns {number} The calculated allowance amount.
+         */
+        function getAllowanceAmount(setting, basicSalary) {
+            const customValueInput = document.querySelector(`input[name="user_allowances[${setting.id}][custom_value]"]`);
+            let valueToUse = setting.value;
+
+            if (customValueInput && customValueInput.value !== '') {
+                valueToUse = parseFloat(customValueInput.value);
+            }
+
+            let allowanceAmount = 0;
+            if (setting.type === 'percentage') {
+                // Note: The city-specific HRA logic is handled on the server-side.
+                // This client-side calculation uses the default percentage.
+                allowanceAmount = (basicSalary * (valueToUse / 100));
+            } else if (setting.type === 'fixed') {
+                allowanceAmount = valueToUse;
+            }
+
+            // Note: The tax-free limit for Medical Allowance is a simplified calculation on the client-side.
+            // The server-side calculation is the authoritative one.
+            if (setting.name === 'Medical Allowance' && setting.tax_free_limit !== null) {
+                const monthlyTaxFreeLimit = setting.tax_free_limit / 12;
+                allowanceAmount = Math.min(allowanceAmount, monthlyTaxFreeLimit);
+            }
+
+            return allowanceAmount;
         }
 
         basicSalaryInput.addEventListener('input', calculateGrossSalary);

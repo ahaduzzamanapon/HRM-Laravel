@@ -159,4 +159,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserAllowance::class);
     }
+
+    public function designation()
+    {
+        return $this->belongsTo(Designation::class);
+    }
 }

@@ -58,7 +58,36 @@
             padding: 11px;
         }
 
-        
+        .text-muted {
+            color: #ff0000ff !important;
+        }
+
+        .control-label {
+            color: #000000ff;
+            font-weight: 500;
+        }
+
+        .form-check-input {
+            height: 20px;
+            width: 20px;
+            border: 2px solid #0177bc;
+        }
+
+        .col-form-label {
+            color: black;
+            font-weight: 500;
+        }
+
+
+        .form-control {
+            border: 1px solid #5f5f5f;
+            padding: 0px 9px;
+            height: 34px;
+        }
+
+        .card {
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        }
 
         /* Custom styles for side tabs */
         .nav-pills.flex-column .nav-link {
@@ -66,8 +95,25 @@
             padding: 10px 15px;
             margin-bottom: 5px;
             border-radius: 5px;
-            color: #495057;
+            color: #000000ff;
             transition: all 0.3s ease;
+        }
+        .card-title {
+            color: black;
+            font-size: 22px;
+            font-weight: 600;
+        }
+        th {
+            color: black !important;
+            font-size: 13px;
+        }
+        td {
+            color: #313131 !important;
+            font-size: 12px;
+        }
+        .sidebar-base .nav-item .nav-link:not(.disabled) {
+            color: #000000;
+            font-size: 16px;
         }
 
         .nav-pills.flex-column .nav-link.active {
@@ -136,16 +182,15 @@
         .sidebar .sidebar-toggle {
             top: 9px;
         }
-
-     
     </style>
 
-    </head>
+</head>
 
 <body>
 
     <aside class="sidebar sidebar-default sidebar-white sidebar-base navs-rounded-all">
-        <div class="sidebar-header d-flex align-items-center justify-content-start" style="background: #0177bc;margin: 0px;margin-bottom: -1px;">
+        <div class="sidebar-header d-flex align-items-center justify-content-start"
+            style="background: #0177bc;margin: 0px;margin-bottom: -1px;">
             <a href="{{ url('/') }}" class="navbar-brand" style="padding: 9.4px;">
                 <div class="logo-main" style="width: 51px;">
                     @if(!empty($setting) && $setting->site_logo)
@@ -241,9 +286,6 @@
     </main>
     <!-- Wrapper End-->
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
-        </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
         integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
         </script>
@@ -287,9 +329,14 @@
                 $('.btn-group').css('position', 'relative');
             });
         });
-        
     </script>
     @yield('scripts')
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+        integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
 </body>
 
 </html>

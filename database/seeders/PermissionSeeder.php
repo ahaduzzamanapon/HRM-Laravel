@@ -44,6 +44,7 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'Approve Leave', 'key' => 'approve_leave', 'parent_id' => $hr->id]);
         Permission::create(['name' => 'Leave Applications', 'key' => 'leave_applications', 'parent_id' => $hr->id]);
         Permission::create(['name' => 'Movements', 'key' => 'movements', 'parent_id' => $hr->id]);
+        Permission::create(['name' => 'process_attendance', 'key' => 'process_attendance', 'parent_id' => $hr->id]);
 
         // Settings Sub-permissions
         Permission::create(['name' => 'Manage Site Settings', 'key' => 'manage_site_settings', 'parent_id' => $settings->id]);

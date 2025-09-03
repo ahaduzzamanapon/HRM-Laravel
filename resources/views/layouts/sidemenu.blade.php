@@ -161,6 +161,15 @@
             </a>
         </li>
         @endif
+        @if(can('process_attendance'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('attendance/process*') ? 'active' : '' !!}" href="{{ route('attendance.process.index') }}">
+                <i class="icon im im-icon-Clock-Forward"></i>
+                <i class="sidenav-mini-icon"> AP </i>
+                <span class="item-name">Attendance Process</span>
+            </a>
+        </li>
+        @endif
         </ul>
 </li>
 

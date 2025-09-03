@@ -381,6 +381,62 @@ class UserController extends Controller
         return redirect(route('users.index'));
     }
 
+    public function updateSalary(Request $request, $id)
+    {
+        /** @var User $user */
+        $user = User::find($id);
+
+        if (empty($user)) {
+            Flash::error('User not found');
+            return redirect(route('users.index'));
+        }
+
+        $user->basic_salary = $request->input('basic_salary', 0);
+
+        // Update or Create User Allowances
+        if ($request->has('user_allowances') && is_array($request->user_allowances)) {
+            foreach ($request->user_allowances as $allowanceId => $allowanceData) {
+                $isEnabled = isset($allowanceData['is_enabled']) && $allowanceData['is_enabled'] == '1';
+                $customValue = isset($allowanceData['custom_value']) ? $allowanceData['custom_value'] : null;
+
+                $userAllowance = $user->userAllowances()->where('allowance_setting_id', $allowanceId)->first();
+
+                if ($isEnabled) {
+                    if ($userAllowance) {
+                        // Update existing user allowance
+                        $userAllowance->update([
+                            'is_enabled' => true,
+                            'custom_value' => $customValue,
+                        ]);
+                    } else {
+                        // Create new user allowance
+                        $user->userAllowances()->create([
+                            'allowance_setting_id' => $allowanceId,
+                            'is_enabled' => true,
+                            'custom_value' => $customValue,
+                        ]);
+                    }
+                } else {
+                    // If not enabled, delete the user allowance if it exists
+                    if ($userAllowance) {
+                        $userAllowance->delete();
+                    }
+                }
+            }
+        } else {
+            // If no user_allowances are submitted, delete all existing user allowances for this user
+            $user->userAllowances()->delete();
+        }
+
+        // Calculate and save gross_salary
+        $salaryCalculator = new \App\Services\SalaryCalculator();
+        $user->gross_salary = $salaryCalculator->calculateGrossSalary($user);
+        $user->save(); // Save the user model after updating basic and gross salary
+
+        Flash::success('Salary structure updated successfully.');
+        return redirect()->back();
+    }
+
     public function destroy($id)
     {
         /** @var User $users */
