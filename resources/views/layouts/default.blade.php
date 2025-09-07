@@ -113,7 +113,7 @@
         }
         .sidebar-base .nav-item .nav-link:not(.disabled) {
             color: #000000;
-            font-size: 16px;
+            font-size: 13px;
         }
 
         .nav-pills.flex-column .nav-link.active {

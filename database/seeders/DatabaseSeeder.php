@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ShiftSeeder::class);
         $this->call(ShiftDetailSeeder::class);
         $this->call(LeaveTypeSeeder::class); // Added
+        $this->call(AllowanceSettingSeeder::class);
         // \App\Models\User::factory(10)->create();
 
         // \App\Models\User::factory()->create([

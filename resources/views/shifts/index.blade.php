@@ -28,7 +28,7 @@ Shift Management @parent
             @else
                 @foreach($shifts as $shift)
                     <div class="card mb-4">
-                        <div class="card-header bg-primary text-white">
+                        <div class="card-header text-white">
                             <h4 class="mb-0">{{ $shift->shift_name }} (Branch: {{ $shift->branch->branch_name ?? 'N/A' }})</h4>
                         </div>
                         <div class="card-body">
