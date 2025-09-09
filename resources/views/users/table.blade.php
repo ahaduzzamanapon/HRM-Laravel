@@ -27,14 +27,19 @@
             <td>{{ $users->email }}</td>
                 <td>
                     <div class='btn-group'>
-                        <a href="{{ route('users.show', [$users->id]) }}" class='btn btn-outline-primary btn-xs'><i class="im im-icon-Eye" data-placement="top" title="View"></i></a>
-                        <a href="{{ route('users.edit', [$users->id]) }}" class='btn btn-outline-primary btn-xs'><i
-                            class="im im-icon-Pen"  data-toggle="tooltip" data-placement="top" title="Edit"></i></a>
-                          @if(can('delete_option'))
-                            {!! Form::open(['route' => ['users.destroy', $users->id], 'method' => 'delete']) !!}
-                            {!! Form::button('<i class="im im-icon-Remove" data-toggle="tooltip" data-placement="top" title="Delete"></i>', ['type' => 'submit', 'class' => 'btn btn-outline-danger btn-xs', 'onclick' => "return confirm('Are you sure?')"]) !!}
-                            {!! Form::close() !!}
-                        @endif
+                        <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-bs-toggle="dropdown" data-bs-boundary="window" aria-expanded="false">
+                            Action <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="{{ route('users.show', [$users->id]) }}" class='dropdown-item'>View</a></li>
+                            <li><a href="{{ route('users.edit', [$users->id]) }}" class='dropdown-item'>Edit</a></li>
+                            <li><a href="#" class='dropdown-item transfer-employee' onclick="openTransferModal('{{ $users->id }}', '{{ $users->name }} {{ $users->last_name }}', '{{ $users->branch->id ?? '' }}', '{{ $users->branch->branch_name ?? '' }}')">Transfer</a></li>
+                            <li>
+                                {!! Form::open(['route' => ['users.destroy', $users->id], 'method' => 'delete']) !!}
+                                <button type="submit" class="dropdown-item" onclick="return confirm('Are you sure?')">Delete</button>
+                                {!! Form::close() !!}
+                            </li>
+                        </ul>
                     </div>
                 </td>
             </tr>

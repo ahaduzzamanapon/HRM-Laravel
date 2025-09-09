@@ -21,10 +21,11 @@ class Permission extends Model
 
 
 
-    public $fillable = [
+        public $fillable = [
         'name',
         'key',
-        'cat_id'
+        'cat_id',
+        'parent_id', // Added
     ];
 
     /**
@@ -36,7 +37,8 @@ class Permission extends Model
         'id' => 'integer',
         'name' => 'string',
         'key' => 'string',
-        'cat_id' => 'string'
+        'cat_id' => 'string',
+        'parent_id' => 'integer', // Added
     ];
 
     /**
@@ -49,5 +51,13 @@ class Permission extends Model
         'key' => 'required'
     ];
 
-    
+    public function parent()
+    {
+        return $this->belongsTo(Permission::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Permission::class, 'parent_id');
+    }
 }

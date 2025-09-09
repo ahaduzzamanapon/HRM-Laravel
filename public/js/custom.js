@@ -1,4 +1,7 @@
 $(document).ready(function () {
+    $('.sidebar-default').addClass('sidebar-mini');
+});
+$(document).ready(function () {
     $x = $(".left-aside").height();
     $y = $(".right-aside").height();
     $z = $(window).height() + 500;

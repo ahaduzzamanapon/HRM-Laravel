@@ -1,0 +1,42 @@
+{
+    "private": true,
+    "scripts": {
+        "dev": "npm run development",
+        "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --config=node_modules/laravel-mix/setup/webpack.config.js",
+        "watch": "npm run development -- --watch",
+        "prod": "npm run production",
+        "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --config=node_modules/laravel-mix/setup/webpack.config.js"
+    },
+    "devDependencies": {
+        "axios": "^0.21",
+        "bootstrap": "^4.6.0",
+        "cross-env": "^7.0.3",
+        "jquery": "^3.6.0",
+        "laravel-mix": "^6.0.49",
+        "lodash": "^4.17.21",
+        "popper.js": "^1.16.1",
+        "resolve-url-loader": "^5.0.0",
+        "sass": "^1.54.5",
+        "sass-loader": "^12.6.0",
+        "vue-template-compiler": "^2.7.10"
+    },
+    "dependencies": {
+        "@fortawesome/fontawesome-free": "^5.15.4",
+        "@ttskch/select2-bootstrap4-theme": "^1.4.0",
+        "animate.css": "^4.1.1",
+        "bootstrapvalidator": "^0.5.4",
+        "chart.js": "^3.9.1",
+        "datatables.net": "^1.12.1",
+        "datatables.net-bs4": "^1.12.1",
+        "datatables.net-buttons-bs4": "^2.2.3",
+        "jasny-bootstrap": "^4.0.0",
+        "jquery-backstretch": "^2.1.18",
+        "metismenu": "^3.0.7",
+        "pdfmake": "^0.2.5",
+        "perfect-scrollbar": "^1.5.5",
+        "select2": "^4.0.13",
+        "sweetalert2": "^11.4.29",
+        "toastr": "^2.1.4",
+        "wenk": "^1.0.3"
+    }
+}

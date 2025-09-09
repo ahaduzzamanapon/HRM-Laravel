@@ -15,9 +15,16 @@ class CreateSitesettingsTable extends Migration
     {
         Schema::create('sitesettings', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name');
-            $table->string('logo');
-            $table->string('slogan');
+            $table->string('site_name')->nullable();
+            $table->string('site_email')->nullable();
+            $table->string('site_phone')->nullable();
+            $table->string('site_address')->nullable();
+            $table->string('site_logo')->nullable();
+            $table->string('site_favicon')->nullable();
+            $table->text('site_description')->nullable();
+            $table->string('site_keywords')->nullable();
+            $table->string('site_author')->nullable();
+            $table->string('site_footer')->nullable();
             $table->timestamps();
         });
     }

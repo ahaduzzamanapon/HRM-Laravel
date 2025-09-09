@@ -36,7 +36,8 @@ class RoleAndPermissionController extends AppBaseController
      */
     public function create()
     {
-        return view('role_and_permissions.create');
+        $permissions = \App\Models\Permission::with('children')->whereNull('parent_id')->get();
+        return view('role_and_permissions.create', compact('permissions'));
     }
 
     /**
@@ -49,15 +50,13 @@ class RoleAndPermissionController extends AppBaseController
     public function store(CreateRoleAndPermissionRequest $request)
     {
         $input1 = $request->all();
+        $permissions = $input1['permission'] ?? []; // Get selected permissions
         unset($input1['permission']);
-        $input2 = $request->all();
 
         /** @var RoleAndPermission $roleAndPermission */
         $roleAndPermission = RoleAndPermission::create($input1);
-        $roll_id = $roleAndPermission->id;
-        foreach ($input2['permission'] as $key => $value) {
-            RollHas::create(['roll_id' => $roll_id, 'permission_id' => $value]);
-        }
+        
+        $roleAndPermission->permissions()->sync($permissions); // Sync permissions
 
         Flash::success('Role And Permission saved successfully.');
 
@@ -102,10 +101,11 @@ class RoleAndPermissionController extends AppBaseController
 
             return redirect(route('roleAndPermissions.index'));
         }
-        $permission_have = RollHas::where('roll_id', $id)->pluck('permission_id')->toArray();
+        
+        $permissions = \App\Models\Permission::with('children')->whereNull('parent_id')->get();
+        $permission_have = $roleAndPermission->permissions->pluck('id')->toArray();
 
-
-        return view('role_and_permissions.edit', compact('roleAndPermission', 'permission_have'));
+        return view('role_and_permissions.edit', compact('roleAndPermission', 'permission_have', 'permissions'));
     }
 
     /**
@@ -128,15 +128,13 @@ class RoleAndPermissionController extends AppBaseController
         }
 
         $input1 = $request->all();
+        $permissions = $input1['permission'] ?? []; // Get selected permissions
         unset($input1['permission']);
-        $input2 = $request->all();
+
         $roleAndPermission->fill($input1);
         $roleAndPermission->save();
 
-        RollHas::where('roll_id', $id)->delete();
-        foreach ($input2['permission'] as $key => $value) {
-            RollHas::create(['roll_id' => $id, 'permission_id' => $value]);
-        }
+        $roleAndPermission->permissions()->sync($permissions); // Sync permissions
 
         Flash::success('Role And Permission updated successfully.');
 

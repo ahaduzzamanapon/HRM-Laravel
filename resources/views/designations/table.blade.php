@@ -1,8 +1,8 @@
 <div class="table-responsive">
-    <table class="table" id="designations-table">
+    <table class="table table-hover" id="designations-table">
         <thead>
             <tr>
-                <th>Id</th>
+                <th>SL</th>
         <th>Name</th>
         <th>Status</th>
 

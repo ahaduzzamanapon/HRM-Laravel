@@ -1,34 +1,48 @@
 @extends('layouts.default')
 
-{{-- Page title --}}
 @section('title')
-Site Settings @parent
+Site Setting @parent
 @stop
 
 @section('content')
-<!-- Content Header (Page header) -->
 <section class="content-header">
-    {{--<div aria-label="breadcrumb" class="card-breadcrumb">
-        <h1>Site Settings</h1>
-    </div>
-    <div class="separator-breadcrumb border-top"></div>--}}
+    <h1>Site Setting</h1>
 </section>
 
 <div class="content">
-    <div class="clearfix"></div>
-
-    @include('flash::message')
-
-    <div class="clearfix"></div>
     <div class="card">
-        <div class="table-responsive">
-        <table class="table table-default">
-            @include('site_settings.show_fields')
-
-            </table>
+        <div class="card-body">
+            <div class="row">
+                <!-- Site Setting Fields -->
+                <div class="col-md-12">
+                    <p><b>Site Name:</b> {{ $siteSetting->site_name }}</p>
+                    <p><b>Site Email:</b> {{ $siteSetting->site_email }}</p>
+                    <p><b>Site Phone:</b> {{ $siteSetting->site_phone }}</p>
+                    <p><b>Site Address:</b> {{ $siteSetting->site_address }}</p>
+                    <p><b>Site Logo:</b>
+                        @if($siteSetting->site_logo)
+                            <img src="{{ asset($siteSetting->site_logo) }}" alt="Site Logo" width="100">
+                        @else
+                            N/A
+                        @endif
+                    </p>
+                    <p><b>Site Favicon:</b>
+                        @if($siteSetting->site_favicon)
+                            <img src="{{ asset($siteSetting->site_favicon) }}" alt="Site Favicon" width="50">
+                        @else
+                            N/A
+                        @endif
+                    </p>
+                    <p><b>Site Description:</b> {{ $siteSetting->site_description }}</p>
+                    <p><b>Site Keywords:</b> {{ $siteSetting->site_keywords }}</p>
+                    <p><b>Site Author:</b> {{ $siteSetting->site_author }}</p>
+                    <p><b>Site Footer:</b> {{ $siteSetting->site_footer }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <a href="{{ route('siteSettings.index') }}" class="btn btn-primary">Back</a>
         </div>
     </div>
-    <a href="{{ route('siteSettings.index') }}"
-                class="btn btn-primary">Back</a>
 </div>
 @endsection

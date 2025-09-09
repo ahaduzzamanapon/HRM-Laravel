@@ -33,4 +33,6 @@ Users @parent
         </div>
     </div>
 </div>
+
+@include('users.partials.transfer_modal')
 @endsection

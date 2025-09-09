@@ -36,16 +36,46 @@ if (!function_exists('can')) {
 
     function can($key)
     {
-        $group_id = auth()->user()->group_id;
-        $permissions = \App\Models\RollHas::where('roll_id', $group_id)
-            ->join('permissions', 'roll_has.permission_id', '=', 'permissions.id')
-            ->select('permissions.key')
-            ->get()
-            ->pluck('key')
-            ->toArray();
-        if (in_array($key, $permissions)) {
+        if (!auth()->check()) {
+            return false;
+        }
+
+        $user = auth()->user();
+        $role = $user->role;
+
+        if (!$role) {
+            return false;
+        }
+
+        // If the role has all permissions (e.g., Admin)
+        if ($role->permissions->contains('key', 'all_permissions')) { // Assuming 'all_permissions' is a key for a super admin
             return true;
         }
+
+        // Check if the role has the permission directly
+        if ($role->permissions->contains('key', $key)) {
+            return true;
+        }
+
+        // Check if the key is a parent permission and the role has any of its children
+        $parentPermission = \App\Models\Permission::where('key', $key)->first();
+        if ($parentPermission && $parentPermission->children->count() > 0) {
+            foreach ($parentPermission->children as $child) {
+                if ($role->permissions->contains('key', $child->key)) {
+                    return true;
+                }
+            }
+        }
+
+        // If the key is a child permission, check if its parent is granted
+        $childPermission = \App\Models\Permission::where('key', $key)->first();
+        if ($childPermission && $childPermission->parent_id) {
+            $grandparentPermission = \App\Models\Permission::find($childPermission->parent_id);
+            if ($grandparentPermission && $role->permissions->contains('key', $grandparentPermission->key)) {
+                return true;
+            }
+        }
+
         return false;
     }
 }

@@ -14,7 +14,28 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        $this->call(DepartmentSeeder::class);
+        $this->call(BranchSeeder::class);
+        $this->call(RoleSeeder::class);
+        $this->call(PermissionSeeder::class);
+        $this->call(RoleHasPermissionsSeeder::class);
         $this->call(UserSeeder::class);
+        $this->call(SiteSettingSeeder::class);
+        $this->call(DesignationSeeder::class);
+        $this->call(TrainingDetailSeeder::class);
+        $this->call(JobExperienceSeeder::class);
+        $this->call(EducationalQualificationSeeder::class);
+        $this->call(NomineeInformationSeeder::class);
+        $this->call(PromotionDetailSeeder::class);
+        $this->call(SalaryIncrementSeeder::class);
+        $this->call(TransferDetailSeeder::class);
+        $this->call(PersonalDocumentSeeder::class);
+      
+        $this->call(HolydaySeeder::class);
+        $this->call(ShiftSeeder::class);
+        $this->call(ShiftDetailSeeder::class);
+        $this->call(LeaveTypeSeeder::class); // Added
+        $this->call(AllowanceSettingSeeder::class);
         // \App\Models\User::factory(10)->create();
 
         // \App\Models\User::factory()->create([

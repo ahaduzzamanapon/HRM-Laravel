@@ -49,11 +49,18 @@ class SiteSettingController extends AppBaseController
     {
         $input = $request->all();
 
-        if ($request->hasFile('logo')) {
-            $file = $request->file('logo');
+        if ($request->hasFile('site_logo')) {
+            $file = $request->file('site_logo');
             $folder = 'images/site';
-            $customName = 'item-'.time();
-            $input['logo'] = uploadFile($file, $folder, $customName);
+            $customName = 'logo-'.time();
+            $input['site_logo'] = (string) uploadFile($file, $folder, $customName);
+        }
+
+        if ($request->hasFile('site_favicon')) {
+            $file = $request->file('site_favicon');
+            $folder = 'images/site';
+            $customName = 'favicon-'.time();
+            $input['site_favicon'] = (string) uploadFile($file, $folder, $customName);
         }
 
         /** @var SiteSetting $siteSetting */
@@ -126,16 +133,23 @@ class SiteSettingController extends AppBaseController
         }
         $input = $request->all();
 
-        if ($request->hasFile('logo')) {
-            $file = $request->file('logo');
+        if ($request->hasFile('site_logo')) {
+            $file = $request->file('site_logo');
             $folder = 'images/site';
-            $customName = 'item-'.time();
-            $input['logo'] = uploadFile($file, $folder, $customName);
+            $customName = 'logo-'.time();
+            $input['site_logo'] = (string) uploadFile($file, $folder, $customName);
         }else{
-            unset($input['logo']);
+            unset($input['site_logo']);
         }
 
-
+        if ($request->hasFile('site_favicon')) {
+            $file = $request->file('site_favicon');
+            $folder = 'images/site';
+            $customName = 'favicon-'.time();
+            $input['site_favicon'] = (string) uploadFile($file, $folder, $customName);
+        }else{
+            unset($input['site_favicon']);
+        }
 
         $siteSetting->fill($input);
         $siteSetting->save();
