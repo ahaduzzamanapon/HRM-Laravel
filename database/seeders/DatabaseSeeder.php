@@ -36,6 +36,12 @@ class DatabaseSeeder extends Seeder
         $this->call(ShiftDetailSeeder::class);
         $this->call(LeaveTypeSeeder::class); // Added
         $this->call(AllowanceSettingSeeder::class);
+        
+        
+        
+        $this->call(LoanTypeSeeder::class);
+        $this->call(LoanSeeder::class);
+        $this->call(LoanRepaymentSeeder::class);
         // \App\Models\User::factory(10)->create();
 
         // \App\Models\User::factory()->create([

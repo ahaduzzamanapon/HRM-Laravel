@@ -34,6 +34,8 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'Manage Designations', 'key' => 'manage_designations', 'parent_id' => $organization->id]);
         Permission::create(['name' => 'Manage Departments', 'key' => 'manage_departments', 'parent_id' => $organization->id]);
         Permission::create(['name' => 'Manage Branches', 'key' => 'manage_branches', 'parent_id' => $organization->id]);
+        Permission::create(['name' => 'Rewardings', 'key' => 'rewardings', 'parent_id' => $organization->id]);
+        Permission::create(['name' => 'Innovations', 'key' => 'innovations', 'parent_id' => $organization->id]); // Added Innovation permission
 
         // HR Sub-permissions
         Permission::create(['name' => 'Manage Holidays', 'key' => 'manage_holidays', 'parent_id' => $hr->id]);
@@ -45,6 +47,23 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'Leave Applications', 'key' => 'leave_applications', 'parent_id' => $hr->id]);
         Permission::create(['name' => 'Movements', 'key' => 'movements', 'parent_id' => $hr->id]);
         Permission::create(['name' => 'process_attendance', 'key' => 'process_attendance', 'parent_id' => $hr->id]);
+
+        // Welfare Fund Permissions
+        $welfareFund = Permission::create(['name' => 'Welfare Fund', 'key' => 'welfare_fund']);
+        Permission::create(['name' => 'Manage Employee Children Education Supports', 'key' => 'manage_employee_children_education_supports', 'parent_id' => $welfareFund->id]);
+        Permission::create(['name' => 'Manage Funeral Supports', 'key' => 'manage_funeral_supports', 'parent_id' => $welfareFund->id]);
+        Permission::create(['name' => 'Manage Medical Supports', 'key' => 'manage_medical_supports', 'parent_id' => $welfareFund->id]);
+
+        // Disciplinary Actions Permissions
+        $disciplinaryActions = Permission::create(['name' => 'Disciplinary Actions', 'key' => 'disciplinary_actions']);
+        Permission::create(['name' => 'Manage Departmental Cases', 'key' => 'manage_departmental_cases', 'parent_id' => $disciplinaryActions->id]);
+        Permission::create(['name' => 'Manage Penalties', 'key' => 'manage_penalties', 'parent_id' => $disciplinaryActions->id]);
+
+        // Loans and Advances Permissions
+        $loansAndAdvances = Permission::create(['name' => 'Loans and Advances', 'key' => 'loans_and_advances']);
+        Permission::create(['name' => 'Manage Loan Types', 'key' => 'manage_loan_types', 'parent_id' => $loansAndAdvances->id]);
+        Permission::create(['name' => 'Manage Loans', 'key' => 'manage_loans', 'parent_id' => $loansAndAdvances->id]);
+        Permission::create(['name' => 'Manage Loan Repayments', 'key' => 'manage_loan_repayments', 'parent_id' => $loansAndAdvances->id]);
 
         // Settings Sub-permissions
         Permission::create(['name' => 'Manage Site Settings', 'key' => 'manage_site_settings', 'parent_id' => $settings->id]);

@@ -59,10 +59,11 @@ class SalaryCalculator
     }
 
     // You can add a calculateNetSalary method here if deductions are to be handled
-    // public function calculateNetSalary(User $user, $grossSalary)
-    // {
-    //     $netSalary = $grossSalary;
-    //     // Apply deductions (tax, provident fund, loans, etc.)
-    //     return $netSalary;
-    // }
+    public function calculateNetSalary(User $user, $grossSalary)
+    {
+        $netSalary = $grossSalary;
+        // Apply deductions (tax, provident fund, loans, etc.)
+        $netSalary -= $user->welfare_fund_deduction;
+        return $netSalary;
+    }
 }

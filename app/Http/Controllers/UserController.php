@@ -375,6 +375,7 @@ class UserController extends Controller
         // Calculate and save gross_salary
         $salaryCalculator = new \App\Services\SalaryCalculator();
         $users->gross_salary = $salaryCalculator->calculateGrossSalary($users);
+        $users->net_salary = $salaryCalculator->calculateNetSalary($users, $users->gross_salary);
         $users->save(); // Save the user model after updating basic and gross salary
 
         Flash::success('User updated successfully.');
@@ -443,6 +444,7 @@ class UserController extends Controller
         // Calculate and save gross_salary
         $salaryCalculator = new \App\Services\SalaryCalculator();
         $user->gross_salary = $salaryCalculator->calculateGrossSalary($user);
+        $user->net_salary = $salaryCalculator->calculateNetSalary($user, $user->gross_salary);
         $user->save(); // Save the user model after updating basic and gross salary
 
         Flash::success('Salary structure updated successfully.');
