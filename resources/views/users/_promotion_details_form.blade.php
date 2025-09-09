@@ -70,7 +70,7 @@
                             <button type="submit" class="btn btn-success" id="save-promotion-detail-btn">Save Promotion</button>
                             <div class="row">
     <div class="col-md-12">
-        
+
         <div class="d-flex justify-content-between align-items-center">
             <h4>Promotion Details</h4>
             <button type="button" class="btn btn-primary btn-sm" id="add-new-promotion-btn" data-toggle="collapse" data-target="#collapseFive">Add New Promotion</button>
@@ -242,104 +242,104 @@
     </div>
 </div>
 
-@section('footer_scripts')
-<script>
-    $(document).ready(function() {
-        const promotionForm = $('#promotion-detail-form');
-        const promotionAccordionCollapse = new bootstrap.Collapse($('#collapseFive'), { toggle: false });
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            const promotionForm = $('#promotion-detail-form');
+            const promotionAccordionCollapse = new bootstrap.Collapse($('#collapseFive'), { toggle: false });
 
-        // Show form for adding new promotion
-        $('#add-new-promotion-btn').click(function() {
-            promotionForm[0].reset(); // Clear form
-            $('#promotion-detail-id').val(''); // Clear ID for new entry
-            $('#current-document-link').html(''); // Clear document link
-            promotionAccordionCollapse.show(); // Show accordion
-        });
-
-        // Cancel button for form
-        $('#cancel-promotion-edit-btn').click(function() {
-            promotionAccordionCollapse.hide(); // Hide accordion
-        });
-
-        // Save Promotion Detail (Add/Edit)
-        promotionForm.submit(function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const promotionDetailId = $('#promotion-detail-id').val();
-            const url = promotionDetailId ? `/promotionDetails/${promotionDetailId}` : '/promotionDetails';
-            const method = promotionDetailId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
-
-            if (promotionDetailId) {
-                formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
-            }
-
-            $.ajax({
-                url: url,
-                type: method,
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    alert(response.message);
-                    promotionAccordionCollapse.hide();
-                    location.reload(); // For simplicity, reload page. In production, update table dynamically.
-                },
-                error: function(xhr) {
-                    alert('Error saving promotion detail: ' + xhr.responseText);
-                }
+            // Show form for adding new promotion
+            $('#add-new-promotion-btn').click(function() {
+                promotionForm[0].reset(); // Clear form
+                $('#promotion-detail-id').val(''); // Clear ID for new entry
+                $('#current-document-link').html(''); // Clear document link
+                promotionAccordionCollapse.show(); // Show accordion
             });
-        });
 
-        // Edit Promotion Detail
-        $(document).on('click', '.edit-promotion-detail', function() {
-            const promotionDetailId = $(this).data('id');
-            $.ajax({
-                url: `/promotionDetails/${promotionDetailId}/edit`, // Laravel's edit route returns data for form
-                type: 'GET',
-                success: function(response) {
-                    $('#promotion-detail-id').val(response.id);
-                    $('#promotion_date').val(response.promotion_date);
-                    $('#new_designation').val(response.new_designation);
-                    $('#old_designation').val(response.old_designation);
-                    $('#pay_grade_change').prop('checked', response.pay_grade_change);
-                    $('#new_salary').val(response.new_salary);
-                    if (response.document) {
-                        $('#current-document-link').html(`<a href="${response.document}" target="_blank">View Current Document</a>`);
-                    } else {
-                        $('#current-document-link').html('');
-                    }
-                    promotionAccordionCollapse.show(); // Show accordion
-                },
-                error: function(xhr) {
-                    alert('Error fetching promotion detail: ' + xhr.responseText);
-                }
+            // Cancel button for form
+            $('#cancel-promotion-edit-btn').click(function() {
+                promotionAccordionCollapse.hide(); // Hide accordion
             });
-        });
 
-        // Delete Promotion Detail
-        $(document).on('click', '.delete-promotion-detail', function() {
-            if (confirm('Are you sure you want to delete this promotion detail?')) {
-                const promotionDetailId = $(this).data('id');
+            // Save Promotion Detail (Add/Edit)
+            promotionForm.submit(function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const promotionDetailId = $('#promotion-detail-id').val();
+                const url = promotionDetailId ? `/promotionDetails/${promotionDetailId}` : '/promotionDetails';
+                const method = promotionDetailId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
+
+                if (promotionDetailId) {
+                    formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
+                }
+
                 $.ajax({
-                    url: `/promotionDetails/${promotionDetailId}`,
-                    type: 'POST', // Laravel uses POST for DELETE with _method field
-                    data: {
-                        _method: 'DELETE',
-                        _token: '{{ csrf_token() }}'
-                    },
+                    url: url,
+                    type: method,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
                     success: function(response) {
                         alert(response.message);
-                        $(`tr[data-id="${promotionDetailId}"]`).remove();
-                        if ($('#promotion-details-table-body tr').length === 0) {
-                            $('#promotion-details-table-body').html('<tr><td colspan="7" class="text-center">No promotion details found.</td></tr>');
-                        }
+                        promotionAccordionCollapse.hide();
+                        location.reload(); // For simplicity, reload page. In production, update table dynamically.
                     },
                     error: function(xhr) {
-                        alert('Error deleting promotion detail: ' + xhr.responseText);
+                        alert('Error saving promotion detail: ' + xhr.responseText);
                     }
                 });
-            }
+            });
+
+            // Edit Promotion Detail
+            $(document).on('click', '.edit-promotion-detail', function() {
+                const promotionDetailId = $(this).data('id');
+                $.ajax({
+                    url: `/promotionDetails/${promotionDetailId}/edit`, // Laravel's edit route returns data for form
+                    type: 'GET',
+                    success: function(response) {
+                        $('#promotion-detail-id').val(response.id);
+                        $('#promotion_date').val(response.promotion_date);
+                        $('#new_designation').val(response.new_designation);
+                        $('#old_designation').val(response.old_designation);
+                        $('#pay_grade_change').prop('checked', response.pay_grade_change);
+                        $('#new_salary').val(response.new_salary);
+                        if (response.document) {
+                            $('#current-document-link').html(`<a href="${response.document}" target="_blank">View Current Document</a>`);
+                        } else {
+                            $('#current-document-link').html('');
+                        }
+                        promotionAccordionCollapse.show(); // Show accordion
+                    },
+                    error: function(xhr) {
+                        alert('Error fetching promotion detail: ' + xhr.responseText);
+                    }
+                });
+            });
+
+            // Delete Promotion Detail
+            $(document).on('click', '.delete-promotion-detail', function() {
+                if (confirm('Are you sure you want to delete this promotion detail?')) {
+                    const promotionDetailId = $(this).data('id');
+                    $.ajax({
+                        url: `/promotionDetails/${promotionDetailId}`,
+                        type: 'POST', // Laravel uses POST for DELETE with _method field
+                        data: {
+                            _method: 'DELETE',
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            alert(response.message);
+                            $(`tr[data-id="${promotionDetailId}"]`).remove();
+                            if ($('#promotion-details-table-body tr').length === 0) {
+                                $('#promotion-details-table-body').html('<tr><td colspan="7" class="text-center">No promotion details found.</td></tr>');
+                            }
+                        },
+                        error: function(xhr) {
+                            alert('Error deleting promotion detail: ' + xhr.responseText);
+                        }
+                    });
+                }
+            });
         });
-    });
-</script>
-@endsection
+    </script>
+@endpush

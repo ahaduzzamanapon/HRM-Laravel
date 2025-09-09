@@ -25,8 +25,7 @@
     <a href="{{ route('roleAndPermissions.index') }}" class="btn btn-danger">Cancel</a>
 </div>
 
-@section('scripts')
-    @parent
+@push('scripts')
     <script>
         $(document).ready(function () {
             // Function to handle parent checkbox change
@@ -42,14 +41,20 @@
                 const $parentCheckbox = $("#permission-" + parentId);
                 const hasCheckedChild = $(".child-permission-checkbox[data-parent=\"${parentId}\"]:checked").length > 0;
                 $parentCheckbox.prop('checked', hasCheckedChild);
+
+                // Explicitly trigger change event on parent to ensure its state is re-evaluated
+                $parentCheckbox.trigger('change');
             });
 
             // Initial state setup
-            $(".parent-permission-checkbox").each(function() {
-                const parentId = $(this).val();
-                const hasCheckedChild = $(".child-permission-checkbox[data-parent=\"${parentId}\"]:checked").length > 0;
-                $(this).prop('checked', hasCheckedChild);
+            $(document).ready(function() {
+                $(".parent-permission-checkbox").each(function() {
+                    const parentId = $(this).val();
+                    const hasCheckedChild = $(".child-permission-checkbox[data-parent=\"${parentId}\"]:checked").length > 0;
+                    $(this).prop('checked', hasCheckedChild);
+                    // Trigger change event to ensure any dependent logic runs
+                    $(this).trigger('change');
+                });
             });
-        });
     </script>
-@endsection
+@endpush

@@ -1,9 +1,11 @@
 <div class="row">
     <div class="col-md-12">
-        
+
         <div class="d-flex justify-content-between align-items-center">
-            <h4>Training Details</h4>
-            <button type="button" class="btn btn-primary btn-sm" id="add-new-training-btn" data-toggle="collapse" data-target="#collapseOne">Add New Training</button>
+            <h4 class="col-md-10">Training Details</h4>
+            {{-- <button type="button" class="btn btn-primary btn-sm" id="add-new-training-btn" data-toggle="collapse" data-target="#collapseOne">Add New Training</button> --}}
+            <button class="btn btn-primary btn-sm col-md-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+             <i class="im im-icon-Add"></i>  Add New</button>
         </div>
 
         <!-- Accordion Form for Add/Edit (moved to top) -->
@@ -90,7 +92,7 @@
                     </tr>
                 </thead>
                 <tbody id="training-details-table-body">
-                    @if(isset($users) && $users->trainingDetails->count() > 0)
+                    @if( isset($users) && $users->trainingDetails->count() > 0 )
                         @foreach($users->trainingDetails as $trainingDetail)
                             <tr data-id="{{ $trainingDetail->id }}">
                                 <td>{{ $trainingDetail->training_name }}</td>
@@ -122,109 +124,112 @@
     </div>
 </div>
 
-@section('footer_scripts')
-@parent
-<script>
-    $(document).ready(function() {
-        const trainingForm = $('#training-detail-form');
-        const trainingAccordionCollapse = new bootstrap.Collapse($('#collapseOne'), { toggle: false });
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            const trainingForm = $('#training-detail-form');
+            const trainingAccordionCollapse = new bootstrap.Collapse($('#collapseOne'), { toggle: false });
 
-        // Show form for adding new training
-        $('#add-new-training-btn').click(function() {
-            trainingForm[0].reset(); // Clear form
-            $('#training-detail-id').val(''); // Clear ID for new entry
-            $('#current-document-link').html(''); // Clear document link
-            trainingAccordionCollapse.show(); // Show accordion
-        });
-
-        // Cancel button for form
-        $('#cancel-training-edit-btn').click(function() {
-            trainingAccordionCollapse.hide(); // Hide accordion
-        });
-
-        // Save Training Detail (Add/Edit)
-        trainingForm.submit(function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const trainingDetailId = $('#training-detail-id').val();
-            const url = trainingDetailId ? `/trainingDetails/${trainingDetailId}` : '/trainingDetails';
-            const method = trainingDetailId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
-
-            if (trainingDetailId) {
-                formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
-            }
-
-            $.ajax({
-                url: url,
-                type: method,
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    alert(response.message);
-                    trainingAccordionCollapse.hide();
-                    // Reload table data (simplified for now, ideally update specific row/add new row)
-                    location.reload(); // For simplicity, reload page. In production, update table dynamically.
-                },
-                error: function(xhr) {
-                    alert('Error saving training detail: ' + xhr.responseText);
-                }
+            // Show form for adding new training
+            $('#add-new-training-btn').click(function() {
+                trainingForm[0].reset(); // Clear form
+                $('#training-detail-id').val(''); // Clear ID for new entry
+                $('#current-document-link').html(''); // Clear document link
+                trainingAccordionCollapse.show(); // Show accordion
             });
-        });
 
-        // Edit Training Detail
-        $(document).on('click', '.edit-training-detail', function() {
-            const trainingDetailId = $(this).data('id');
-            $.ajax({
-                url: `/trainingDetails/${trainingDetailId}/edit`, // Laravel's edit route returns data for form
-                type: 'GET',
-                success: function(response) {
-                    $('#training-detail-id').val(response.id);
-                    $('#training_name').val(response.training_name);
-                    $('#training_provider').val(response.training_provider);
-                    $('#training_type').val(response.training_type);
-                    $('#start_date').val(response.start_date);
-                    $('#end_date').val(response.end_date);
-                    $('#description').val(response.description);
-                    if (response.document) {
-                        $('#current-document-link').html(`<a href="${response.document}" target="_blank">View Current Document</a>`);
-                    } else {
-                        $('#current-document-link').html('');
-                    }
-                    trainingAccordionCollapse.show(); // Show accordion
-                },
-                error: function(xhr) {
-                    alert('Error fetching training detail: ' + xhr.responseText);
-                }
+            // Cancel button for form
+            $('#cancel-training-edit-btn').click(function() {
+                trainingAccordionCollapse.hide(); // Hide accordion
             });
-        });
 
-        // Delete Training Detail
-        $(document).on('click', '.delete-training-detail', function() {
-            if (confirm('Are you sure you want to delete this training detail?')) {
-                const trainingDetailId = $(this).data('id');
+            // Save Training Detail (Add/Edit)
+            trainingForm.submit(function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const trainingDetailId = $('#training-detail-id').val();
+                const url = trainingDetailId ? `/trainingDetails/${trainingDetailId}` : '/trainingDetails';
+                const method = trainingDetailId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
+
+                if (trainingDetailId) {
+                    formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
+                }
+
                 $.ajax({
-                    url: `/trainingDetails/${trainingDetailId}`,
-                    type: 'POST', // Laravel uses POST for DELETE with _method field
-                    data: {
-                        _method: 'DELETE',
-                        _token: '{{ csrf_token() }}'
-                    },
+                    url: url,
+                    type: method,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
                     success: function(response) {
-                        alert(response.message);
-                        // Remove row from table
-                        $(`tr[data-id="${trainingDetailId}"]`).remove();
-                        // If no rows left, display "No training details found."
-                        if ($('#training-details-table-body tr').length === 0) {
-                            $('#training-details-table-body').html('<tr><td colspan="7" class="text-center">No training details found.</td></tr>');
+                        if(response.error){
+                            alert('Error: ' + response.message + ' !!!!');
+                            return;
+                        }else{
+                            alert(response.message);
+                            trainingAccordionCollapse.hide();
+                            location.reload(); 
                         }
                     },
                     error: function(xhr) {
-                        alert('Error deleting training detail: ' + xhr.responseText);
+                        alert('Error saving training detail: ' + xhr.responseText);
                     }
                 });
-            }
+            });
+
+            // Edit Training Detail
+            $(document).on('click', '.edit-training-detail', function() {
+                const trainingDetailId = $(this).data('id');
+                $.ajax({
+                    url: `/trainingDetails/${trainingDetailId}/edit`, // Laravel's edit route returns data for form
+                    type: 'GET',
+                    success: function(response) {
+                        $('#training-detail-id').val(response.trainingDetail.id);
+                        $('#training_name').val(response.trainingDetail.training_name);
+                        $('#training_provider').val(response.trainingDetail.training_provider);
+                        $('#training_type').val(response.trainingDetail.training_type);
+                        $('#start_date').val(response.trainingDetail.start_date);
+                        $('#end_date').val(response.trainingDetail.end_date);
+                        $('#description').val(response.trainingDetail.description);
+                        if (response.trainingDetail.document) {
+                            $('#current-document-link').html(`<a href="{{asset('${response.trainingDetail.document}')}}" target="_blank">View Current Document</a>`);
+                        } else {
+                            $('#current-document-link').html('');
+                        }
+                        trainingAccordionCollapse.show(); // Show accordion
+                    },
+                    error: function(xhr) {
+                        alert('Error fetching training detail: ' + xhr.responseText);
+                    }
+                });
+            });
+
+            // Delete Training Detail
+            $(document).on('click', '.delete-training-detail', function() {
+                if (confirm('Are you sure you want to delete this training detail?')) {
+                    const trainingDetailId = $(this).data('id');
+                    $.ajax({
+                        url: `/trainingDetails/${trainingDetailId}`,
+                        type: 'POST', // Laravel uses POST for DELETE with _method field
+                        data: {
+                            _method: 'DELETE',
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            alert(response.message);
+                            // Remove row from table
+                            $(`tr[data-id="${trainingDetailId}"]`).remove();
+                            // If no rows left, display "No training details found."
+                            if ($('#training-details-table-body tr').length === 0) {
+                                $('#training-details-table-body').html('<tr><td colspan="7" class="text-center">No training details found.</td></tr>');
+                            }
+                        },
+                        error: function(xhr) {
+                            alert('Error deleting training detail: ' + xhr.responseText);
+                        }
+                    });
+                }
+            });
         });
-    });
-</script>
-@endsection
+    </script>
+@endpush

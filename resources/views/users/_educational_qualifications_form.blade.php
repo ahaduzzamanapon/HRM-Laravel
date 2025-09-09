@@ -1,19 +1,16 @@
 <div class="row">
     <div class="col-md-12">
-        
+
         <div class="d-flex justify-content-between align-items-center">
-            <h4>Educational Qualifications</h4>
-            <button type="button" class="btn btn-primary btn-sm" id="add-new-educational-qualification-btn" data-toggle="collapse" data-target="#collapseThree">Add New Qualification</button>
+            <h4 class="col-md-10">Educational Qualifications</h4>
+            <button class="btn btn-primary btn-sm accordion-button collapsed col-md-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree"><i class="im
+im-icon-Add"></i> Add New</button>
         </div>
 
         <!-- Accordion Form for Add/Edit (moved to top) -->
         <div class="accordion mb-4" id="educationalQualificationsAccordion">
             <div class="accordion-item">
-                <h2 class="accordion-header" id="headingThree">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                        Educational Qualifications Form
-                    </button>
-                </h2>
+
                 <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#educationalQualificationsAccordion">
                     <div class="accordion-body">
                         <form id="educational-qualification-form" enctype="multipart/form-data">
@@ -56,7 +53,7 @@
                             </div>
 
                             <button type="submit" class="btn btn-success" id="save-educational-qualification-btn">Save Qualification</button>
-                            <button type="button" class="btn btn-secondary" id="cancel-educational-qualification-edit-btn" data-toggle="collapse" data-target="#collapseThree">Cancel</button>
+                            <button type="button" class="btn btn-secondary" onclick="cancelEducationalQualificationEdit()" data-toggle="collapse" data-target="#collapseThree">Cancel</button>
                         </form>
                     </div>
                 </div>
@@ -92,7 +89,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-info edit-educational-qualification" data-id="{{ $educationalQualification->id }}">Edit</button>
+                                    <button type="button" class="btn btn-sm btn-info" id="edit-educational-qualification" data-id="{{ $educationalQualification->id }}">Edit</button>
                                     <button type="button" class="btn btn-sm btn-danger delete-educational-qualification" data-id="{{ $educationalQualification->id }}">Delete</button>
                                 </td>
                             </tr>
@@ -108,103 +105,119 @@
     </div>
 </div>
 
-@section('footer_scripts')
-<script>
-    $(document).ready(function() {
-        const educationalQualificationForm = $('#educational-qualification-form');
-        const educationalQualificationsAccordionCollapse = new bootstrap.Collapse($('#collapseThree'), { toggle: false });
 
-        // Show form for adding new educational qualification
-        $('#add-new-educational-qualification-btn').click(function() {
-            educationalQualificationForm[0].reset(); // Clear form
-            $('#educational-qualification-id').val(''); // Clear ID for new entry
-            $('#current-document-link').html(''); // Clear document link
-            educationalQualificationsAccordionCollapse.show(); // Show accordion
-        });
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            const educationalQualificationForm = $('#educational-qualification-form');
+            const educationalQualificationsAccordionCollapse = new bootstrap.Collapse($('#collapseThree'), { toggle: false });
 
-        // Cancel button for form
-        $('#cancel-educational-qualification-edit-btn').click(function() {
-            educationalQualificationsAccordionCollapse.hide(); // Hide accordion
-        });
-
-        // Save Educational Qualification (Add/Edit)
-        educationalQualificationForm.submit(function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const educationalQualificationId = $('#educational-qualification-id').val();
-            const url = educationalQualificationId ? `/educationalQualifications/${educationalQualificationId}` : '/educationalQualifications';
-            const method = educationalQualificationId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
-
-            if (educationalQualificationId) {
-                formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
-            }
-
-            $.ajax({
-                url: url,
-                type: method,
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    alert(response.message);
-                    educationalQualificationsAccordionCollapse.hide();
-                    location.reload(); // For simplicity, reload page. In production, update table dynamically.
-                },
-                error: function(xhr) {
-                    alert('Error saving educational qualification: ' + xhr.responseText);
-                }
+            // Show form for adding new educational qualification
+            $('#add-new-educational-qualification-btn').click(function() {
+                educationalQualificationForm[0].reset(); // Clear form
+                $('#educational-qualification-id').val(''); // Clear ID for new entry
+                $('#current-document-link').html(''); // Clear document link
+                educationalQualificationsAccordionCollapse.show(); // Show accordion
             });
-        });
 
-        // Edit Educational Qualification
-        $(document).on('click', '.edit-educational-qualification', function() {
-            const educationalQualificationId = $(this).data('id');
-            $.ajax({
-                url: `/educationalQualifications/${educationalQualificationId}/edit`, // Laravel's edit route returns data for form
-                type: 'GET',
-                success: function(response) {
-                    $('#educational-qualification-id').val(response.id);
-                    $('#degree').val(response.degree);
-                    $('#institution').val(response.institution);
-                    $('#passing_year').val(response.passing_year);
-                    $('#grade').val(response.grade);
-                    if (response.document) {
-                        $('#current-document-link').html(`<a href="${response.document}" target="_blank">View Current Document</a>`);
-                    } else {
-                        $('#current-document-link').html('');
-                    }
-                    educationalQualificationsAccordionCollapse.show(); // Show accordion
-                },
-                error: function(xhr) {
-                    alert('Error fetching educational qualification: ' + xhr.responseText);
-                }
+            // Cancel button for form
+            $('#cancel-educational-qualification-edit-btnn').click(function() {
+                // console.log('Cancel button clicked');
+                educationalQualificationsAccordionCollapse.hide(); // Hide accordion
             });
-        });
 
-        // Delete Educational Qualification
-        $(document).on('click', '.delete-educational-qualification', function() {
-            if (confirm('Are you sure you want to delete this educational qualification?')) {
-                const educationalQualificationId = $(this).data('id');
+
+            // Save Educational Qualification (Add/Edit)
+            educationalQualificationForm.submit(function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const educationalQualificationId = $('#educational-qualification-id').val();
+                const url = educationalQualificationId ? `/educationalQualifications/${educationalQualificationId}` : '/educationalQualifications';
+                const method = educationalQualificationId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
+
+                if (educationalQualificationId) {
+                    formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
+                }
+
                 $.ajax({
-                    url: `/educationalQualifications/${educationalQualificationId}`,
-                    type: 'POST', // Laravel uses POST for DELETE with _method field
-                    data: {
-                        _method: 'DELETE',
-                        _token: '{{ csrf_token() }}'
-                    },
+                    url: url,
+                    type: method,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
                     success: function(response) {
-                        alert(response.message);
-                        $(`tr[data-id="${educationalQualificationId}"]`).remove();
-                        if ($('#educational-qualifications-table-body tr').length === 0) {
-                            $('#educational-qualifications-table-body').html('<tr><td colspan="6" class="text-center">No educational qualifications found.</td></tr>');
+                        if(response.error){
+                            alert(response.message);
+                            return false;
+                        } else {
+                            alert(response.message);
+                            educationalQualificationsAccordionCollapse.hide();
+                            location.reload(); 
                         }
                     },
                     error: function(xhr) {
-                        alert('Error deleting educational qualification: ' + xhr.responseText);
+                        alert('Error saving educational qualification: ' + xhr.responseText);
                     }
                 });
-            }
+            });
+
+            // Edit Educational Qualification
+            $(document).on('click', '#edit-educational-qualification', function() {
+                const educationalQualificationId = $(this).data('id');
+                $.ajax({
+                    url: `/educationalQualifications/${educationalQualificationId}/edit`, // Laravel's edit route returns data for form
+                    type: 'GET',
+                    success: function(response) {
+                        $('#educational-qualification-id').val(response.educationalQualification.id);
+                        $('#degree').val(response.educationalQualification.degree);
+                        $('#institution').val(response.educationalQualification.institution);
+                        $('#passing_year').val(response.educationalQualification.passing_year);
+                        $('#grade').val(response.educationalQualification.grade);
+                        if (response.educationalQualification.document) {
+                            $('#current-document-link').html(`<a href="${response.educationalQualification.document}" target="_blank">View Current Document</a>`);
+                        } else {
+                            $('#current-document-link').html('');
+                        }
+                        educationalQualificationsAccordionCollapse.show(); // Show accordion
+                    },
+                    error: function(xhr) {
+                        alert('Error fetching educational qualification: ' + xhr.responseText);
+                    }
+                });
+            });
+
+            // Delete Educational Qualification
+            $(document).on('click', '.delete-educational-qualification', function() {
+                if (confirm('Are you sure you want to delete this educational qualification?')) {
+                    const educationalQualificationId = $(this).data('id');
+                    $.ajax({
+                        url: `/educationalQualifications/${educationalQualificationId}`,
+                        type: 'POST', // Laravel uses POST for DELETE with _method field
+                        data: {
+                            _method: 'DELETE',
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            alert(response.message);
+                            $(`tr[data-id="${educationalQualificationId}"]`).remove();
+                            if ($('#educational-qualifications-table-body tr').length === 0) {
+                                $('#educational-qualifications-table-body').html('<tr><td colspan="6" class="text-center">No educational qualifications found.</td></tr>');
+                            }
+                        },
+                        error: function(xhr) {
+                            alert('Error deleting educational qualification: ' + xhr.responseText);
+                        }
+                    });
+                }
+            });
+
+
         });
-    });
-</script>
-@endsection
+
+
+        function cancelEducationalQualificationEdit(){
+            const educationalQualificationsAccordionCollapse = new bootstrap.Collapse($('#collapseThree'), { toggle: false });
+            educationalQualificationsAccordionCollapse.hide(); // Hide accordion
+        }
+    </script>
+@endpush

@@ -5,7 +5,7 @@
         {!! Form::text('$FIELD_NAME$', null, ['class' => 'form-control','id'=>'$FIELD_NAME$']) !!}
     </div>
 </div>
-@section('footer_scripts')
+@push('scripts')
 <script type="text/javascript">
     $('#$FIELD_NAME$').datetimepicker({
             format: 'YYYY-MM-DD HH:mm:ss',
@@ -13,4 +13,4 @@
             sideBySide: true
         })
 </script>
-@endsection
+@endpush

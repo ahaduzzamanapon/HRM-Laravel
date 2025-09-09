@@ -8,7 +8,7 @@
 
         <h3 class="profile-username text-center">{{ $users->name }} {{ $users->last_name }}</h3>
 
-        <p class="text-muted text-center">{{ $users->designation }}</p>
+        {{-- <p class="text-muted text-center">{{ $users->designation }}</p> --}}
 
         <ul class="list-group list-group-unbordered mb-3">
             <li class="list-group-item">

@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-md-12">
-        
+
         <div class="d-flex justify-content-between align-items-center">
             <h4>Nominee Information</h4>
             <button type="button" class="btn btn-primary btn-sm" id="add-new-nominee-information-btn" data-toggle="collapse" data-target="#collapseFour">Add New Nominee</button>
@@ -108,103 +108,103 @@
     </div>
 </div>
 
-@section('footer_scripts')
-<script>
-    $(document).ready(function() {
-        const nomineeInformationForm = $('#nominee-information-form');
-        const nomineeInformationAccordionCollapse = new bootstrap.Collapse($('#collapseFour'), { toggle: false });
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            const nomineeInformationForm = $('#nominee-information-form');
+            const nomineeInformationAccordionCollapse = new bootstrap.Collapse($('#collapseFour'), { toggle: false });
 
-        // Show form for adding new nominee information
-        $('#add-new-nominee-information-btn').click(function() {
-            nomineeInformationForm[0].reset(); // Clear form
-            $('#nominee-information-id').val(''); // Clear ID for new entry
-            $('#current-photo-link').html(''); // Clear photo link
-            nomineeInformationAccordionCollapse.show(); // Show accordion
-        });
-
-        // Cancel button for form
-        $('#cancel-nominee-information-edit-btn').click(function() {
-            nomineeInformationAccordionCollapse.hide(); // Hide accordion
-        });
-
-        // Save Nominee Information (Add/Edit)
-        nomineeInformationForm.submit(function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const nomineeInformationId = $('#nominee-information-id').val();
-            const url = nomineeInformationId ? `/nomineeInformation/${nomineeInformationId}` : '/nomineeInformation';
-            const method = nomineeInformationId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
-
-            if (nomineeInformationId) {
-                formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
-            }
-
-            $.ajax({
-                url: url,
-                type: method,
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    alert(response.message);
-                    nomineeInformationAccordionCollapse.hide();
-                    location.reload(); // For simplicity, reload page. In production, update table dynamically.
-                },
-                error: function(xhr) {
-                    alert('Error saving nominee information: ' + xhr.responseText);
-                }
+            // Show form for adding new nominee information
+            $('#add-new-nominee-information-btn').click(function() {
+                nomineeInformationForm[0].reset(); // Clear form
+                $('#nominee-information-id').val(''); // Clear ID for new entry
+                $('#current-photo-link').html(''); // Clear photo link
+                nomineeInformationAccordionCollapse.show(); // Show accordion
             });
-        });
 
-        // Edit Nominee Information
-        $(document).on('click', '.edit-nominee-information', function() {
-            const nomineeInformationId = $(this).data('id');
-            $.ajax({
-                url: `/nomineeInformation/${nomineeInformationId}/edit`, // Laravel's edit route returns data for form
-                type: 'GET',
-                success: function(response) {
-                    $('#nominee-information-id').val(response.id);
-                    $('#nominee_name').val(response.nominee_name);
-                    $('#relation').val(response.relation);
-                    $('#voter_id').val(response.voter_id);
-                    $('#percentage').val(response.percentage);
-                    if (response.photo) {
-                        $('#current-photo-link').html(`<a href="${response.photo}" target="_blank">View Current Photo</a>`);
-                    } else {
-                        $('#current-photo-link').html('');
-                    }
-                    nomineeInformationAccordionCollapse.show(); // Show accordion
-                },
-                error: function(xhr) {
-                    alert('Error fetching nominee information: ' + xhr.responseText);
-                }
+            // Cancel button for form
+            $('#cancel-nominee-information-edit-btn').click(function() {
+                nomineeInformationAccordionCollapse.hide(); // Hide accordion
             });
-        });
 
-        // Delete Nominee Information
-        $(document).on('click', '.delete-nominee-information', function() {
-            if (confirm('Are you sure you want to delete this nominee information?')) {
-                const nomineeInformationId = $(this).data('id');
+            // Save Nominee Information (Add/Edit)
+            nomineeInformationForm.submit(function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const nomineeInformationId = $('#nominee-information-id').val();
+                const url = nomineeInformationId ? `/nomineeInformation/${nomineeInformationId}` : '/nomineeInformation';
+                const method = nomineeInformationId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
+
+                if (nomineeInformationId) {
+                    formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
+                }
+
                 $.ajax({
-                    url: `/nomineeInformation/${nomineeInformationId}`,
-                    type: 'POST', // Laravel uses POST for DELETE with _method field
-                    data: {
-                        _method: 'DELETE',
-                        _token: '{{ csrf_token() }}'
-                    },
+                    url: url,
+                    type: method,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
                     success: function(response) {
                         alert(response.message);
-                        $(`tr[data-id="${nomineeInformationId}"]`).remove();
-                        if ($('#nominee-information-table-body tr').length === 0) {
-                            $('#nominee-information-table-body').html('<tr><td colspan="6" class="text-center">No nominee information found.</td></tr>');
-                        }
+                        nomineeInformationAccordionCollapse.hide();
+                        location.reload(); // For simplicity, reload page. In production, update table dynamically.
                     },
                     error: function(xhr) {
-                        alert('Error deleting nominee information: ' + xhr.responseText);
+                        alert('Error saving nominee information: ' + xhr.responseText);
                     }
                 });
-            }
+            });
+
+            // Edit Nominee Information
+            $(document).on('click', '.edit-nominee-information', function() {
+                const nomineeInformationId = $(this).data('id');
+                $.ajax({
+                    url: `/nomineeInformation/${nomineeInformationId}/edit`, // Laravel's edit route returns data for form
+                    type: 'GET',
+                    success: function(response) {
+                        $('#nominee-information-id').val(response.id);
+                        $('#nominee_name').val(response.nominee_name);
+                        $('#relation').val(response.relation);
+                        $('#voter_id').val(response.voter_id);
+                        $('#percentage').val(response.percentage);
+                        if (response.photo) {
+                            $('#current-photo-link').html(`<a href="${response.photo}" target="_blank">View Current Photo</a>`);
+                        } else {
+                            $('#current-photo-link').html('');
+                        }
+                        nomineeInformationAccordionCollapse.show(); // Show accordion
+                    },
+                    error: function(xhr) {
+                        alert('Error fetching nominee information: ' + xhr.responseText);
+                    }
+                });
+            });
+
+            // Delete Nominee Information
+            $(document).on('click', '.delete-nominee-information', function() {
+                if (confirm('Are you sure you want to delete this nominee information?')) {
+                    const nomineeInformationId = $(this).data('id');
+                    $.ajax({
+                        url: `/nomineeInformation/${nomineeInformationId}`,
+                        type: 'POST', // Laravel uses POST for DELETE with _method field
+                        data: {
+                            _method: 'DELETE',
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            alert(response.message);
+                            $(`tr[data-id="${nomineeInformationId}"]`).remove();
+                            if ($('#nominee-information-table-body tr').length === 0) {
+                                $('#nominee-information-table-body').html('<tr><td colspan="6" class="text-center">No nominee information found.</td></tr>');
+                            }
+                        },
+                        error: function(xhr) {
+                            alert('Error deleting nominee information: ' + xhr.responseText);
+                        }
+                    });
+                }
+            });
         });
-    });
-</script>
-@endsection
+    </script>
+@endpush

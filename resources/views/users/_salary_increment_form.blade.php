@@ -52,7 +52,7 @@
                             <button type="submit" class="btn btn-success" id="save-salary-increment-btn">Save Increment</button>
                             <div class="row">
     <div class="col-md-12">
-        
+
         <div class="d-flex justify-content-between align-items-center">
             <h4>Salary Increment Details</h4>
             <button type="button" class="btn btn-primary btn-sm" id="add-new-salary-increment-btn" data-toggle="collapse" data-target="#collapseSix">Add New Increment</button>
@@ -210,104 +210,103 @@
     </div>
 </div>
 
-@section('footer_scripts')
-@parent
-<script>
-    $(document).ready(function() {
-        const salaryIncrementForm = $('#salary-increment-form');
-        const salaryIncrementsAccordionCollapse = new bootstrap.Collapse($('#collapseSix'), { toggle: false });
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            const salaryIncrementForm = $('#salary-increment-form');
+            const salaryIncrementsAccordionCollapse = new bootstrap.Collapse($('#collapseSix'), { toggle: false });
 
-        // Show form for adding new salary increment
-        $('#add-new-salary-increment-btn').click(function() {
-            salaryIncrementForm[0].reset(); // Clear form
-            $('#salary-increment-id').val(''); // Clear ID for new entry
-            $('#current-document-link').html(''); // Clear document link
-            salaryIncrementsAccordionCollapse.show(); // Show accordion
-        });
-
-        // Cancel button for form
-        $('#cancel-salary-increment-edit-btn').click(function() {
-            salaryIncrementsAccordionCollapse.hide(); // Hide accordion
-        });
-
-        // Save Salary Increment (Add/Edit)
-        salaryIncrementForm.submit(function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const salaryIncrementId = $('#salary-increment-id').val();
-            const url = salaryIncrementId ? `/salaryIncrements/${salaryIncrementId}` : '/salaryIncrements';
-            const method = salaryIncrementId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
-
-            if (salaryIncrementId) {
-                formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
-            }
-
-            $.ajax({
-                url: url,
-                type: method,
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    alert(response.message);
-                    salaryIncrementsAccordionCollapse.hide();
-                    location.reload(); // For simplicity, reload page. In production, update table dynamically.
-                },
-                error: function(xhr) {
-                    alert('Error saving salary increment: ' + xhr.responseText);
-                }
+            // Show form for adding new salary increment
+            $('#add-new-salary-increment-btn').click(function() {
+                salaryIncrementForm[0].reset(); // Clear form
+                $('#salary-increment-id').val(''); // Clear ID for new entry
+                $('#current-document-link').html(''); // Clear document link
+                salaryIncrementsAccordionCollapse.show(); // Show accordion
             });
-        });
 
-        // Edit Salary Increment
-        $(document).on('click', '.edit-salary-increment', function() {
-            const salaryIncrementId = $(this).data('id');
-            $.ajax({
-                url: `/salaryIncrements/${salaryIncrementId}/edit`, // Laravel's edit route returns data for form
-                type: 'GET',
-                success: function(response) {
-                    $('#salary-increment-id').val(response.id);
-                    $('#increment_date').val(response.increment_date);
-                    $('#old_salary').val(response.old_salary);
-                    $('#new_salary').val(response.new_salary);
-                    $('#increment_amount').val(response.increment_amount);
-                    if (response.document) {
-                        $('#current-document-link').html(`<a href="${response.document}" target="_blank">View Current Document</a>`);
-                    } else {
-                        $('#current-document-link').html('');
-                    }
-                    salaryIncrementsAccordionCollapse.show(); // Show accordion
-                },
-                error: function(xhr) {
-                    alert('Error fetching salary increment: ' + xhr.responseText);
-                }
+            // Cancel button for form
+            $('#cancel-salary-increment-edit-btn').click(function() {
+                salaryIncrementsAccordionCollapse.hide(); // Hide accordion
             });
-        });
 
-        // Delete Salary Increment
-        $(document).on('click', '.delete-salary-increment', function() {
-            if (confirm('Are you sure you want to delete this salary increment?')) {
-                const salaryIncrementId = $(this).data('id');
+            // Save Salary Increment (Add/Edit)
+            salaryIncrementForm.submit(function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const salaryIncrementId = $('#salary-increment-id').val();
+                const url = salaryIncrementId ? `/salaryIncrements/${salaryIncrementId}` : '/salaryIncrements';
+                const method = salaryIncrementId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
+
+                if (salaryIncrementId) {
+                    formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
+                }
+
                 $.ajax({
-                    url: `/salaryIncrements/${salaryIncrementId}`,
-                    type: 'POST', // Laravel uses POST for DELETE with _method field
-                    data: {
-                        _method: 'DELETE',
-                        _token: '{{ csrf_token() }}'
-                    },
+                    url: url,
+                    type: method,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
                     success: function(response) {
                         alert(response.message);
-                        $(`tr[data-id="${salaryIncrementId}"]`).remove();
-                        if ($('#salary-increments-table-body tr').length === 0) {
-                            $('#salary-increments-table-body').html('<tr><td colspan="6" class="text-center">No salary increment details found.</td></tr>');
-                        }
+                        salaryIncrementsAccordionCollapse.hide();
+                        location.reload(); // For simplicity, reload page. In production, update table dynamically.
                     },
                     error: function(xhr) {
-                        alert('Error deleting salary increment: ' + xhr.responseText);
+                        alert('Error saving salary increment: ' + xhr.responseText);
                     }
                 });
-            }
+            });
+
+            // Edit Salary Increment
+            $(document).on('click', '.edit-salary-increment', function() {
+                const salaryIncrementId = $(this).data('id');
+                $.ajax({
+                    url: `/salaryIncrements/${salaryIncrementId}/edit`, // Laravel's edit route returns data for form
+                    type: 'GET',
+                    success: function(response) {
+                        $('#salary-increment-id').val(response.id);
+                        $('#increment_date').val(response.increment_date);
+                        $('#old_salary').val(response.old_salary);
+                        $('#new_salary').val(response.new_salary);
+                        $('#increment_amount').val(response.increment_amount);
+                        if (response.document) {
+                            $('#current-document-link').html(`<a href="${response.document}" target="_blank">View Current Document</a>`);
+                        } else {
+                            $('#current-document-link').html('');
+                        }
+                        salaryIncrementsAccordionCollapse.show(); // Show accordion
+                    },
+                    error: function(xhr) {
+                        alert('Error fetching salary increment: ' + xhr.responseText);
+                    }
+                });
+            });
+
+            // Delete Salary Increment
+            $(document).on('click', '.delete-salary-increment', function() {
+                if (confirm('Are you sure you want to delete this salary increment?')) {
+                    const salaryIncrementId = $(this).data('id');
+                    $.ajax({
+                        url: `/salaryIncrements/${salaryIncrementId}`,
+                        type: 'POST', // Laravel uses POST for DELETE with _method field
+                        data: {
+                            _method: 'DELETE',
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            alert(response.message);
+                            $(`tr[data-id="${salaryIncrementId}"]`).remove();
+                            if ($('#salary-increments-table-body tr').length === 0) {
+                                $('#salary-increments-table-body').html('<tr><td colspan="6" class="text-center">No salary increment details found.</td></tr>');
+                            }
+                        },
+                        error: function(xhr) {
+                            alert('Error deleting salary increment: ' + xhr.responseText);
+                        }
+                    });
+                }
+            });
         });
-    });
-</script>
-@endsection
+    </script>
+@endpush

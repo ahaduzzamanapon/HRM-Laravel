@@ -54,25 +54,25 @@
     </div>
 </div>
 
-@section('scripts')
-<script>
-  function openTransferModal(userId, userName, currentBranchId, currentBranchName) {
-            const modal = $('#transferModal');
-            modal.find('#employeeName').text(userName);
-            modal.find('#transferUserId').val(userId);
-            modal.find('#oldBranchId').val(currentBranchId);
-            modal.find('#old_branch_display').val(currentBranchName); // Populate Old Branch text input
+@push('scripts')
+    <script>
+    function openTransferModal(userId, userName, currentBranchId, currentBranchName) {
+                const modal = $('#transferModal');
+                modal.find('#employeeName').text(userName);
+                modal.find('#transferUserId').val(userId);
+                modal.find('#oldBranchId').val(currentBranchId);
+                modal.find('#old_branch_display').val(currentBranchName); // Populate Old Branch text input
 
-            modal.find('#newBranch option').each(function() {
-                if ($(this).val() == currentBranchId) {
-                    $(this).prop('disabled', true);
-                } else {
-                    $(this).prop('disabled', false);
-                }
-            });
+                modal.find('#newBranch option').each(function() {
+                    if ($(this).val() == currentBranchId) {
+                        $(this).prop('disabled', true);
+                    } else {
+                        $(this).prop('disabled', false);
+                    }
+                });
 
-            modal.modal('show'); // Manually show the modal
-        }
-</script>
-@endsection
+                modal.modal('show'); // Manually show the modal
+            }
+    </script>
+@endpush
 
