@@ -105,7 +105,10 @@
             let valueToUse = setting.value;
 
             if (customValueInput && customValueInput.value !== '') {
-                valueToUse = parseFloat(customValueInput.value);
+                const parsedValue = parseFloat(customValueInput.value);
+                if (!isNaN(parsedValue)) {
+                    valueToUse = parsedValue;
+                }
             }
 
             let allowanceAmount = 0;

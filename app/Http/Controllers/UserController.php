@@ -396,8 +396,20 @@ class UserController extends Controller
         // Update or Create User Allowances
         if ($request->has('user_allowances') && is_array($request->user_allowances)) {
             foreach ($request->user_allowances as $allowanceId => $allowanceData) {
+                $allowanceSetting = AllowanceSetting::find($allowanceId);
+                if (!$allowanceSetting) {
+                    continue;
+                }
+
                 $isEnabled = isset($allowanceData['is_enabled']) && $allowanceData['is_enabled'] == '1';
                 $customValue = isset($allowanceData['custom_value']) ? $allowanceData['custom_value'] : null;
+
+                if (($allowanceSetting->type == 'fixed' || $allowanceSetting->type == 'percentage') && $customValue !== null) {
+                    if (!is_numeric($customValue)) {
+                        Flash::error('Custom value for ' . $allowanceSetting->name . ' must be a number.');
+                        return redirect()->back()->withInput();
+                    }
+                }
 
                 $userAllowance = $user->userAllowances()->where('allowance_setting_id', $allowanceId)->first();
 
