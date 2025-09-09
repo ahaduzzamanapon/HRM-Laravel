@@ -30,7 +30,7 @@ User @parent
                             <button style="width: 100%;" class="nav-link" id="v-pills-educational-qualifications-tab"
                                 data-bs-toggle="pill" data-bs-target="#v-pills-educational-qualifications" type="button"
                                 role="tab" aria-controls="v-pills-educational-qualifications" aria-selected="false"><i
-                                    class="im im-icon-Graduation-Cap"></i> Educational Qualifications</button>
+                                    class="im im-icon-Student-Hat"></i> Educational Qualifications</button>
                             <button style="width: 100%;" class="nav-link" id="v-pills-nominee-information-tab"
                                 data-bs-toggle="pill" data-bs-target="#v-pills-nominee-information" type="button" role="tab"
                                 aria-controls="v-pills-nominee-information" aria-selected="false"><i
