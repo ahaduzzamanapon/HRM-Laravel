@@ -50,5 +50,7 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'Manage Site Settings', 'key' => 'manage_site_settings', 'parent_id' => $settings->id]);
         Permission::create(['name' => 'Manage Roles and Permissions', 'key' => 'manage_roles_and_permissions', 'parent_id' => $settings->id]);
         Permission::create(['name' => 'Manage Allowance Settings', 'key' => 'manage_allowance_settings', 'parent_id' => $settings->id]);
+        Permission::create(['name' => 'Manage notices', 'key' => 'notices', 'parent_id' => $settings->id]);
+        Permission::create(['name' => 'Add notices', 'key' => 'add_notices', 'parent_id' => $settings->id]);
     }
 }

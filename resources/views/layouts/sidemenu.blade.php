@@ -179,12 +179,12 @@
 {{-- Settings --}}
 @if(can('settings'))
 <li class="nav-item">
-    <a class="nav-link {!! (Request::is('siteSettings*') || Request::is('roleAndPermissions*')  ? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#settings_menu" role="button" aria-expanded="false" aria-controls="settings_menu">
+    <a class="nav-link {!! (Request::is('siteSettings*') || Request::is('notices*') || Request::is('roleAndPermissions*')  ? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#settings_menu" role="button" aria-expanded="false" aria-controls="settings_menu">
         <i class="icon im im-icon-Gear"></i>
         <span class="item-name">Settings</span>
         <i class="right-icon im im-icon-Arrow-Right"></i>
     </a>
-    <ul class="sub-nav collapse {!! (Request::is('siteSettings*')  || Request::is('roleAndPermissions*')   ? 'show' : '' ) !!}" id="settings_menu" data-bs-parent="#sidebar-menu">
+    <ul class="sub-nav collapse {!! (Request::is('siteSettings*') || Request::is('notices*') || Request::is('roleAndPermissions*')   ? 'show' : '' ) !!}" id="settings_menu" data-bs-parent="#sidebar-menu">
         @if(can('manage_site_settings'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('siteSettings*') ? 'active' : '' !!}" href="{{ route('siteSettings.index') }}">
@@ -211,6 +211,16 @@
                 <i class="icon im im-icon-Money-Bag"></i>
                 <i class="sidenav-mini-icon"> AS </i>
                 <span class="item-name">Allowance Settings</span>
+            </a>
+        </li>
+        @endif
+        @if(can('notices'))
+        {{-- Allowance Settings --}}
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('notices*') ? 'active' : '' !!}" href="{{ route('notices.index') }}">
+                <i class="icon im im-icon-Money-Bag"></i>
+                <i class="sidenav-mini-icon"> N </i>
+                <span class="item-name">notices</span>
             </a>
         </li>
         @endif
