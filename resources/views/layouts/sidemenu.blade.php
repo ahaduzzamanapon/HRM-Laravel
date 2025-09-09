@@ -215,7 +215,6 @@
         </li>
         @endif
         @if(can('notices'))
-        {{-- Allowance Settings --}}
         <li class="nav-item">
             <a class="nav-link {!! Request::is('notices*') ? 'active' : '' !!}" href="{{ route('notices.index') }}">
                 <i class="icon im im-icon-Money-Bag"></i>
