@@ -18,6 +18,7 @@ include 'web_builder.php';
 | contains the "web" middleware group. Now create something great!
 |
 */
+include 'bulder_route.php';
 
 Auth::routes();
 

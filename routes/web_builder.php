@@ -28,3 +28,5 @@ Route::get('leaveApplications/{id}/approve', [App\Http\Controllers\LeaveApplicat
 Route::get('leaveApplications/{id}/reject', [App\Http\Controllers\LeaveApplicationController::class, 'reject'])->name('leaveApplications.reject');
 
 Route::resource('movements', 'MovementController');
+
+Route::resource('notices', 'NoticeController');
