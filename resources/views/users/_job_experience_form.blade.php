@@ -1,9 +1,11 @@
 <div class="row">
     <div class="col-md-12">
-        
+
         <div class="d-flex justify-content-between align-items-center">
             <h4>Job Experience Details</h4>
-            <button type="button" class="btn btn-primary btn-sm" id="add-new-job-experience-btn" data-toggle="collapse" data-target="#collapseTwo">Add New Job Experience</button>
+            {{-- <button type="button" class="btn btn-primary btn-sm"  data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"><i class="im im-icon-Add"></i>Add New</button> --}}
+            <button class="btn btn-primary btn-sm  col-md-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"><i class="im
+im-icon-Add"></i> Add New</button>
         </div>
 
         <!-- Accordion Form for Add/Edit (moved to top) -->
@@ -94,98 +96,98 @@
     </div>
 </div>
 
-@section('footer_scripts')
-<script>
-    $(document).ready(function() {
-        const jobExperienceForm = $('#job-experience-form');
-        const jobExperienceAccordionCollapse = new bootstrap.Collapse($('#collapseTwo'), { toggle: false });
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            const jobExperienceForm = $('#job-experience-form');
+            const jobExperienceAccordionCollapse = new bootstrap.Collapse($('#collapseTwo'), { toggle: false });
 
-        // Show form for adding new job experience
-        $('#add-new-job-experience-btn').click(function() {
-            jobExperienceForm[0].reset(); // Clear form
-            $('#job-experience-id').val(''); // Clear ID for new entry
-            jobExperienceAccordionCollapse.show(); // Show accordion
-        });
-
-        // Cancel button for form
-        $('#cancel-job-experience-edit-btn').click(function() {
-            jobExperienceAccordionCollapse.hide(); // Hide accordion
-        });
-
-        // Save Job Experience (Add/Edit)
-        jobExperienceForm.submit(function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const jobExperienceId = $('#job-experience-id').val();
-            const url = jobExperienceId ? `/jobExperiences/${jobExperienceId}` : '/jobExperiences';
-            const method = jobExperienceId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
-
-            if (jobExperienceId) {
-                formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
-            }
-
-            $.ajax({
-                url: url,
-                type: method,
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    alert(response.message);
-                    jobExperienceAccordionCollapse.hide();
-                    location.reload(); // For simplicity, reload page. In production, update table dynamically.
-                },
-                error: function(xhr) {
-                    alert('Error saving job experience: ' + xhr.responseText);
-                }
+            // Show form for adding new job experience
+            $('#add-new-job-experience-btn').click(function() {
+                jobExperienceForm[0].reset(); // Clear form
+                $('#job-experience-id').val(''); // Clear ID for new entry
+                jobExperienceAccordionCollapse.show(); // Show accordion
             });
-        });
 
-        // Edit Job Experience
-        $(document).on('click', '.edit-job-experience', function() {
-            const jobExperienceId = $(this).data('id');
-            $.ajax({
-                url: `/jobExperiences/${jobExperienceId}/edit`, // Laravel's edit route returns data for form
-                type: 'GET',
-                success: function(response) {
-                    $('#job-experience-id').val(response.id);
-                    $('#company_name').val(response.company_name);
-                    $('#job_title').val(response.job_title);
-                    $('#start_date').val(response.start_date);
-                    $('#end_date').val(response.end_date);
-                    $('#description').val(response.description);
-                    jobExperienceAccordionCollapse.show(); // Show accordion
-                },
-                error: function(xhr) {
-                    alert('Error fetching job experience: ' + xhr.responseText);
-                }
+            // Cancel button for form
+            $('#cancel-job-experience-edit-btn').click(function() {
+                jobExperienceAccordionCollapse.hide(); // Hide accordion
             });
-        });
 
-        // Delete Job Experience
-        $(document).on('click', '.delete-job-experience', function() {
-            if (confirm('Are you sure you want to delete this job experience?')) {
-                const jobExperienceId = $(this).data('id');
+            // Save Job Experience (Add/Edit)
+            jobExperienceForm.submit(function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const jobExperienceId = $('#job-experience-id').val();
+                const url = jobExperienceId ? `/jobExperiences/${jobExperienceId}` : '/jobExperiences';
+                const method = jobExperienceId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
+
+                if (jobExperienceId) {
+                    formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
+                }
+
                 $.ajax({
-                    url: `/jobExperiences/${jobExperienceId}`,
-                    type: 'POST', // Laravel uses POST for DELETE with _method field
-                    data: {
-                        _method: 'DELETE',
-                        _token: '{{ csrf_token() }}'
-                    },
+                    url: url,
+                    type: method,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
                     success: function(response) {
                         alert(response.message);
-                        $(`tr[data-id="${jobExperienceId}"]`).remove();
-                        if ($('#job-experience-table-body tr').length === 0) {
-                            $('#job-experience-table-body').html('<tr><td colspan="5" class="text-center">No job experience details found.</td></tr>');
-                        }
+                        jobExperienceAccordionCollapse.hide();
+                        location.reload(); // For simplicity, reload page. In production, update table dynamically.
                     },
                     error: function(xhr) {
-                        alert('Error deleting job experience: ' + xhr.responseText);
+                        alert('Error saving job experience: ' + xhr.responseText);
                     }
                 });
-            }
+            });
+
+            // Edit Job Experience
+            $(document).on('click', '.edit-job-experience', function() {
+                const jobExperienceId = $(this).data('id');
+                $.ajax({
+                    url: `/jobExperiences/${jobExperienceId}/edit`, // Laravel's edit route returns data for form
+                    type: 'GET',
+                    success: function(response) {
+                        $('#job-experience-id').val(response.id);
+                        $('#company_name').val(response.company_name);
+                        $('#job_title').val(response.job_title);
+                        $('#start_date').val(response.start_date);
+                        $('#end_date').val(response.end_date);
+                        $('#description').val(response.description);
+                        jobExperienceAccordionCollapse.show(); // Show accordion
+                    },
+                    error: function(xhr) {
+                        alert('Error fetching job experience: ' + xhr.responseText);
+                    }
+                });
+            });
+
+            // Delete Job Experience
+            $(document).on('click', '.delete-job-experience', function() {
+                if (confirm('Are you sure you want to delete this job experience?')) {
+                    const jobExperienceId = $(this).data('id');
+                    $.ajax({
+                        url: `/jobExperiences/${jobExperienceId}`,
+                        type: 'POST', // Laravel uses POST for DELETE with _method field
+                        data: {
+                            _method: 'DELETE',
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            alert(response.message);
+                            $(`tr[data-id="${jobExperienceId}"]`).remove();
+                            if ($('#job-experience-table-body tr').length === 0) {
+                                $('#job-experience-table-body').html('<tr><td colspan="5" class="text-center">No job experience details found.</td></tr>');
+                            }
+                        },
+                        error: function(xhr) {
+                            alert('Error deleting job experience: ' + xhr.responseText);
+                        }
+                    });
+                }
+            });
         });
-    });
-</script>
-@endsection
+    </script>
+@endpush

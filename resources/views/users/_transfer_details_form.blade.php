@@ -112,60 +112,60 @@
     </div>
 </div>
 
-@section('scripts')
-<script>
-    $(document).ready(function() {
-        const transferForm = $('#transfer-detail-form');
-        const transferAccordionCollapse = new bootstrap.Collapse($('#collapseSeven'), { toggle: false });
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            const transferForm = $('#transfer-detail-form');
+            const transferAccordionCollapse = new bootstrap.Collapse($('#collapseSeven'), { toggle: false });
 
-        // Show form for adding new transfer
-        $('#add-new-transfer-btn').click(function() {
-            transferForm[0].reset(); // Clear form
-            $('#transfer-detail-id').val(''); // Clear ID for new entry
-            $('#current-document-link').html(''); // Clear document link
-            transferAccordionCollapse.show(); // Show accordion
-        });
-
-        // Cancel button for form
-        $('#cancel-transfer-edit-btn').click(function() {
-            transferAccordionCollapse.hide(); // Hide accordion
-        });
-
-        // Save Transfer Detail (Add/Edit)
-        transferForm.submit(function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const transferDetailId = $('#transfer-detail-id').val();
-            const url = transferDetailId ? `/transferDetails/${transferDetailId}` : '/transferDetails';
-            const method = transferDetailId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
-
-            if (transferDetailId) {
-                formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
-            }
-
-            console.log('Form Data:', formData); // Debugging statement
-            console.log('Transfer Date from FormData:', formData.get('transfer_date')); // Debugging transfer_date
-
-            $.ajax({
-                url: url,
-                type: method,
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    console.log('Success Response:', response); // Debugging statement
-                    alert(response.message);
-                    transferAccordionCollapse.hide();
-                    location.reload(); // For simplicity, reload page. In production, update table dynamically.
-                },
-                error: function(xhr) {
-                    console.error('Error XHR:', xhr); // Debugging statement
-                    alert('Error saving transfer detail: ' + xhr.responseText);
-                }
+            // Show form for adding new transfer
+            $('#add-new-transfer-btn').click(function() {
+                transferForm[0].reset(); // Clear form
+                $('#transfer-detail-id').val(''); // Clear ID for new entry
+                $('#current-document-link').html(''); // Clear document link
+                transferAccordionCollapse.show(); // Show accordion
             });
-        });
 
-        
-    });
-</script>
-@endsection
+            // Cancel button for form
+            $('#cancel-transfer-edit-btn').click(function() {
+                transferAccordionCollapse.hide(); // Hide accordion
+            });
+
+            // Save Transfer Detail (Add/Edit)
+            transferForm.submit(function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const transferDetailId = $('#transfer-detail-id').val();
+                const url = transferDetailId ? `/transferDetails/${transferDetailId}` : '/transferDetails';
+                const method = transferDetailId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
+
+                if (transferDetailId) {
+                    formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
+                }
+
+                console.log('Form Data:', formData); // Debugging statement
+                console.log('Transfer Date from FormData:', formData.get('transfer_date')); // Debugging transfer_date
+
+                $.ajax({
+                    url: url,
+                    type: method,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        console.log('Success Response:', response); // Debugging statement
+                        alert(response.message);
+                        transferAccordionCollapse.hide();
+                        location.reload(); // For simplicity, reload page. In production, update table dynamically.
+                    },
+                    error: function(xhr) {
+                        console.error('Error XHR:', xhr); // Debugging statement
+                        alert('Error saving transfer detail: ' + xhr.responseText);
+                    }
+                });
+            });
+
+            
+        });
+    </script>
+@endpush

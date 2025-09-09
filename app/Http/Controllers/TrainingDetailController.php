@@ -40,8 +40,7 @@ class TrainingDetailController extends Controller
      */
     public function store(Request $request)
     {
-        $input = $request->all();
-
+        $input = $request->except('_token');
         if ($request->hasFile('document')) {
             $file = $request->file('document');
             $folder = 'documents/training';
@@ -49,10 +48,12 @@ class TrainingDetailController extends Controller
             $input['document'] = uploadFile($file, $folder, $customName);
         }
 
-        TrainingDetail::create($input);
-
-        Flash::success('Training Detail saved successfully.');
-        return redirect(route('trainingDetails.index'));
+        $training = TrainingDetail::create($input);
+        if($training){
+            return response()->json(['success' => true, 'message' => 'Training Detail saved successfully.'],200);
+        } else {
+            return response()->json(['error' => false, 'message' => 'Failed to save Training Detail.'], 500);
+        }
     }
 
     /**
@@ -82,14 +83,15 @@ class TrainingDetailController extends Controller
     public function edit($id)
     {
         $trainingDetail = TrainingDetail::find($id);
-        $users = User::pluck('name', 'id'); // Get users for dropdown
+        $users = User::pluck('name', 'id');
+        $trainingDetailArray = $trainingDetail->toArray();
+        $trainingDetailArray = array_merge($trainingDetailArray, $users->toArray());
 
         if (empty($trainingDetail)) {
-            Flash::error('Training Detail not found');
-            return redirect(route('trainingDetails.index'));
+            return response()->json(['error' => true, 'message' => 'Training Detail not found'], 404);
         }
-
-        return view('training_details.edit')->with(['trainingDetail' => $trainingDetail, 'users' => $users]);
+        // dd($users);
+        return response()->json(['trainingDetail' => $trainingDetail]);
     }
 
     /**
@@ -121,8 +123,7 @@ class TrainingDetailController extends Controller
 
         $trainingDetail->update($input);
 
-        Flash::success('Training Detail updated successfully.');
-        return redirect(route('trainingDetails.index'));
+        return response()->json(['success' => true, 'message' => 'Training Detail updated successfully.'], 200);
     }
 
     /**

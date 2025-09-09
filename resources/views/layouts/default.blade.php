@@ -54,6 +54,9 @@
     </main>
     <!-- Wrapper End-->
     @include('layouts/scripts')
+    @stack('scripts')
+{{-- @yield('scripts_gvhgh') --}}
+{{-- @yield('footer_scripts') --}}
 </body>
 
 </html>

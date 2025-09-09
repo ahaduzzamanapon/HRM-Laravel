@@ -40,7 +40,9 @@ class EducationalQualificationController extends Controller
      */
     public function store(Request $request)
     {
-        $input = $request->all();
+
+        // dd($request);
+        $input = $request->except('_token');
 
         if ($request->hasFile('document')) {
             $file = $request->file('document');
@@ -49,10 +51,14 @@ class EducationalQualificationController extends Controller
             $input['document'] = uploadFile($file, $folder, $customName);
         }
 
-        EducationalQualification::create($input);
+       $edu =  EducationalQualification::create($input);
+       if($edu){
+        return response()->json(['success' => true, 'message' => 'Educational Qualification saved successfully.'],200);
+       } else {
+        return response()->json(['error' => false, 'message' => 'Failed to save Educational Qualification.'], 500);
+       }
 
-        Flash::success('Educational Qualification saved successfully.');
-        return redirect(route('educationalQualifications.index'));
+ 
     }
 
     /**
@@ -89,7 +95,7 @@ class EducationalQualificationController extends Controller
             return redirect(route('educationalQualifications.index'));
         }
 
-        return view('educational_qualifications.edit')->with(['educationalQualification' => $educationalQualification, 'users' => $users]);
+    return response()->json(['educationalQualification' => $educationalQualification]);
     }
 
     /**

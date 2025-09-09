@@ -25,8 +25,7 @@
     <a href="{{ route('roleAndPermissions.index') }}" class="btn btn-danger">Cancel</a>
 </div>
 
-@section('scripts')
-    @parent
+@push('scripts')
     <script>
         $(document).ready(function () {
             // Function to handle parent checkbox change
@@ -58,4 +57,4 @@
                 });
             });
     </script>
-@endsection
+@endpush

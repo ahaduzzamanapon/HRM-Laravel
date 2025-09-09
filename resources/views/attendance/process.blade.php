@@ -71,7 +71,7 @@ Attendance Process @parent
         </div>
         {!! Form::close() !!}
     </div>
-    @section('scripts')
+    @push('scripts')
         <script>
             $(function () {
                 console.log("Attendance process script loaded.");
@@ -134,6 +134,6 @@ Attendance Process @parent
                 }
             });
         </script>
-    @endsection
+    @endpush
 
 @endsection

@@ -63,7 +63,7 @@
     <a href="{{ route('roleAndPermissions.index') }}" class="btn btn-danger">Cancel</a>
 </div>
 
-@section('scripts')
+@push('scripts')
     <script>
         $(document).ready(function () {
             $('.per_data').change(function () {
@@ -80,4 +80,4 @@
             });
         });
     </script>
-@endsection
+@endpush

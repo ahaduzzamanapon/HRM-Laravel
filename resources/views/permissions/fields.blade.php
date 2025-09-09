@@ -32,7 +32,7 @@
 </div>
 
 
-@section('scripts')
+@push('scripts')
     <script type="text/javascript">
        function auto_capitalize(s) {
            var str = s.value;
@@ -40,5 +40,5 @@
            $('#key').val(text);
        }
     </script>
-@endsection
+@endpush
 

@@ -33,6 +33,8 @@
 <script src="{{ asset('assets/js/hope-ui.js') }}" defer></script>
 <script>
     $(document).ready(function () {
+        console.log('Layout scripts loaded');
+
         $('.table-responsive').on('show.bs.dropdown', function () {
             $('.btn-group').css('position', 'static');
         });
@@ -42,10 +44,11 @@
         });
     });
 </script>
-@yield('scripts')
+
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"
     integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
     integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+

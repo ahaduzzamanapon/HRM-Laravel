@@ -40,9 +40,12 @@ class JobExperienceController extends Controller
      */
     public function store(Request $request)
     {
-        $input = $request->all();
+        $input = $request->except('_token');
 
-        JobExperience::create($input);
+        $jobExperience = JobExperience::create($input);
+        if($jobExperience){
+            return response()->json(['succes' => false, 'message' => ''], 200);
+        }
 
         Flash::success('Job Experience saved successfully.');
         return redirect(route('jobExperiences.index'));

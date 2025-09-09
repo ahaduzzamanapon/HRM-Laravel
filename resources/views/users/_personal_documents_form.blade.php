@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-md-12">
-        
+
         <div class="d-flex justify-content-between align-items-center">
             <h4>Personal Documents</h4>
             <button type="button" class="btn btn-primary btn-sm" id="add-new-personal-document-btn" data-toggle="collapse" data-target="#collapseEight">Add New Document</button>
@@ -9,7 +9,7 @@
         <!-- Accordion Form for Add/Edit (moved to top) -->
         <div class="accordion mb-4" id="personalDocumentsAccordion">
             <div class="accordion-item">
-               
+
                 <div id="collapseEight" class="accordion-collapse collapse" aria-labelledby="headingEight" data-bs-parent="#personalDocumentsAccordion">
                     <div class="accordion-body">
                         <form id="personal-document-form" enctype="multipart/form-data">
@@ -80,102 +80,101 @@
     </div>
 </div>
 
-@section('footer_scripts')
-@parent
-<script>
-    $(document).ready(function() {
-        const personalDocumentForm = $('#personal-document-form');
-        const personalDocumentsAccordionCollapse = new bootstrap.Collapse($('#collapseEight'), { toggle: false });
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            const personalDocumentForm = $('#personal-document-form');
+            const personalDocumentsAccordionCollapse = new bootstrap.Collapse($('#collapseEight'), { toggle: false });
 
-        // Show form for adding new personal document
-        $('#add-new-personal-document-btn').click(function() {
-            personalDocumentForm[0].reset(); // Clear form
-            $('#personal-document-id').val(''); // Clear ID for new entry
-            $('#current-document-link').html(''); // Clear document link
-            personalDocumentsAccordionCollapse.show(); // Show accordion
-        });
-
-        // Cancel button for form
-        $('#cancel-personal-document-edit-btn').click(function() {
-            personalDocumentsAccordionCollapse.hide(); // Hide accordion
-        });
-
-        // Save Personal Document (Add/Edit)
-        personalDocumentForm.submit(function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const personalDocumentId = $('#personal-document-id').val();
-            const url = personalDocumentId ? `/personalDocuments/${personalDocumentId}` : '/personalDocuments';
-            const method = personalDocumentId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
-
-            if (personalDocumentId) {
-                formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
-            }
-
-            $.ajax({
-                url: url,
-                type: method,
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    alert(response.message);
-                    personalDocumentsAccordionCollapse.hide();
-                    location.reload(); // For simplicity, reload page. In production, update table dynamically.
-                },
-                error: function(xhr) {
-                    alert('Error saving personal document: ' + xhr.responseText);
-                }
+            // Show form for adding new personal document
+            $('#add-new-personal-document-btn').click(function() {
+                personalDocumentForm[0].reset(); // Clear form
+                $('#personal-document-id').val(''); // Clear ID for new entry
+                $('#current-document-link').html(''); // Clear document link
+                personalDocumentsAccordionCollapse.show(); // Show accordion
             });
-        });
 
-        // Edit Personal Document
-        $(document).on('click', '.edit-personal-document', function() {
-            const personalDocumentId = $(this).data('id');
-            $.ajax({
-                url: `/personalDocuments/${personalDocumentId}/edit`, // Laravel's edit route returns data for form
-                type: 'GET',
-                success: function(response) {
-                    $('#personal-document-id').val(response.id);
-                    $('#document_type').val(response.document_type);
-                    $('#description').val(response.description);
-                    if (response.document_file) {
-                        $('#current-document-link').html(`<a href="${response.document_file}" target="_blank">View Current Document</a>`);
-                    } else {
-                        $('#current-document-link').html('');
-                    }
-                    personalDocumentsAccordionCollapse.show(); // Show accordion
-                },
-                error: function(xhr) {
-                    alert('Error fetching personal document: ' + xhr.responseText);
-                }
+            // Cancel button for form
+            $('#cancel-personal-document-edit-btn').click(function() {
+                personalDocumentsAccordionCollapse.hide(); // Hide accordion
             });
-        });
 
-        // Delete Personal Document
-        $(document).on('click', '.delete-personal-document', function() {
-            if (confirm('Are you sure you want to delete this personal document?')) {
-                const personalDocumentId = $(this).data('id');
+            // Save Personal Document (Add/Edit)
+            personalDocumentForm.submit(function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const personalDocumentId = $('#personal-document-id').val();
+                const url = personalDocumentId ? `/personalDocuments/${personalDocumentId}` : '/personalDocuments';
+                const method = personalDocumentId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
+
+                if (personalDocumentId) {
+                    formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
+                }
+
                 $.ajax({
-                    url: `/personalDocuments/${personalDocumentId}`,
-                    type: 'POST', // Laravel uses POST for DELETE with _method field
-                    data: {
-                        _method: 'DELETE',
-                        _token: '{{ csrf_token() }}'
-                    },
+                    url: url,
+                    type: method,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
                     success: function(response) {
                         alert(response.message);
-                        $(`tr[data-id="${personalDocumentId}"]`).remove();
-                        if ($('#personal-documents-table-body tr').length === 0) {
-                            $('#personal-documents-table-body').html('<tr><td colspan="4" class="text-center">No personal documents found.</td></tr>');
-                        }
+                        personalDocumentsAccordionCollapse.hide();
+                        location.reload(); // For simplicity, reload page. In production, update table dynamically.
                     },
                     error: function(xhr) {
-                        alert('Error deleting personal document: ' + xhr.responseText);
+                        alert('Error saving personal document: ' + xhr.responseText);
                     }
                 });
-            }
+            });
+
+            // Edit Personal Document
+            $(document).on('click', '.edit-personal-document', function() {
+                const personalDocumentId = $(this).data('id');
+                $.ajax({
+                    url: `/personalDocuments/${personalDocumentId}/edit`, // Laravel's edit route returns data for form
+                    type: 'GET',
+                    success: function(response) {
+                        $('#personal-document-id').val(response.id);
+                        $('#document_type').val(response.document_type);
+                        $('#description').val(response.description);
+                        if (response.document_file) {
+                            $('#current-document-link').html(`<a href="${response.document_file}" target="_blank">View Current Document</a>`);
+                        } else {
+                            $('#current-document-link').html('');
+                        }
+                        personalDocumentsAccordionCollapse.show(); // Show accordion
+                    },
+                    error: function(xhr) {
+                        alert('Error fetching personal document: ' + xhr.responseText);
+                    }
+                });
+            });
+
+            // Delete Personal Document
+            $(document).on('click', '.delete-personal-document', function() {
+                if (confirm('Are you sure you want to delete this personal document?')) {
+                    const personalDocumentId = $(this).data('id');
+                    $.ajax({
+                        url: `/personalDocuments/${personalDocumentId}`,
+                        type: 'POST', // Laravel uses POST for DELETE with _method field
+                        data: {
+                            _method: 'DELETE',
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            alert(response.message);
+                            $(`tr[data-id="${personalDocumentId}"]`).remove();
+                            if ($('#personal-documents-table-body tr').length === 0) {
+                                $('#personal-documents-table-body').html('<tr><td colspan="4" class="text-center">No personal documents found.</td></tr>');
+                            }
+                        },
+                        error: function(xhr) {
+                            alert('Error deleting personal document: ' + xhr.responseText);
+                        }
+                    });
+                }
+            });
         });
-    });
-</script>
-@endsection
+    </script>
+@endpush

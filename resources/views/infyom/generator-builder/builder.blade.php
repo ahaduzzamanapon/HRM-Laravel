@@ -353,543 +353,543 @@ Crud Builder @parent
 </section>
 @stop
 
-@section('footer_scripts')
-<script src="{{ asset('vendors/select2/js/select2.min.js') }}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.2/icheck.min.js"></script>
+@push('scripts')
+    <script src="{{ asset('vendors/select2/js/select2.min.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.2/icheck.min.js"></script>
 
-<script>
-    /*
-     * defining all functions here to use them later
-     */
-    //check if model exists
-    function checkForTableExistence()
-    {
-        let tableName = elTable.value;
-
-        //don't make ajax call if model value is empty
-        if(tableName === "") return;
-
-        // TODO: convert it to es6 call
-        $.ajax({
-            url: "{{ url('tableCheck') }}",
-            type: 'POST',
-            dataType: 'json',
-            contentType: 'application/json',
-            data: JSON.stringify({tableName}),
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-            },
-            success: function (result) {
-                document.getElementById('btnGenerate').disabled = !result;
-                if(result)
-                {
-                    return document.getElementById('txtCustomTblName').nextElementSibling.innerHTML = '';
-                }
-                return document.getElementById('txtCustomTblName').nextElementSibling.innerHTML = 'a table with that name already exists!';
-            }
-        });
-    }
-
-
-    // enable/disable "Generate" button dynamically based on validation
-    function setButtonStatus(status)
-    {
-        document.getElementById('btnGenerate').disabled = !status;
-    }
-
-    function setTableName(){
-        // if table name set using its own input, then don't change it anymore
-        if(customTableName) return;
-        //set table name
-        const tableField = document.getElementById('txtCustomTblName');
-        if (elModel.value === "") {
-            tableField.value = '';
-        }
-        else {
-            tableField.value = elModel.value.concat('s').toLowerCase();
-        }
-
-        // finally check whether a table with same name exists or not
-        checkForTableExistence();
-    }
-
-    function capitalizeModelName(e){
-        elModel.value = elModel.value.charAt(0).toUpperCase() + elModel.value.slice(1);
-
-        //finally set table name
-        setTableName();
-    }
-
-    //check for duplicate field names
-    function hasDuplicates(arr)
-    {
-        return new Set(arr).size !== arr.length;
-    }
-
-    function checkForDuplicateFieldNames(e)
-    {
-        const nodeList = document.querySelectorAll('.txtFieldName');
-        const reservedFields = ['id','created_at','updated_at','deleted_at'];
-        if(reservedFields.includes(e.target.value))
+    <script>
+        /*
+        * defining all functions here to use them later
+        */
+        //check if model exists
+        function checkForTableExistence()
         {
-            e.target.classList.add('is-invalid');
-            setButtonStatus(false);
-            return e.target.nextElementSibling.nextElementSibling.innerHTML = `<strong>${e.target.value}</strong> will be created automatically`;
+            let tableName = elTable.value;
+
+            //don't make ajax call if model value is empty
+            if(tableName === "") return;
+
+            // TODO: convert it to es6 call
+            $.ajax({
+                url: "{{ url('tableCheck') }}",
+                type: 'POST',
+                dataType: 'json',
+                contentType: 'application/json',
+                data: JSON.stringify({tableName}),
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                },
+                success: function (result) {
+                    document.getElementById('btnGenerate').disabled = !result;
+                    if(result)
+                    {
+                        return document.getElementById('txtCustomTblName').nextElementSibling.innerHTML = '';
+                    }
+                    return document.getElementById('txtCustomTblName').nextElementSibling.innerHTML = 'a table with that name already exists!';
+                }
+            });
         }
-        let fields = [];
-        nodeList.forEach(node => fields.push( node.value));
 
-        if (hasDuplicates(fields)) {
-            e.target.classList.add('is-invalid');
-            setButtonStatus(false);
-            e.target.nextElementSibling.nextElementSibling.innerHTML = "Another field with that name already exists";
 
-        }
-        else {
-            e.target.classList.remove('is-invalid');
-            setButtonStatus(true);
+        // enable/disable "Generate" button dynamically based on validation
+        function setButtonStatus(status)
+        {
+            document.getElementById('btnGenerate').disabled = !status;
         }
 
-    }
-
-    /*
-     * usual functionality starts here
-     */
-
-    $("select").select2({width: '100%'});
-    var fieldIdArr = [];
-    $(function () {
-        /* $('input').iCheck({
-            checkboxClass: 'icheckbox_square-blue',
-            radioClass: 'iradio_square-blue',
-            increaseArea: '20%' // optional
-        }); */
-
-        $("#drdCommandType").on("change", function () {
-            if ($(this).val() === "infyom:scaffold") {
-                $('#chSwag').hide();
-                $('#chTest').hide();
+        function setTableName(){
+            // if table name set using its own input, then don't change it anymore
+            if(customTableName) return;
+            //set table name
+            const tableField = document.getElementById('txtCustomTblName');
+            if (elModel.value === "") {
+                tableField.value = '';
             }
             else {
-                $('#chSwag').show();
-                $('#chTest').show();
+                tableField.value = elModel.value.concat('s').toLowerCase();
             }
-        });
 
-        $("#chkForceMigrate").on("ifChanged", function () {
-            if ($(this).prop('checked') === true) {
-                $('#chkMigration').iCheck("check", true);
-                $('#chkMigration').iCheck("disable", true);
-            } else {
-                $('#chkMigration').iCheck("enable", true);
-            }
-        });
+            // finally check whether a table with same name exists or not
+            checkForTableExistence();
+        }
 
-        $(document).ready(function () {
-            var htmlStr = '<tr class="item" style="display: table-row;"></tr>';
-            var commonComponent = $(htmlStr).filter("tr").load('{{ route('io_field_template') }}');
-            var relationStr = '<tr class="relationItem" style="display: table-row;"></tr>';
-            var relationComponent = $(relationStr).filter("tr").load('{{ route('io_relation_field_template') }}');
+        function capitalizeModelName(e){
+            elModel.value = elModel.value.charAt(0).toUpperCase() + elModel.value.slice(1);
 
-            $("#btnAdd").on("click", function () {
-                var item = $(commonComponent).clone();
-                initializeCheckbox(item);
-                $("#container").append(item);
-            });
+            //finally set table name
+            setTableName();
+        }
 
-            $("#btnRelationShip").on("click", function () {
-                $("#relationShip").show();
-                var item = $(relationComponent).clone();
+        //check for duplicate field names
+        function hasDuplicates(arr)
+        {
+            return new Set(arr).size !== arr.length;
+        }
 
-                $(item).find("select").select2({ width: '100%' });
-
-                var relationType = $(item).find('.drdRelationType');
-
-                $(relationType).select2().on('change', function () {
-                    if ($(relationType).val() === "mtm")
-                        $(item).find('.foreignTable').show();
-                    else
-                        $(item).find('.foreignTable').hide();
-                });
-
-                $("#rsContainer").append(item);
-            });
-
-            $("#btnModelReset").on("click", function () {
-                $("#container").html("");
-                $('input:text').val("");
-                $('input:checkbox').iCheck('uncheck');
-
-            });
-
-            $("#form").on("submit", function () {
+        function checkForDuplicateFieldNames(e)
+        {
+            const nodeList = document.querySelectorAll('.txtFieldName');
+            const reservedFields = ['id','created_at','updated_at','deleted_at'];
+            if(reservedFields.includes(e.target.value))
+            {
+                e.target.classList.add('is-invalid');
                 setButtonStatus(false);
-                let fieldArr = [];
-                let relationFieldArr = [];
-                $('.item').each(function () {
+                return e.target.nextElementSibling.nextElementSibling.innerHTML = `<strong>${e.target.value}</strong> will be created automatically`;
+            }
+            let fields = [];
+            nodeList.forEach(node => fields.push( node.value));
 
-                    var htmlType = $(this).find('.drdHtmlType');
-                    let htmlValue;
-                    if ($(htmlType).val() === "select" || $(htmlType).val() === "radio") {
-                        htmlValue = $(this).find('.drdHtmlType').val() + ',' + $(this).find('.txtHtmlValue').val();
-                    }
-                    else {
-                        htmlValue = $(this).find('.drdHtmlType').val();
-                    }
+            if (hasDuplicates(fields)) {
+                e.target.classList.add('is-invalid');
+                setButtonStatus(false);
+                e.target.nextElementSibling.nextElementSibling.innerHTML = "Another field with that name already exists";
 
-                    fieldArr.push({
-                        name: $(this).find('.txtFieldName').val(),
-                        dbType: $(this).find('.txtdbType').val(),
-                        htmlType: htmlValue,
-                        validations: $(this).find('.txtValidation').val(),
-                        foreignTable: $(this).find('.txtForeignTable').val(),
-                        isForeign: $(this).find('.chkForeign').prop('checked'),
-                        searchable: $(this).find('.chkSearchable').prop('checked'),
-                        fillable: $(this).find('.chkFillable').prop('checked'),
-                        primary: $(this).find('.chkPrimary').prop('checked'),
-                        inForm: $(this).find('.chkInForm').prop('checked'),
-                        inIndex: $(this).find('.chkInIndex').prop('checked')
-                    });
-                });
+            }
+            else {
+                e.target.classList.remove('is-invalid');
+                setButtonStatus(true);
+            }
 
-                $('.relationItem').each(function () {
-                    relationFieldArr.push({
-                        relationType: $(this).find('.drdRelationType').val(),
-                        foreignModel: $(this).find('.txtForeignModel').val(),
-                        foreignTable: $(this).find('.txtForeignTable').val(),
-                        foreignKey: $(this).find('.txtForeignKey').val(),
-                        localKey: $(this).find('.txtLocalKey').val(),
-                    });
-                });
+        }
 
-                // add id to fieldsArr
-                fieldArr.unshift({
-                name: 'id',
-                dbType: 'increments',
-                htmlType: "number",
-                validations: "",
-                foreignTable: "",
-                isForeign: false,
-                searchable: true,
-                fillable: false,
-                primary: true,
-                inForm: false,
-                inIndex: true
-                });
+        /*
+        * usual functionality starts here
+        */
 
-                // add timestaps to fieldArr
-                fieldArr.push({
-                name: 'created_at',
-                dbType: 'timestamp',
-                htmlType: "date",
-                validations: "",
-                foreignTable: "",
-                isForeign: false,
-                searchable: false,
-                fillable: false,
-                primary: false,
-                inForm: false,
-                inIndex: true
-                });
-                fieldArr.push({
-                name: 'updated_at',
-                dbType: 'timestamp',
-                htmlType: "date",
-                validations: "",
-                foreignTable: "",
-                isForeign: false,
-                searchable: false,
-                fillable: false,
-                primary: false,
-                inForm: false,
-                inIndex: true
-                });
+        $("select").select2({width: '100%'});
+        var fieldIdArr = [];
+        $(function () {
+            /* $('input').iCheck({
+                checkboxClass: 'icheckbox_square-blue',
+                radioClass: 'iradio_square-blue',
+                increaseArea: '20%' // optional
+            }); */
 
-                var data = {
-                    modelName: $('#txtModelName').val(),
-                    commandType: $('#drdCommandType').val(),
-                    tableName: $('#txtCustomTblName').val(),
-                    migrate: $('#chkMigration').prop('checked'),
-                    options: {
-                        softDelete: $('#chkDelete').prop('checked'),
-                        save: $('#chkSave').prop('checked'),
-                        prefix: $('#txtPrefix').val(),
-                        paginate: $('#txtPaginate').val(),
-                        forceMigrate: $('#chkForceMigrate').prop('checked'),
-                    },
-                    addOns: {
-                        tests: $('#chkTestCases').prop('checked'),
-                        datatables: $('#chkDataTable').prop('checked')
-                    },
-                    fields: fieldArr,
-                    relations: relationFieldArr
-                };
-
-                data['_token'] = $("input[name=_token]").val();
-
-                $.ajax({
-                    url: '{{ route('io_generator_builder_generate') }}',
-                   // type: "POST",
-                    method: "POST",
-                    dataType: 'json',
-                    contentType: 'application/json',
-                    data: JSON.stringify(data),
-                    success: function (result) {
-                        $("#info").html("");
-                        $("#info").append('<div class="alert alert-success"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>' + result + '</strong></div>');
-                        $("#info").show();
-                        var $container = $("html,body");
-                        var $scrollTo = $('#info');
-                        $container.animate({scrollTop: $scrollTo.offset().top - $container.offset().top, scrollLeft: 0},300);
-                        setTimeout(function () {
-                            $('#info').fadeOut('fast');
-                        }, 3000);
-                        location.reload();
-                    },
-                    error: function (result) {
-                        var result = JSON.parse(JSON.stringify(result));
-                        var errorMessage = '';
-                        if (result.hasOwnProperty('responseJSON') && result.responseJSON.hasOwnProperty('message')) {
-                            errorMessage = result.responseJSON.message;
-                        }
-
-                        $("#info").html("");
-                        $("#info").append('<div class="alert alert-danger"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Fail! </strong>' + errorMessage + '</div>');
-                        $("#info").show();
-                        var $container = $("html,body");
-                        var $scrollTo = $('#info');
-                        $container.animate({ scrollTop: $scrollTo.offset().top}, 300);
-                        setTimeout(function () {
-                            $('#info').fadeOut('fast');
-                        }, 3000);
-                    }
-                });
-
-                return false;
-            });
-
-            $('#rollbackForm').on("submit", function (e) {
-                e.preventDefault();
-
-                var data = {
-                    modelName: $('#txtRBModelName').val(),
-                    commandType: $('#drdRBCommandType').val(),
-                    prefix: $('#txtRBPrefix').val(),
-                    _token: $('#rbToken').val()
-                };
-
-                $.ajax({
-                    url: '{{ route('io_generator_builder_rollback') }}',
-                    method: "POST",
-                    dataType: 'json',
-                    contentType: 'application/json',
-                    data: JSON.stringify(data),
-                    success: function (result) {
-                        var result = JSON.parse(JSON.stringify(result));
-
-                        $("#rollbackInfo").html("");
-                        $("#rollbackInfo").append('<div class="alert alert-success"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>' + result.message + '</strong></div>');
-                        $("#rollbackInfo").show();
-
-                        var $container = $("html,body");
-                        var $scrollTo = $('#rollbackInfo');
-                        $container.animate({
-                            scrollTop: $scrollTo.offset().top - $container.offset().top,
-                            scrollLeft: 0
-                        }, 300);
-                        setTimeout(function () {
-                            $('#rollbackInfo').fadeOut('fast');
-                        }, 3000);
-                        location.reload();
-                    },
-                    error: function (result) {
-                        var result = JSON.parse(JSON.stringify(result));
-                        var errorMessage = '';
-                        if (result.hasOwnProperty('responseJSON') && result.responseJSON.hasOwnProperty('message')) {
-                            errorMessage = result.responseJSON.message;
-                        }
-
-                        $("#rollbackInfo").html("");
-                        $("#rollbackInfo").append('<div class="alert alert-danger"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Fail! </strong>' + errorMessage + '</div>');
-                        $("#rollbackInfo").show();
-                        setTimeout(function () {
-                            $('#rollbackInfo').fadeOut('fast');
-                        }, 3000);
-                    }
-                });
-            });
-
-            $('#schemaFile').change(function () {
-                var ext = $(this).val().split('.').pop().toLowerCase();
-                if (ext !== 'json') {
-                    $("#schemaInfo").html("");
-                    $("#schemaInfo").append('<div class="alert alert-danger"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Schema file must be json</strong></div>');
-                    $("#schemaInfo").show();
-                    $(this).replaceWith($(this).val('').clone(true));
-                    setTimeout(function () {
-                        $('div.alert').fadeOut('fast');
-                    }, 3000);
+            $("#drdCommandType").on("change", function () {
+                if ($(this).val() === "infyom:scaffold") {
+                    $('#chSwag').hide();
+                    $('#chTest').hide();
+                }
+                else {
+                    $('#chSwag').show();
+                    $('#chTest').show();
                 }
             });
 
-            $('#schemaForm').on("submit", function (e) {
-                e.preventDefault();
+            $("#chkForceMigrate").on("ifChanged", function () {
+                if ($(this).prop('checked') === true) {
+                    $('#chkMigration').iCheck("check", true);
+                    $('#chkMigration').iCheck("disable", true);
+                } else {
+                    $('#chkMigration').iCheck("enable", true);
+                }
+            });
 
-                $.ajax({
-                    url: '{{ route('io_generator_builder_generate_from_file') }}',
-                    type: 'POST',
-                    data: new FormData($(this)[0]),
-                    processData: false,
-                    contentType: false,
-                    success: function (result) {
-                        var result = JSON.parse(JSON.stringify(result));
+            $(document).ready(function () {
+                var htmlStr = '<tr class="item" style="display: table-row;"></tr>';
+                var commonComponent = $(htmlStr).filter("tr").load('{{ route('io_field_template') }}');
+                var relationStr = '<tr class="relationItem" style="display: table-row;"></tr>';
+                var relationComponent = $(relationStr).filter("tr").load('{{ route('io_relation_field_template') }}');
 
-                        $("#schemaInfo").html("");
-                        $("#schemaInfo").append('<div class="alert alert-success"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>' + result.message + '</strong></div>');
-                        $("#schemaInfo").show();
-                        var $container = $("html,body");
-                        var $scrollTo = $('#schemaInfo');
-                        $container.animate({
-                            scrollTop: $scrollTo.offset().top - $container.offset().top,
-                            scrollLeft: 0
-                        }, 300);
-                        setTimeout(function () {
-                            $('#schemaInfo').fadeOut('fast');
-                        }, 3000);
-                        location.reload();
-                    },
-                    error: function (result) {
-                        var result = JSON.parse(JSON.stringify(result));
-                        var errorMessage = '';
-                        if (result.hasOwnProperty('responseJSON') && result.responseJSON.hasOwnProperty('message')) {
-                            errorMessage = result.responseJSON.message;
+                $("#btnAdd").on("click", function () {
+                    var item = $(commonComponent).clone();
+                    initializeCheckbox(item);
+                    $("#container").append(item);
+                });
+
+                $("#btnRelationShip").on("click", function () {
+                    $("#relationShip").show();
+                    var item = $(relationComponent).clone();
+
+                    $(item).find("select").select2({ width: '100%' });
+
+                    var relationType = $(item).find('.drdRelationType');
+
+                    $(relationType).select2().on('change', function () {
+                        if ($(relationType).val() === "mtm")
+                            $(item).find('.foreignTable').show();
+                        else
+                            $(item).find('.foreignTable').hide();
+                    });
+
+                    $("#rsContainer").append(item);
+                });
+
+                $("#btnModelReset").on("click", function () {
+                    $("#container").html("");
+                    $('input:text').val("");
+                    $('input:checkbox').iCheck('uncheck');
+
+                });
+
+                $("#form").on("submit", function () {
+                    setButtonStatus(false);
+                    let fieldArr = [];
+                    let relationFieldArr = [];
+                    $('.item').each(function () {
+
+                        var htmlType = $(this).find('.drdHtmlType');
+                        let htmlValue;
+                        if ($(htmlType).val() === "select" || $(htmlType).val() === "radio") {
+                            htmlValue = $(this).find('.drdHtmlType').val() + ',' + $(this).find('.txtHtmlValue').val();
+                        }
+                        else {
+                            htmlValue = $(this).find('.drdHtmlType').val();
                         }
 
+                        fieldArr.push({
+                            name: $(this).find('.txtFieldName').val(),
+                            dbType: $(this).find('.txtdbType').val(),
+                            htmlType: htmlValue,
+                            validations: $(this).find('.txtValidation').val(),
+                            foreignTable: $(this).find('.txtForeignTable').val(),
+                            isForeign: $(this).find('.chkForeign').prop('checked'),
+                            searchable: $(this).find('.chkSearchable').prop('checked'),
+                            fillable: $(this).find('.chkFillable').prop('checked'),
+                            primary: $(this).find('.chkPrimary').prop('checked'),
+                            inForm: $(this).find('.chkInForm').prop('checked'),
+                            inIndex: $(this).find('.chkInIndex').prop('checked')
+                        });
+                    });
+
+                    $('.relationItem').each(function () {
+                        relationFieldArr.push({
+                            relationType: $(this).find('.drdRelationType').val(),
+                            foreignModel: $(this).find('.txtForeignModel').val(),
+                            foreignTable: $(this).find('.txtForeignTable').val(),
+                            foreignKey: $(this).find('.txtForeignKey').val(),
+                            localKey: $(this).find('.txtLocalKey').val(),
+                        });
+                    });
+
+                    // add id to fieldsArr
+                    fieldArr.unshift({
+                    name: 'id',
+                    dbType: 'increments',
+                    htmlType: "number",
+                    validations: "",
+                    foreignTable: "",
+                    isForeign: false,
+                    searchable: true,
+                    fillable: false,
+                    primary: true,
+                    inForm: false,
+                    inIndex: true
+                    });
+
+                    // add timestaps to fieldArr
+                    fieldArr.push({
+                    name: 'created_at',
+                    dbType: 'timestamp',
+                    htmlType: "date",
+                    validations: "",
+                    foreignTable: "",
+                    isForeign: false,
+                    searchable: false,
+                    fillable: false,
+                    primary: false,
+                    inForm: false,
+                    inIndex: true
+                    });
+                    fieldArr.push({
+                    name: 'updated_at',
+                    dbType: 'timestamp',
+                    htmlType: "date",
+                    validations: "",
+                    foreignTable: "",
+                    isForeign: false,
+                    searchable: false,
+                    fillable: false,
+                    primary: false,
+                    inForm: false,
+                    inIndex: true
+                    });
+
+                    var data = {
+                        modelName: $('#txtModelName').val(),
+                        commandType: $('#drdCommandType').val(),
+                        tableName: $('#txtCustomTblName').val(),
+                        migrate: $('#chkMigration').prop('checked'),
+                        options: {
+                            softDelete: $('#chkDelete').prop('checked'),
+                            save: $('#chkSave').prop('checked'),
+                            prefix: $('#txtPrefix').val(),
+                            paginate: $('#txtPaginate').val(),
+                            forceMigrate: $('#chkForceMigrate').prop('checked'),
+                        },
+                        addOns: {
+                            tests: $('#chkTestCases').prop('checked'),
+                            datatables: $('#chkDataTable').prop('checked')
+                        },
+                        fields: fieldArr,
+                        relations: relationFieldArr
+                    };
+
+                    data['_token'] = $("input[name=_token]").val();
+
+                    $.ajax({
+                        url: '{{ route('io_generator_builder_generate') }}',
+                    // type: "POST",
+                        method: "POST",
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function (result) {
+                            $("#info").html("");
+                            $("#info").append('<div class="alert alert-success"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>' + result + '</strong></div>');
+                            $("#info").show();
+                            var $container = $("html,body");
+                            var $scrollTo = $('#info');
+                            $container.animate({scrollTop: $scrollTo.offset().top - $container.offset().top, scrollLeft: 0},300);
+                            setTimeout(function () {
+                                $('#info').fadeOut('fast');
+                            }, 3000);
+                            location.reload();
+                        },
+                        error: function (result) {
+                            var result = JSON.parse(JSON.stringify(result));
+                            var errorMessage = '';
+                            if (result.hasOwnProperty('responseJSON') && result.responseJSON.hasOwnProperty('message')) {
+                                errorMessage = result.responseJSON.message;
+                            }
+
+                            $("#info").html("");
+                            $("#info").append('<div class="alert alert-danger"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Fail! </strong>' + errorMessage + '</div>');
+                            $("#info").show();
+                            var $container = $("html,body");
+                            var $scrollTo = $('#info');
+                            $container.animate({ scrollTop: $scrollTo.offset().top}, 300);
+                            setTimeout(function () {
+                                $('#info').fadeOut('fast');
+                            }, 3000);
+                        }
+                    });
+
+                    return false;
+                });
+
+                $('#rollbackForm').on("submit", function (e) {
+                    e.preventDefault();
+
+                    var data = {
+                        modelName: $('#txtRBModelName').val(),
+                        commandType: $('#drdRBCommandType').val(),
+                        prefix: $('#txtRBPrefix').val(),
+                        _token: $('#rbToken').val()
+                    };
+
+                    $.ajax({
+                        url: '{{ route('io_generator_builder_rollback') }}',
+                        method: "POST",
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function (result) {
+                            var result = JSON.parse(JSON.stringify(result));
+
+                            $("#rollbackInfo").html("");
+                            $("#rollbackInfo").append('<div class="alert alert-success"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>' + result.message + '</strong></div>');
+                            $("#rollbackInfo").show();
+
+                            var $container = $("html,body");
+                            var $scrollTo = $('#rollbackInfo');
+                            $container.animate({
+                                scrollTop: $scrollTo.offset().top - $container.offset().top,
+                                scrollLeft: 0
+                            }, 300);
+                            setTimeout(function () {
+                                $('#rollbackInfo').fadeOut('fast');
+                            }, 3000);
+                            location.reload();
+                        },
+                        error: function (result) {
+                            var result = JSON.parse(JSON.stringify(result));
+                            var errorMessage = '';
+                            if (result.hasOwnProperty('responseJSON') && result.responseJSON.hasOwnProperty('message')) {
+                                errorMessage = result.responseJSON.message;
+                            }
+
+                            $("#rollbackInfo").html("");
+                            $("#rollbackInfo").append('<div class="alert alert-danger"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Fail! </strong>' + errorMessage + '</div>');
+                            $("#rollbackInfo").show();
+                            setTimeout(function () {
+                                $('#rollbackInfo').fadeOut('fast');
+                            }, 3000);
+                        }
+                    });
+                });
+
+                $('#schemaFile').change(function () {
+                    var ext = $(this).val().split('.').pop().toLowerCase();
+                    if (ext !== 'json') {
                         $("#schemaInfo").html("");
-                        $("#schemaInfo").append('<div class="alert alert-danger"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Fail! </strong>' + errorMessage + '</div>');
+                        $("#schemaInfo").append('<div class="alert alert-danger"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Schema file must be json</strong></div>');
                         $("#schemaInfo").show();
+                        $(this).replaceWith($(this).val('').clone(true));
                         setTimeout(function () {
-                            $('#schemaInfo').fadeOut('fast');
+                            $('div.alert').fadeOut('fast');
                         }, 3000);
                     }
                 });
+
+                $('#schemaForm').on("submit", function (e) {
+                    e.preventDefault();
+
+                    $.ajax({
+                        url: '{{ route('io_generator_builder_generate_from_file') }}',
+                        type: 'POST',
+                        data: new FormData($(this)[0]),
+                        processData: false,
+                        contentType: false,
+                        success: function (result) {
+                            var result = JSON.parse(JSON.stringify(result));
+
+                            $("#schemaInfo").html("");
+                            $("#schemaInfo").append('<div class="alert alert-success"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>' + result.message + '</strong></div>');
+                            $("#schemaInfo").show();
+                            var $container = $("html,body");
+                            var $scrollTo = $('#schemaInfo');
+                            $container.animate({
+                                scrollTop: $scrollTo.offset().top - $container.offset().top,
+                                scrollLeft: 0
+                            }, 300);
+                            setTimeout(function () {
+                                $('#schemaInfo').fadeOut('fast');
+                            }, 3000);
+                            location.reload();
+                        },
+                        error: function (result) {
+                            var result = JSON.parse(JSON.stringify(result));
+                            var errorMessage = '';
+                            if (result.hasOwnProperty('responseJSON') && result.responseJSON.hasOwnProperty('message')) {
+                                errorMessage = result.responseJSON.message;
+                            }
+
+                            $("#schemaInfo").html("");
+                            $("#schemaInfo").append('<div class="alert alert-danger"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Fail! </strong>' + errorMessage + '</div>');
+                            $("#schemaInfo").show();
+                            setTimeout(function () {
+                                $('#schemaInfo').fadeOut('fast');
+                            }, 3000);
+                        }
+                    });
+                });
+
+                function renderPrimaryData(el) {
+
+                    $('.chkPrimary').iCheck(getiCheckSelection(false));
+
+                    $(el).find('.txtFieldName').val("id");
+                    $(el).find('.txtdbType').val("increments");
+                    $(el).find('.chkSearchable').attr('checked', false);
+                    $(el).find('.chkFillable').attr('checked', false);
+                    $(el).find('.chkPrimary').attr('checked', true);
+                    $(el).find('.chkInForm').attr('checked', false);
+                    $(el).find('.chkInIndex').attr('checked', false);
+                    $(el).find('.drdHtmlType').val('number').trigger('change');
+                }
+
+                function renderTimeStampData(el) {
+                    $(el).find('.txtdbType').val("timestamp");
+                    $(el).find('.chkSearchable').attr('checked', false);
+                    $(el).find('.chkFillable').attr('checked', false);
+                    $(el).find('.chkPrimary').attr('checked', false);
+                    $(el).find('.chkInForm').attr('checked', false);
+                    $(el).find('.chkInIndex').attr('checked', false);
+                    $(el).find('.drdHtmlType').val('date').trigger('change');
+                }
+
             });
 
-            function renderPrimaryData(el) {
+            function initializeCheckbox(el) {
+                $(el).find('input:checkbox').iCheck({
+                    checkboxClass: 'icheckbox_square-blue',
+                    radioClass: 'iradio_square-blue'
+                });
+                $(el).find("select").select2({width: '100%'});
 
-                $('.chkPrimary').iCheck(getiCheckSelection(false));
+                $(el).find(".chkPrimary").on("ifClicked", function () {
+                    $('.chkPrimary').each(function () {
+                        $(this).iCheck('uncheck');
+                    });
+                });
 
-                $(el).find('.txtFieldName').val("id");
-                $(el).find('.txtdbType').val("increments");
-                $(el).find('.chkSearchable').attr('checked', false);
-                $(el).find('.chkFillable').attr('checked', false);
-                $(el).find('.chkPrimary').attr('checked', true);
-                $(el).find('.chkInForm').attr('checked', false);
-                $(el).find('.chkInIndex').attr('checked', false);
-                $(el).find('.drdHtmlType').val('number').trigger('change');
-            }
+                $(el).find(".chkForeign").on("ifChanged", function () {
+                    if ($(this).prop('checked') === true) {
+                        $(el).find('.foreignTable').show();
+                    } else {
+                        $(el).find('.foreignTable').hide();
+                    }
+                });
 
-            function renderTimeStampData(el) {
-                $(el).find('.txtdbType').val("timestamp");
-                $(el).find('.chkSearchable').attr('checked', false);
-                $(el).find('.chkFillable').attr('checked', false);
-                $(el).find('.chkPrimary').attr('checked', false);
-                $(el).find('.chkInForm').attr('checked', false);
-                $(el).find('.chkInIndex').attr('checked', false);
-                $(el).find('.drdHtmlType').val('date').trigger('change');
+                $(el).find(".chkPrimary").on("ifChanged", function () {
+                    if ($(this).prop('checked') === true) {
+                        $(el).find(".chkSearchable").iCheck('uncheck');
+                        $(el).find(".chkFillable").iCheck('uncheck');
+                        $(el).find(".chkInForm").iCheck('uncheck');
+                    }
+                });
+
+                var htmlType = $(el).find('.drdHtmlType');
+
+                $(htmlType).select2().on('change', function () {
+                    if ($(htmlType).val() === "select" || $(htmlType).val() === "radio")
+                        $(el).find('.htmlValue').show();
+                    else
+                        $(el).find('.htmlValue').hide();
+                });
+
             }
 
         });
 
-        function initializeCheckbox(el) {
-            $(el).find('input:checkbox').iCheck({
-                checkboxClass: 'icheckbox_square-blue',
-                radioClass: 'iradio_square-blue'
-            });
-            $(el).find("select").select2({width: '100%'});
-
-            $(el).find(".chkPrimary").on("ifClicked", function () {
-                $('.chkPrimary').each(function () {
-                    $(this).iCheck('uncheck');
-                });
-            });
-
-            $(el).find(".chkForeign").on("ifChanged", function () {
-                if ($(this).prop('checked') === true) {
-                    $(el).find('.foreignTable').show();
-                } else {
-                    $(el).find('.foreignTable').hide();
-                }
-            });
-
-            $(el).find(".chkPrimary").on("ifChanged", function () {
-                if ($(this).prop('checked') === true) {
-                    $(el).find(".chkSearchable").iCheck('uncheck');
-                    $(el).find(".chkFillable").iCheck('uncheck');
-                    $(el).find(".chkInForm").iCheck('uncheck');
-                }
-            });
-
-            var htmlType = $(el).find('.drdHtmlType');
-
-            $(htmlType).select2().on('change', function () {
-                if ($(htmlType).val() === "select" || $(htmlType).val() === "radio")
-                    $(el).find('.htmlValue').show();
-                else
-                    $(el).find('.htmlValue').hide();
-            });
-
+        function getiCheckSelection(value) {
+            if (value === true)
+                return 'checked';
+            else
+                return 'uncheck';
         }
 
-    });
-
-    function getiCheckSelection(value) {
-        if (value === true)
-            return 'checked';
-        else
-            return 'uncheck';
-    }
-
-    function removeItem(e) {
-        e.parentNode.parentNode.parentNode.removeChild(e.parentNode.parentNode);
-    }
-
-    let elModel = document.getElementById('txtModelName');
-    let elTable = document.getElementById('txtCustomTblName');
-    let customTableName = false;
-
-    // sanitize model input
-    elModel.addEventListener('keypress', (e) => {
-        const key = e.keyCode;
-        if(!((key >= 65 && key <= 90) || (key >= 97 && key <= 122))) e.preventDefault();
-    });
-
-    // capitalize elModel
-    elModel.addEventListener('keyup',capitalizeModelName);
-
-    // check for table existence when custom table name is set
-    document.getElementById('txtCustomTblName').addEventListener('keyup', () => {
-        customTableName = true;
-        checkForTableExistence();
-    });
-
-
-    /***
-     * Fields related logic
-     */
-
-    // do not allow other characters for field names
-    const fields = document.querySelector('#fieldsTable');
-    fields.addEventListener('keypress', (e) => {
-        if(e.target.classList.contains('txtFieldName')) {
-            const rule = new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-            console.log(e.target.value+e.key);
-            if(!rule.test(e.target.value+e.key)) e.preventDefault();
+        function removeItem(e) {
+            e.parentNode.parentNode.parentNode.removeChild(e.parentNode.parentNode);
         }
-    });
 
-    fields.addEventListener('keyup',checkForDuplicateFieldNames);
+        let elModel = document.getElementById('txtModelName');
+        let elTable = document.getElementById('txtCustomTblName');
+        let customTableName = false;
 
-</script>
+        // sanitize model input
+        elModel.addEventListener('keypress', (e) => {
+            const key = e.keyCode;
+            if(!((key >= 65 && key <= 90) || (key >= 97 && key <= 122))) e.preventDefault();
+        });
+
+        // capitalize elModel
+        elModel.addEventListener('keyup',capitalizeModelName);
+
+        // check for table existence when custom table name is set
+        document.getElementById('txtCustomTblName').addEventListener('keyup', () => {
+            customTableName = true;
+            checkForTableExistence();
+        });
+
+
+        /***
+         * Fields related logic
+         */
+
+        // do not allow other characters for field names
+        const fields = document.querySelector('#fieldsTable');
+        fields.addEventListener('keypress', (e) => {
+            if(e.target.classList.contains('txtFieldName')) {
+                const rule = new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+                console.log(e.target.value+e.key);
+                if(!rule.test(e.target.value+e.key)) e.preventDefault();
+            }
+        });
+
+        fields.addEventListener('keyup',checkForDuplicateFieldNames);
+
+    </script>
 
 @stop

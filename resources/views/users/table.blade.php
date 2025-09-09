@@ -1,8 +1,3 @@
-
-
-
-
-
 <div class="table-responsive">
     <table class="table" id="users-table">
         <thead>
@@ -19,7 +14,7 @@
         <tbody>
         @foreach($users as $key => $users)
             <tr>
-                <td>{{ $key+1 }}</td>
+            <td>{{ $key+1 }}</td>
             <td>{{ $users->emp_id }}</td>
             <td>{{ $users->name }} {{ $users->last_name }}</td>
             <td>{{ $users->role }}</td>
