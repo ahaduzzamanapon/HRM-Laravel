@@ -3,17 +3,17 @@
 
         <div class="d-flex justify-content-between align-items-center">
             <h4>Nominee Information</h4>
-            <button type="button" class="btn btn-primary btn-sm" id="add-new-nominee-information-btn" data-toggle="collapse" data-target="#collapseFour">Add New Nominee</button>
+            <button class="btn btn-primary btn-sm  col-md-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour"><i class="im im-icon-Add"></i> Add New</button>
         </div>
 
         <!-- Accordion Form for Add/Edit (moved to top) -->
         <div class="accordion mb-4" id="nomineeInformationAccordion">
             <div class="accordion-item">
-                <h2 class="accordion-header" id="headingFour">
+                {{-- <h2 class="accordion-header" id="headingFour">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
                         Nominee Information Form
                     </button>
-                </h2>
+                </h2> --}}
                 <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#nomineeInformationAccordion">
                     <div class="accordion-body">
                         <form id="nominee-information-form" enctype="multipart/form-data">

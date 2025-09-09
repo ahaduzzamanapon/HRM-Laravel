@@ -3,9 +3,7 @@
 
         <div class="d-flex justify-content-between align-items-center">
             <h4>Job Experience Details</h4>
-            {{-- <button type="button" class="btn btn-primary btn-sm"  data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"><i class="im im-icon-Add"></i>Add New</button> --}}
-            <button class="btn btn-primary btn-sm  col-md-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"><i class="im
-im-icon-Add"></i> Add New</button>
+            <button class="btn btn-primary btn-sm  col-md-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"><i class="im im-icon-Add"></i> Add New</button>
         </div>
 
         <!-- Accordion Form for Add/Edit (moved to top) -->
@@ -35,20 +33,20 @@ im-icon-Add"></i> Add New</button>
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="start_date">Start Date:</label>
-                                        <input type="date" name="start_date" id="start_date" class="form-control">
+                                        <label for="start_datee">Start Date:</label>
+                                        <input type="date" name="start_date" id="start_datee" class="form-control">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="end_date">End Date:</label>
-                                        <input type="date" name="end_date" id="end_date" class="form-control">
+                                        <label for="end_datee">End Date:</label>
+                                        <input type="date" name="end_date" id="end_datee" class="form-control">
                                     </div>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="description">Description:</label>
-                                <textarea name="description" id="description" class="form-control" rows="3"></textarea>
+                                <label for="descriptionn">Description:</label>
+                                <textarea name="descriptionn" id="descriptionn" class="form-control" rows="3"></textarea>
                             </div>
 
                             <button type="submit" class="btn btn-success" id="save-job-experience-btn">Save Job Experience</button>
@@ -133,9 +131,14 @@ im-icon-Add"></i> Add New</button>
                     processData: false,
                     contentType: false,
                     success: function(response) {
-                        alert(response.message);
-                        jobExperienceAccordionCollapse.hide();
-                        location.reload(); // For simplicity, reload page. In production, update table dynamically.
+                        if(response.success) {
+                            alert(response.message);
+                            jobExperienceAccordionCollapse.hide();
+                            location.reload();
+                        } else {
+                            alert('Failed to save job experience.');
+                        }
+                   // For simplicity, reload page. In production, update table dynamically.
                     },
                     error: function(xhr) {
                         alert('Error saving job experience: ' + xhr.responseText);
@@ -150,12 +153,14 @@ im-icon-Add"></i> Add New</button>
                     url: `/jobExperiences/${jobExperienceId}/edit`, // Laravel's edit route returns data for form
                     type: 'GET',
                     success: function(response) {
-                        $('#job-experience-id').val(response.id);
-                        $('#company_name').val(response.company_name);
-                        $('#job_title').val(response.job_title);
-                        $('#start_date').val(response.start_date);
-                        $('#end_date').val(response.end_date);
-                        $('#description').val(response.description);
+                        console.log(response);
+                        
+                        $('#job-experience-id').val(response.jobExperience.id);
+                        $('#company_name').val(response.jobExperience.company_name);
+                        $('#job_title').val(response.jobExperience.job_title);
+                        $('#start_datee').val(response.jobExperience.start_date);
+                        $('#end_datee').val(response.jobExperience.end_date);
+                        $('#descriptionn').val(response.jobExperience.description);
                         jobExperienceAccordionCollapse.show(); // Show accordion
                     },
                     error: function(xhr) {
