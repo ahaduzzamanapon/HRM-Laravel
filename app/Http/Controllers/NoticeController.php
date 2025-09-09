@@ -48,7 +48,14 @@ class NoticeController extends AppBaseController
     public function store(CreateNoticeRequest $request)
     {
         $input = $request->all();
-
+        if ($request->hasFile('documents')) {
+            $file = $request->file('documents');
+            $folder = 'documents/notices';
+            $customName = 'documents-' . time();
+            $input['documents'] = uploadFile($file, $folder, $customName);
+        } else {
+            $input['documents'] = null;
+        }
         /** @var Notice $notice */
         $notice = Notice::create($input);
 
