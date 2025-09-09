@@ -23,7 +23,6 @@
         {!! Form::file('documents') !!}
     </div>
 </div>
- <div class="clearfix"></div>
 
 
 <!-- Description Field -->

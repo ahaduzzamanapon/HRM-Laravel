@@ -85,6 +85,24 @@
             </a>
         </li>
         @endif
+        @if(can('rewardings'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('rewardings*') ? 'active' : '' !!}" href="{{ route('rewardings.index') }}">
+                <i class="icon im im-icon-Teacher"></i>
+                <i class="sidenav-mini-icon"> R </i>
+                <span class="item-name">Rewarding</span>
+            </a>
+        </li>
+        @endif
+        @if(can('innovations'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('innovations*') ? 'active' : '' !!}" href="{{ route('innovations.index') }}">
+                <i class="icon im im-icon-Idea"></i>
+                <i class="sidenav-mini-icon"> I </i>
+                <span class="item-name">Innovations</span>
+            </a>
+        </li>
+        @endif
         @if(can('manage_branches'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('branches*') ? 'active' : '' !!}" href="{{ route('branches.index') }}">
@@ -173,8 +191,113 @@
         </ul>
 </li>
 
+@if(can('welfare_fund'))
+<li class="nav-item">
+    <a class="nav-link {!! (Request::is('employeeChildrenEducationSupports*') || Request::is('funeralSupports*') || Request::is('medicalSupports*') ? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#welfare_fund_menu" role="button" aria-expanded="false" aria-controls="welfare_fund_menu">
+        <i class="icon im im-icon-Heart"></i>
+        <span class="item-name">Welfare Fund</span>
+        <i class="right-icon im im-icon-Arrow-Right"></i>
+    </a>
+    <ul class="sub-nav collapse  {!!  Request::is('employeeChildrenEducationSupports*') || Request::is('funeralSupports*') || Request::is('medicalSupports*') ? 'show' : ''  !!}" id="welfare_fund_menu" data-bs-parent="#sidebar-menu">
+        @if(can('manage_employee_children_education_supports'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('employeeChildrenEducationSupports*') ? 'active' : '' !!}" href="{{ route('employeeChildrenEducationSupports.index') }}">
+                <i class="icon im im-icon-Student-Female"></i>
+                <i class="sidenav-mini-icon"> ECES </i>
+                <span class="item-name">Children Education Support</span>
+            </a>
+        </li>
+        @endif
+        @if(can('manage_funeral_supports'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('funeralSupports*') ? 'active' : '' !!}" href="{{ route('funeralSupports.index') }}">
+                <i class="icon im im-icon-Coffin"></i>
+                <i class="sidenav-mini-icon"> FS </i>
+                <span class="item-name">Funeral Support</span>
+            </a>
+        </li>
+        @endif
+        @if(can('manage_medical_supports'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('medicalSupports*') ? 'active' : '' !!}" href="{{ route('medicalSupports.index') }}">
+                <i class="icon im im-icon-Medical-Sign"></i>
+                <i class="sidenav-mini-icon"> MS </i>
+                <span class="item-name">Medical Support</span>
+            </a>
+        </li>
+        @endif
+    </ul>
+</li>
+@endif
 
+@if(can('disciplinary_actions'))
+<li class="nav-item">
+    <a class="nav-link {!! (Request::is('departmentalCases*') || Request::is('penalties*') ? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#disciplinary_actions_menu" role="button" aria-expanded="false" aria-controls="disciplinary_actions_menu">
+        <i class="icon im im-icon-Hammer"></i>
+        <span class="item-name">Disciplinary Actions</span>
+        <i class="right-icon im im-icon-Arrow-Right"></i>
+    </a>
+    <ul class="sub-nav collapse  {!!  Request::is('departmentalCases*') || Request::is('penalties*') ? 'show' : ''  !!}" id="disciplinary_actions_menu" data-bs-parent="#sidebar-menu">
+        @if(can('manage_departmental_cases'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('departmentalCases*') ? 'active' : '' !!}" href="{{ route('departmentalCases.index') }}">
+                <i class="icon im im-icon-Folder-Open"></i>
+                <i class="sidenav-mini-icon"> DC </i>
+                <span class="item-name">Departmental Cases</span>
+            </a>
+        </li>
+        @endif
+        @if(can('manage_penalties'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('penalties*') ? 'active' : '' !!}" href="{{ route('penalties.index') }}">
+                <i class="icon im im-icon-Warning-Window"></i>
+                <i class="sidenav-mini-icon"> P </i>
+                <span class="item-name">Penalties</span>
+            </a>
+        </li>
+        @endif
+    </ul>
+</li>
+@endif
 
+@if(can('loans_and_advances'))
+<li class="nav-item">
+    <a class="nav-link {!! (Request::is('loanTypes*') || Request::is('loans*') || Request::is('loanRepayments*') ? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#loans_and_advances_menu" role="button" aria-expanded="false" aria-controls="loans_and_advances_menu">
+        <i class="icon im im-icon-Money-Bag"></i>
+        <span class="item-name">Loans and Advances</span>
+        <i class="right-icon im im-icon-Arrow-Right"></i>
+    </a>
+    <ul class="sub-nav collapse  {!!  Request::is('loanTypes*') || Request::is('loans*') || Request::is('loanRepayments*') ? 'show' : ''  !!}" id="loans_and_advances_menu" data-bs-parent="#sidebar-menu">
+        @if(can('manage_loan_types'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('loanTypes*') ? 'active' : '' !!}" href="{{ route('loanTypes.index') }}">
+                <i class="icon im im-icon-Align-Justify-All"></i>
+                <i class="sidenav-mini-icon"> LT </i>
+                <span class="item-name">Loan Types</span>
+            </a>
+        </li>
+        @endif
+        @if(can('manage_loans'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('loans*') ? 'active' : '' !!}" href="{{ route('loans.index') }}">
+                <i class="icon im im-icon-File-Edit"></i>
+                <i class="sidenav-mini-icon"> LA </i>
+                <span class="item-name">Loan Applications</span>
+            </a>
+        </li>
+        @endif
+        @if(can('manage_loan_repayments'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('loanRepayments*') ? 'active' : '' !!}" href="{{ route('loanRepayments.index') }}">
+                <i class="icon im im-icon-Money-Graph"></i>
+                <i class="sidenav-mini-icon"> LR </i>
+                <span class="item-name">Loan Repayments</span>
+            </a>
+        </li>
+        @endif
+    </ul>
+</li>
+@endif
 
 {{-- Settings --}}
 @if(can('settings'))

@@ -20,6 +20,8 @@ include 'web_builder.php';
 */
 include 'bulder_route.php';
 
+Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+
 Auth::routes();
 
 Route::patch('users/update-salary/{id}', [App\Http\Controllers\UserController::class, 'updateSalary'])->name('users.updateSalary');
