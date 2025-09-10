@@ -40,7 +40,8 @@ class NomineeInformationController extends Controller
      */
     public function store(Request $request)
     {
-        $input = $request->all();
+        // dd($request->all());
+        $input = $request->except('_token');
 
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
@@ -51,8 +52,7 @@ class NomineeInformationController extends Controller
 
         NomineeInformation::create($input);
 
-        Flash::success('Nominee Information saved successfully.');
-        return redirect(route('nomineeInformation.index'));
+        return response()->json(['success' => true, 'message' => 'Nominee Information saved successfully.'], 200);
     }
 
     /**
@@ -66,11 +66,10 @@ class NomineeInformationController extends Controller
         $nomineeInformation = NomineeInformation::find($id);
 
         if (empty($nomineeInformation)) {
-            Flash::error('Nominee Information not found');
-            return redirect(route('nomineeInformation.index'));
+            return response()->json(['error' => true, 'message' => 'Nominee Information not found'], 404);
         }
 
-        return view('nominee_information.show')->with('nomineeInformation', $nomineeInformation);
+        return response()->json(['nomineeInformation' => $nomineeInformation], 200);
     }
 
     /**
@@ -85,11 +84,10 @@ class NomineeInformationController extends Controller
         $users = User::pluck('name', 'id'); // Get users for dropdown
 
         if (empty($nomineeInformation)) {
-            Flash::error('Nominee Information not found');
-            return redirect(route('nomineeInformation.index'));
+            return response()->json(['error' => true, 'message' => 'Nominee Information not found'], 404);
         }
 
-        return view('nominee_information.edit')->with(['nomineeInformation' => $nomineeInformation, 'users' => $users]);
+        return response()->json(['nomineeInformation' => $nomineeInformation, 'users' => $users], 200);
     }
 
     /**
@@ -104,8 +102,7 @@ class NomineeInformationController extends Controller
         $nomineeInformation = NomineeInformation::find($id);
 
         if (empty($nomineeInformation)) {
-            Flash::error('Nominee Information not found');
-            return redirect(route('nomineeInformation.index'));
+             return response()->json(['error' => true, 'message' => 'Nominee Information not found'], 404);
         }
 
         $input = $request->all();
@@ -121,8 +118,7 @@ class NomineeInformationController extends Controller
 
         $nomineeInformation->update($input);
 
-        Flash::success('Nominee Information updated successfully.');
-        return redirect(route('nomineeInformation.index'));
+        return response()->json(['success' => true, 'message' => 'Nominee Information updated successfully.'], 200);
     }
 
     /**
@@ -136,8 +132,7 @@ class NomineeInformationController extends Controller
         $nomineeInformation = NomineeInformation::find($id);
 
         if (empty($nomineeInformation)) {
-            Flash::error('Nominee Information not found');
-            return redirect(route('nomineeInformation.index'));
+            return response()->json(['error' => 'Nominee Information not found'], 404);
         }
 
         // Delete associated photo if exists
@@ -147,7 +142,13 @@ class NomineeInformationController extends Controller
 
         $nomineeInformation->delete();
 
-        Flash::success('Nominee Information deleted successfully.');
-        return redirect(route('nomineeInformation.index'));
+        return response()->json(['success' => true, 'message' => 'Nominee Information deleted successfully.'], 200);
+    }
+
+    public function list($user_id)
+    {
+        $users = NomineeInformation::where('user_id', $user_id)->get();
+
+        return response()->json(['sucess' => true,'nomineeInformation' => $users]);
     }
 }

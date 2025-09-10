@@ -3,7 +3,6 @@
 
         <div class="d-flex justify-content-between align-items-center">
             <h4 class="col-md-10">Training Details</h4>
-            {{-- <button type="button" class="btn btn-primary btn-sm" id="add-new-training-btn" data-toggle="collapse" data-target="#collapseOne">Add New Training</button> --}}
             <button class="btn btn-primary btn-sm col-md-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
              <i class="im im-icon-Add"></i>  Add New</button>
         </div>
@@ -92,6 +91,7 @@
                     </tr>
                 </thead>
                 <tbody id="training-details-table-body">
+                    {{-- @dd($users) --}}
                     @if( isset($users) && $users->trainingDetails->count() > 0 )
                         @foreach($users->trainingDetails as $trainingDetail)
                             <tr data-id="{{ $trainingDetail->id }}">
@@ -125,23 +125,72 @@
 </div>
 
 @push('scripts')
+
+    <script>
+        const userId = "{{ $users->id }}";
+        function loadTrainingDetails() {
+            $.ajax({
+                url: `/trainingDetails/list/${userId}`, // Laravel route
+                type: 'GET',
+                dataType: 'json',
+                success: function(res) {
+                    // console.log(res.trainingDetail[0]);
+                    let tableData = '';
+                    res.trainingDetail.forEach(trainingDetail => {
+                        tableData += `<tr data-id="${trainingDetail.id}">
+                            <td>${trainingDetail.training_name}</td>
+                            <td>${trainingDetail.training_provider}</td>
+                            <td>${trainingDetail.training_type}</td>
+                            <td>${trainingDetail.start_date}</td>
+                            <td>${trainingDetail.end_date}</td>
+                            <td>${trainingDetail.document ? `<a href="${trainingDetail.document}" target="_blank">View</a>` : 'N/A'}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-info edit-training-detail" data-id="${trainingDetail.id}">Edit</button>
+                                <button type="button" class="btn btn-sm btn-danger delete-training-detail" data-id="${trainingDetail.id}">Delete</button>
+                            </td>
+                        </tr>`;
+                    });
+                    $('#training-details-table-body').html(tableData);
+                },
+                error: function(xhr) {
+                    console.error('Error loading table:', xhr.responseText);
+                }
+            });
+        }
+    </script>
+
+    <script>
+        $(document).ready(function() {
+        // Select all buttons that toggle collapse
+            $('button[data-bs-toggle="collapse"]').each(function() {
+                $(this).on('click', function() {
+                        // Get the target accordion from data-bs-target
+                    var targetSelector = $(this).data('bs-target');
+                    var $collapseElement = $(targetSelector);
+
+                    // Find a form inside the collapse element (if any)
+                    var $form = $collapseElement.find('form');
+
+                    // Reset the form if it exists
+                    if ($form.length) {
+                        $form[0].reset();
+                    }
+                });
+            });
+        });
+
+    </script>
     <script>
         $(document).ready(function() {
             const trainingForm = $('#training-detail-form');
             const trainingAccordionCollapse = new bootstrap.Collapse($('#collapseOne'), { toggle: false });
 
-            // Show form for adding new training
-            $('#add-new-training-btn').click(function() {
-                trainingForm[0].reset(); // Clear form
-                $('#training-detail-id').val(''); // Clear ID for new entry
-                $('#current-document-link').html(''); // Clear document link
-                trainingAccordionCollapse.show(); // Show accordion
-            });
-
             // Cancel button for form
             $('#cancel-training-edit-btn').click(function() {
+                trainingForm[0].reset();
                 trainingAccordionCollapse.hide(); // Hide accordion
             });
+
 
             // Save Training Detail (Add/Edit)
             trainingForm.submit(function(e) {
@@ -162,13 +211,15 @@
                     processData: false,
                     contentType: false,
                     success: function(response) {
+                        loadTrainingDetails();
+
                         if(response.error){
                             alert('Error: ' + response.message + ' !!!!');
                             return;
                         }else{
                             alert(response.message);
                             trainingAccordionCollapse.hide();
-                            location.reload(); 
+                            // location.reload();
                         }
                     },
                     error: function(xhr) {
@@ -184,6 +235,8 @@
                     url: `/trainingDetails/${trainingDetailId}/edit`, // Laravel's edit route returns data for form
                     type: 'GET',
                     success: function(response) {
+                        loadTrainingDetails();
+
                         $('#training-detail-id').val(response.trainingDetail.id);
                         $('#training_name').val(response.trainingDetail.training_name);
                         $('#training_provider').val(response.trainingDetail.training_provider);
@@ -216,6 +269,8 @@
                             _token: '{{ csrf_token() }}'
                         },
                         success: function(response) {
+                            loadTrainingDetails();
+
                             alert(response.message);
                             // Remove row from table
                             $(`tr[data-id="${trainingDetailId}"]`).remove();
@@ -232,4 +287,7 @@
             });
         });
     </script>
+
+
+
 @endpush

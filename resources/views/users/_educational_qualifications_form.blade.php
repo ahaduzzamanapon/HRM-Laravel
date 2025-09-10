@@ -3,7 +3,7 @@
 
         <div class="d-flex justify-content-between align-items-center">
             <h4 class="col-md-10">Educational Qualifications</h4>
-            <button class="btn btn-primary btn-sm accordion-button collapsed col-md-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree"><i class="im
+            <button class="btn btn-primary btn-sm col-md-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree"><i class="im
 im-icon-Add"></i> Add New</button>
         </div>
 
@@ -107,117 +107,169 @@ im-icon-Add"></i> Add New</button>
 
 
 @push('scripts')
-    <script>
-        $(document).ready(function() {
-            const educationalQualificationForm = $('#educational-qualification-form');
-            const educationalQualificationsAccordionCollapse = new bootstrap.Collapse($('#collapseThree'), { toggle: false });
+<script>
+    $(document).ready(function() {
+        const userId = "{{ $users->id }}";
+        const educationalQualificationForm = $('#educational-qualification-form');
+        const educationalQualificationsAccordionCollapse = new bootstrap.Collapse($('#collapseThree'), { toggle: false });
 
-            // Show form for adding new educational qualification
-            $('#add-new-educational-qualification-btn').click(function() {
-                educationalQualificationForm[0].reset(); // Clear form
-                $('#educational-qualification-id').val(''); // Clear ID for new entry
-                $('#current-document-link').html(''); // Clear document link
-                educationalQualificationsAccordionCollapse.show(); // Show accordion
-            });
+        // -------------------------
+        // Load educational qualifications
+        // -------------------------
+        function loadEducationalQualifications() {
+            $.ajax({
+                url: `/educationalQualifications/list/${userId}`,
+                type: 'GET',
+                dataType: 'json',
+                success: function(res) {
+                    let tableData = '';
 
-            // Cancel button for form
-            $('#cancel-educational-qualification-edit-btnn').click(function() {
-                // console.log('Cancel button clicked');
-                educationalQualificationsAccordionCollapse.hide(); // Hide accordion
-            });
-
-
-            // Save Educational Qualification (Add/Edit)
-            educationalQualificationForm.submit(function(e) {
-                e.preventDefault();
-                const formData = new FormData(this);
-                const educationalQualificationId = $('#educational-qualification-id').val();
-                const url = educationalQualificationId ? `/educationalQualifications/${educationalQualificationId}` : '/educationalQualifications';
-                const method = educationalQualificationId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
-
-                if (educationalQualificationId) {
-                    formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
-                }
-
-                $.ajax({
-                    url: url,
-                    type: method,
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        if(response.error){
-                            alert(response.message);
-                            return false;
-                        } else {
-                            alert(response.message);
-                            educationalQualificationsAccordionCollapse.hide();
-                            location.reload(); 
-                        }
-                    },
-                    error: function(xhr) {
-                        alert('Error saving educational qualification: ' + xhr.responseText);
+                    if (res.educationalQualification.length > 0) {
+                        res.educationalQualification.forEach(edu => {
+                            tableData += `<tr data-id="${edu.id}">
+                                <td>${edu.degree}</td>
+                                <td>${edu.institution}</td>
+                                <td>${edu.passing_year}</td>
+                                <td>${edu.grade}</td>
+                                <td>${edu.document ? `<a href="${edu.document}" target="_blank">View</a>` : 'N/A'}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-info edit-educational-qualification" data-id="${edu.id}">Edit</button>
+                                    <button type="button" class="btn btn-sm btn-danger delete-educational-qualification" data-id="${edu.id}">Delete</button>
+                                </td>
+                            </tr>`;
+                        });
+                    } else {
+                        tableData = '<tr><td colspan="6" class="text-center">No educational qualifications found.</td></tr>';
                     }
-                });
-            });
 
-            // Edit Educational Qualification
-            $(document).on('click', '#edit-educational-qualification', function() {
-                const educationalQualificationId = $(this).data('id');
-                $.ajax({
-                    url: `/educationalQualifications/${educationalQualificationId}/edit`, // Laravel's edit route returns data for form
-                    type: 'GET',
-                    success: function(response) {
-                        $('#educational-qualification-id').val(response.educationalQualification.id);
-                        $('#degree').val(response.educationalQualification.degree);
-                        $('#institution').val(response.educationalQualification.institution);
-                        $('#passing_year').val(response.educationalQualification.passing_year);
-                        $('#grade').val(response.educationalQualification.grade);
-                        if (response.educationalQualification.document) {
-                            $('#current-document-link').html(`<a href="${response.educationalQualification.document}" target="_blank">View Current Document</a>`);
-                        } else {
-                            $('#current-document-link').html('');
-                        }
-                        educationalQualificationsAccordionCollapse.show(); // Show accordion
-                    },
-                    error: function(xhr) {
-                        alert('Error fetching educational qualification: ' + xhr.responseText);
-                    }
-                });
-            });
-
-            // Delete Educational Qualification
-            $(document).on('click', '.delete-educational-qualification', function() {
-                if (confirm('Are you sure you want to delete this educational qualification?')) {
-                    const educationalQualificationId = $(this).data('id');
-                    $.ajax({
-                        url: `/educationalQualifications/${educationalQualificationId}`,
-                        type: 'POST', // Laravel uses POST for DELETE with _method field
-                        data: {
-                            _method: 'DELETE',
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function(response) {
-                            alert(response.message);
-                            $(`tr[data-id="${educationalQualificationId}"]`).remove();
-                            if ($('#educational-qualifications-table-body tr').length === 0) {
-                                $('#educational-qualifications-table-body').html('<tr><td colspan="6" class="text-center">No educational qualifications found.</td></tr>');
-                            }
-                        },
-                        error: function(xhr) {
-                            alert('Error deleting educational qualification: ' + xhr.responseText);
-                        }
-                    });
+                    $('#educational-qualifications-table-body').html(tableData);
+                },
+                error: function(xhr) {
+                    console.error('Error loading educational qualifications:', xhr.responseText);
                 }
             });
+        }
 
+        // Initial load
+        loadEducationalQualifications();
 
+        // -------------------------
+        // Reset form on accordion toggle
+        // -------------------------
+        $('button[data-bs-toggle="collapse"]').on('click', function() {
+            const targetSelector = $(this).data('bs-target');
+            const $collapseElement = $(targetSelector);
+            const $form = $collapseElement.find('form');
+
+            if ($form.length) {
+                $form[0].reset();
+                $('#educational-qualification-id').val('');
+                $('#current-document-link').html('');
+            }
         });
 
+        // -------------------------
+        // Cancel button
+        // -------------------------
+        $('#cancel-educational-qualification-edit-btn').click(function() {
+            educationalQualificationForm[0].reset();
+            $('#educational-qualification-id').val('');
+            $('#current-document-link').html('');
+            educationalQualificationsAccordionCollapse.hide();
+        });
 
-        function cancelEducationalQualificationEdit(){
-            const educationalQualificationsAccordionCollapse = new bootstrap.Collapse($('#collapseThree'), { toggle: false });
-            educationalQualificationsAccordionCollapse.hide(); // Hide accordion
-        }
-    </script>
+        // -------------------------
+        // Save Educational Qualification (Add/Edit)
+        // -------------------------
+        educationalQualificationForm.submit(function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const eduId = $('#educational-qualification-id').val();
+            const url = eduId ? `/educationalQualifications/${eduId}` : '/educationalQualifications';
+            const method = 'POST';
+
+            if (eduId) formData.append('_method', 'PATCH');
+
+            $.ajax({
+                url: url,
+                type: method,
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    loadEducationalQualifications();
+                    if(response.error){
+                        alert(response.message);
+                        return false;
+                    }
+                    alert(response.message);
+                    educationalQualificationForm[0].reset();
+                    $('#educational-qualification-id').val('');
+                    $('#current-document-link').html('');
+                    educationalQualificationsAccordionCollapse.hide();
+                },
+                error: function(xhr) {
+                    alert('Error saving educational qualification: ' + xhr.responseText);
+                }
+            });
+        });
+
+        // -------------------------
+        // Edit Educational Qualification
+        // -------------------------
+        $(document).on('click', '.edit-educational-qualification', function() {
+            const eduId = $(this).data('id');
+
+            $.ajax({
+                url: `/educationalQualifications/${eduId}/edit`,
+                type: 'GET',
+                success: function(response) {
+                    const edu = response.educationalQualification;
+                    $('#educational-qualification-id').val(edu.id);
+                    $('#degree').val(edu.degree);
+                    $('#institution').val(edu.institution);
+                    $('#passing_year').val(edu.passing_year);
+                    $('#grade').val(edu.grade);
+
+                    if (edu.document) {
+                        $('#current-document-link').html(`<a href="${edu.document}" target="_blank">View Current Document</a>`);
+                    } else {
+                        $('#current-document-link').html('');
+                    }
+
+                    educationalQualificationsAccordionCollapse.show();
+                },
+                error: function(xhr) {
+                    alert('Error fetching educational qualification: ' + xhr.responseText);
+                }
+            });
+        });
+
+        // -------------------------
+        // Delete Educational Qualification
+        // -------------------------
+        $(document).on('click', '.delete-educational-qualification', function() {
+            const eduId = $(this).data('id');
+            if (!confirm('Are you sure you want to delete this educational qualification?')) return;
+
+            $.ajax({
+                url: `/educationalQualifications/${eduId}`,
+                type: 'POST',
+                data: {
+                    _method: 'DELETE',
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    alert(response.message);
+                    loadEducationalQualifications();
+                },
+                error: function(xhr) {
+                    alert('Error deleting educational qualification: ' + xhr.responseText);
+                }
+            });
+        });
+
+    });
+</script>
+
 @endpush

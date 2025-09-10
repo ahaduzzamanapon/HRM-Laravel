@@ -2,7 +2,7 @@
     <div class="col-md-12">
         <div class="d-flex justify-content-between align-items-center">
             <h4>Transfer Details</h4>
-            <button type="button" class="btn btn-primary btn-sm" id="add-new-transfer-btn" data-toggle="collapse" data-target="#collapseOne">Add New Transfer</button>
+            <button class="btn btn-primary btn-sm  col-md-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven" aria-expanded="false" aria-controls="collapseSeven"><i class="im im-icon-Add"></i> Add New</button>
         </div>
         <!-- Accordion Form for Add/Edit (moved to top) -->
         <div class="accordion mb-4" id="transferDetailsAccordion">
@@ -18,7 +18,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="transfer_date">Transfer Date:</label>
-                                        <input type="date" name="transfer_date" id="transfer_date" class="form-control">
+                                        <input type="date" name="transfer_date" id="transfer_datee" class="form-control">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -81,15 +81,17 @@
                         <th>Reason</th>
                         <th>Status</th>
                         <th>Document</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="transfer-details-table-body">
+                    {{-- @dd($users->transferDetails) --}}
                     @if(isset($users) && $users->transferDetails->count() > 0)
-                        @foreach($users->transferDetails as $transferDetail)
+                    @foreach($users->transferDetails as $transferDetail)
                             <tr data-id="{{ $transferDetail->id }}">
                                 <td>{{ $transferDetail->transfer_date->format('Y-m-d') }}</td>
-                                <td>{{ $transferDetail->oldBranchName->branch_name ?? 'N/A' }}</td>
-                                <td>{{ $transferDetail->newBranchName->branch_name ?? 'N/A' }}</td>
+                                <td>{{ $transferDetail->old_branch ?? 'N/A' }}</td>
+                                <td>{{ $transferDetail->new_branch ?? 'N/A' }}</td>
                                 <td>{{ $transferDetail->reason }}</td>
                                 <td>{{ $transferDetail->status }}</td>
                                 <td>
@@ -98,6 +100,10 @@
                                     @else
                                         N/A
                                     @endif
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary edit-transfer-btn" data-id="{{ $transferDetail->id }}">Edit</button>
+                                    <button class="btn btn-sm btn-danger delete-transfer-btn" data-id="{{ $transferDetail->id }}">Delete</button>
                                 </td>
                             </tr>
                         @endforeach
@@ -113,59 +119,151 @@
 </div>
 
 @push('scripts')
-    <script>
-        $(document).ready(function() {
-            const transferForm = $('#transfer-detail-form');
-            const transferAccordionCollapse = new bootstrap.Collapse($('#collapseSeven'), { toggle: false });
-
-            // Show form for adding new transfer
-            $('#add-new-transfer-btn').click(function() {
-                transferForm[0].reset(); // Clear form
-                $('#transfer-detail-id').val(''); // Clear ID for new entry
-                $('#current-document-link').html(''); // Clear document link
-                transferAccordionCollapse.show(); // Show accordion
-            });
-
-            // Cancel button for form
-            $('#cancel-transfer-edit-btn').click(function() {
-                transferAccordionCollapse.hide(); // Hide accordion
-            });
-
-            // Save Transfer Detail (Add/Edit)
-            transferForm.submit(function(e) {
-                e.preventDefault();
-                const formData = new FormData(this);
-                const transferDetailId = $('#transfer-detail-id').val();
-                const url = transferDetailId ? `/transferDetails/${transferDetailId}` : '/transferDetails';
-                const method = transferDetailId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
-
-                if (transferDetailId) {
-                    formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
+<script>
+    $(document).ready(function() {
+        const userId = "{{ $users->id }}"; // Laravel Blade user id
+        const transferForm = $('#transfer-detail-form');
+        const transferAccordionCollapse = new bootstrap.Collapse($('#collapseSeven'), { toggle: false });
+        function loadTransferDetails() {
+            $.ajax({
+                url: `/transferDetails/list/${userId}`, // Laravel route
+                type: 'GET',
+                dataType: 'json',
+                success: function(res) {
+                    // return false;
+                    console.log(res);
+                    let tableData = '';
+                    if (res.transferDetails.length > 0) {
+                        res.transferDetails.forEach(tr => {
+                            tableData += `
+                                <tr data-id="${tr.id}">
+                                    <td>${ new Date(tr.transfer_date).toISOString().split('T')[0] }</td>
+                                    <td>${ tr.old_branch }</td>
+                                    <td>${ tr.new_branch }</td>
+                                    <td>${ tr.reason }</td>
+                                    <td>${ tr.status }</td>
+                                    <td>
+                                        @if($transferDetail->document)
+                                            <a href="{{ asset($transferDetail->document) }}" target="_blank">View</a>
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary edit-transfer-btn" data-id="{{ $transferDetail->id }}">Edit</button>
+                                        <button class="btn btn-sm btn-danger delete-transfer-btn" data-id="{{ $transferDetail->id }}">Delete</button>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                    } else {
+                        tableData = `<tr><td colspan="7" class="text-center">No transfer details found.</td></tr>`;
+                    }
+                    $('#transfer-details-table-body').html(tableData);
+                },
+                error: function(xhr) {
+                    alert('Error loading transfer details: ' + xhr.responseText);
                 }
+            });
+        }
 
-                console.log('Form Data:', formData); // Debugging statement
-                console.log('Transfer Date from FormData:', formData.get('transfer_date')); // Debugging transfer_date
+        // Load transfers on page load
+        loadTransferDetails();
 
+        // Show form for adding new transfer
+        $('#add-new-transfer-btn').click(function() {
+            transferForm[0].reset();
+            $('#transfer-detail-id').val('');
+            $('#current-document-link').html('');
+            transferAccordionCollapse.show();
+        });
+
+        // Cancel button
+        $('#cancel-transfer-edit-btn').click(function() {
+            transferAccordionCollapse.hide();
+        });
+
+        // Save Transfer Detail (Add/Edit)
+        transferForm.submit(function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const transferDetailId = $('#transfer-detail-id').val();
+            const url = transferDetailId ? `/transferDetails/${transferDetailId}` : '/transferDetails';
+            const method = 'POST';
+
+            if (transferDetailId) {
+                formData.append('_method', 'PATCH'); // Spoof PATCH for Laravel
+            }
+
+            $.ajax({
+                url: url,
+                type: method,
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    alert(response.message);
+                    transferAccordionCollapse.hide();
+                    loadTransferDetails(); 
+                },
+                error: function(xhr) {
+                    alert('Error saving transfer detail: ' + xhr.responseText);
+                }
+            });
+        });
+
+        // Edit Transfer Detail
+        $(document).on('click', '.edit-transfer-btn', function() {
+            const transferDetailId = $(this).data('id');
+            $.ajax({
+                url: `/transferDetails/${transferDetailId}/edit`,
+                type: 'GET',
+                success: function(response) {
+                    // console.log(response.transferDetails.oldBranchName);
+                     loadTransferDetails();
+                    $('#transfer-detail-id').val(response.transferDetails.id);
+                    $('#transfer_datee').val(new Date(response.transferDetails.transfer_date).toISOString().split('T')[0]);
+                    $('#old_branch_display').val(response.transferDetails.old_branch);
+                    $('#new_branch').val(response.transferDetails.new_branch).change();
+                    $('#status').val(response.transferDetails.status);
+                    $('#reason').val(response.transferDetails.reason);
+
+                    if (response.transferDetails.document) {
+                        $('#current-document-link').html(`<a href="${response.transferDetails.document}" target="_blank">View Current Document</a>`);
+                    } else {
+                        $('#current-document-link').html('');
+                    }
+
+                    transferAccordionCollapse.show();
+                },
+                error: function(xhr) {
+                    alert('Error fetching transfer detail: ' + xhr.responseText);
+                }
+            });
+        });
+
+        // Delete Transfer Detail
+        $(document).on('click', '.delete-transfer-btn', function() {
+            if (confirm('Are you sure you want to delete this transfer detail?')) {
+                const transferDetailId = $(this).data('id');
                 $.ajax({
-                    url: url,
-                    type: method,
-                    data: formData,
-                    processData: false,
-                    contentType: false,
+                    url: `/transferDetails/${transferDetailId}`,
+                    type: 'POST',
+                    data: {
+                        _method: 'DELETE',
+                        _token: '{{ csrf_token() }}'
+                    },
                     success: function(response) {
-                        console.log('Success Response:', response); // Debugging statement
                         alert(response.message);
-                        transferAccordionCollapse.hide();
-                        location.reload(); // For simplicity, reload page. In production, update table dynamically.
+                        loadTransferDetails();
                     },
                     error: function(xhr) {
-                        console.error('Error XHR:', xhr); // Debugging statement
-                        alert('Error saving transfer detail: ' + xhr.responseText);
+                        alert('Error deleting transfer detail: ' + xhr.responseText);
                     }
                 });
-            });
-
-            
+            }
         });
-    </script>
+    });
+</script>
+
 @endpush

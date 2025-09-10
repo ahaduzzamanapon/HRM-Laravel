@@ -58,7 +58,7 @@ class EducationalQualificationController extends Controller
         return response()->json(['error' => false, 'message' => 'Failed to save Educational Qualification.'], 500);
        }
 
- 
+
     }
 
     /**
@@ -127,8 +127,7 @@ class EducationalQualificationController extends Controller
 
         $educationalQualification->update($input);
 
-        Flash::success('Educational Qualification updated successfully.');
-        return redirect(route('educationalQualifications.index'));
+        return response()->json(['success' => true, 'message' => 'Educational Qualification updated successfully.'], 200);
     }
 
     /**
@@ -142,8 +141,7 @@ class EducationalQualificationController extends Controller
         $educationalQualification = EducationalQualification::find($id);
 
         if (empty($educationalQualification)) {
-            Flash::error('Educational Qualification not found');
-            return redirect(route('educationalQualifications.index'));
+            return response()->json(['error' => true, 'message' => 'Educational Qualification not found'], 404);
         }
 
         // Delete associated document if exists
@@ -153,7 +151,13 @@ class EducationalQualificationController extends Controller
 
         $educationalQualification->delete();
 
-        Flash::success('Educational Qualification deleted successfully.');
-        return redirect(route('educationalQualifications.index'));
+        return response()->json(['success' => true, 'message' => 'Job Experience deleted successfully.'], 200);
+    }
+
+    public function list($user_id)
+    {
+        $users = EducationalQualification::where('user_id', $user_id)->get();
+
+        return response()->json(['success' => true,'educationalQualification' => $users]);
     }
 }

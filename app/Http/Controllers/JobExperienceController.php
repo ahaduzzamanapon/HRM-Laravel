@@ -98,7 +98,7 @@ class JobExperienceController extends Controller
             return response()->json(['error' => true, 'message' => 'Job Experience not found.'], 404);
         }
 
-        dd($request->all());
+        // dd($request->all());
 
         $job =  $jobExperience->update($request->all());
 
@@ -123,10 +123,14 @@ class JobExperienceController extends Controller
             Flash::error('Job Experience not found');
             return redirect(route('jobExperiences.index'));
         }
-
         $jobExperience->delete();
+        return response()->json(['success' => true, 'message' => 'Job Experience deleted successfully.'], 200);
+    }
 
-        Flash::success('Job Experience deleted successfully.');
-        return redirect(route('jobExperiences.index'));
+    public function list($user_id)
+    {
+        $users = JobExperience::where('user_id', $user_id)->get();
+
+        return response()->json(['sucess' => true,'jobExperience' => $users]);
     }
 }
