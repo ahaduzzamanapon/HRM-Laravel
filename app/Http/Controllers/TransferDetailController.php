@@ -112,13 +112,10 @@ class TransferDetailController extends Controller
     public function update(Request $request, $id)
     {
         $transferDetail = TransferDetail::find($id);
-
         if (empty($transferDetail)) {
             return response()->json(['error' => true, 'message' => 'Transfer Detail not found'], 404);
         }
-
         $input = $request->except(['_token']); // Exclude _token
-
         if ($request->hasFile('document')) {
             $file = $request->file('document');
             $folder = 'documents/transfer';
@@ -127,10 +124,8 @@ class TransferDetailController extends Controller
         } else {
             unset($input['document']); // Don't update document if not provided
         }
-
         // Update transfer details
         $transferDetail->update($input);
-
         // Update user's branch only if status is Approved and new_branch is provided and different
         if (isset($input['status']) && $input['status'] === 'Approved') {
             $user = User::find($input['user_id']);

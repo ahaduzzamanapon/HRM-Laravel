@@ -51,8 +51,7 @@ class PersonalDocumentController extends Controller
 
         PersonalDocument::create($input);
 
-        Flash::success('Personal Document saved successfully.');
-        return redirect(route('personalDocuments.index'));
+        return response()->json(['success' => true,'message' => 'Personal Document saved successfully.'], 202);
     }
 
     /**
@@ -89,7 +88,7 @@ class PersonalDocumentController extends Controller
             return redirect(route('personalDocuments.index'));
         }
 
-        return view('personal_documents.edit')->with(['personalDocument' => $personalDocument, 'users' => $users]);
+        return response()->json(['personalDocument' => $personalDocument, 'users' => $users], 200);
     }
 
     /**
@@ -102,27 +101,20 @@ class PersonalDocumentController extends Controller
     public function update(Request $request, $id)
     {
         $personalDocument = PersonalDocument::find($id);
-
         if (empty($personalDocument)) {
-            Flash::error('Personal Document not found');
-            return redirect(route('personalDocuments.index'));
+            return response()->json(['success' => false, 'message' => 'Personal Document not found'], 404);
         }
-
         $input = $request->all();
-
         if ($request->hasFile('document_file')) {
             $file = $request->file('document_file');
             $folder = 'documents/personal';
             $customName = 'personal-document-'.time();
             $input['document_file'] = uploadFile($file, $folder, $customName);
         } else {
-            unset($input['document_file']); // Don't update document if not provided
+            unset($input['document_file']);
         }
-
         $personalDocument->update($input);
-
-        Flash::success('Personal Document updated successfully.');
-        return redirect(route('personalDocuments.index'));
+        return response()->json(['success' => true, 'message' => 'Personal Document updated successfully.'], 202);
     }
 
     /**
@@ -136,8 +128,7 @@ class PersonalDocumentController extends Controller
         $personalDocument = PersonalDocument::find($id);
 
         if (empty($personalDocument)) {
-            Flash::error('Personal Document not found');
-            return redirect(route('personalDocuments.index'));
+            return response()->json(['success' => false, 'message' => 'Personal Document not found'], 404);
         }
 
         // Delete associated document if exists
@@ -147,7 +138,11 @@ class PersonalDocumentController extends Controller
 
         $personalDocument->delete();
 
-        Flash::success('Personal Document deleted successfully.');
-        return redirect(route('personalDocuments.index'));
+        return response()->json(['success' => true, 'message' => 'Personal Document deleted successfully.'], 202);
+    }
+    public function list($user_id)
+    {
+        $personalDocuments = PersonalDocument::where('user_id', $user_id)->get();
+        return response()->json(['personalDocuments' => $personalDocuments], 200);
     }
 }
