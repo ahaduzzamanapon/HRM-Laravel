@@ -111,9 +111,6 @@ textarea::placeholder {
   background: none;
 }
 
-#sign-up {
-  overflow-y: scroll !important;
-}
 
 .register3 {
   overflow-y: scroll !important;

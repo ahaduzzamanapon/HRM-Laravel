@@ -5,6 +5,9 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\AllowanceSetting;
 
+use App\Models\ProvidentFundSetting;
+use App\Models\ProvidentFundContribution;
+
 class SalaryCalculator
 {
     public function calculateGrossSalary(User $user, $city = null)
@@ -64,6 +67,29 @@ class SalaryCalculator
         $netSalary = $grossSalary;
         // Apply deductions (tax, provident fund, loans, etc.)
         $netSalary -= $user->welfare_fund_deduction;
+
+        if ($user->is_pf_member) {
+            $pfSetting = ProvidentFundSetting::first();
+            if ($pfSetting) {
+                $employeeContribution = ($user->basic_salary * $pfSetting->employee_contribution) / 100;
+                $employerContribution = ($user->basic_salary * $pfSetting->employer_contribution) / 100;
+
+                $netSalary -= $employeeContribution;
+
+                // Create a contribution record
+                ProvidentFundContribution::create([
+                    'employee_id' => $user->id,
+                    'contribution_date' => now(),
+                    'employee_contribution' => $employeeContribution,
+                    'employer_contribution' => $employerContribution,
+                ]);
+
+                // Update user's PF balance
+                $user->provident_fund_balance += $employeeContribution + $employerContribution;
+                $user->save();
+            }
+        }
+
         return $netSalary;
     }
 }

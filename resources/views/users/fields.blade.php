@@ -167,6 +167,14 @@
     </div>
 </div>
 
+<!-- Is PF Member Field -->
+<div class="col-md-3">
+    <div class="form-group">
+        {!! Form::label('is_pf_member', 'Is PF Member:',['class'=>'control-label']) !!}
+        {!! Form::checkbox('is_pf_member', 1, null) !!}
+    </div>
+</div>
+
 
 <!-- Password Field -->
 <div class="col-md-3">

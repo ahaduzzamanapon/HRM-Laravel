@@ -2,6 +2,7 @@
     <table class="table" id="medical-supports-table">
         <thead>
             <tr>
+                <th>SL</th>
                 <th>Employee</th>
                 <th>Amount</th>
                 <th>Support Date</th>
@@ -10,8 +11,9 @@
             </tr>
         </thead>
         <tbody>
-        @foreach($medicalSupports as $medicalSupport)
+        @foreach($medicalSupports as $key => $medicalSupport)
             <tr>
+                <td>{{ $key + 1 }}</td>
                 <td>{{ $medicalSupport->employee->name }}</td>
                 <td>{{ $medicalSupport->amount }}</td>
                 <td>{{ $medicalSupport->support_date }}</td>

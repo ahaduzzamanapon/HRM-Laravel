@@ -45,3 +45,6 @@ Route::resource('departmentalCases', 'DepartmentalCaseController');
 Route::resource('loanTypes', 'LoanTypeController');
 Route::resource('loans', 'LoanController');
 Route::resource('loanRepayments', 'LoanRepaymentController');
+
+Route::resource('providentFundSettings', 'ProvidentFundSettingController');
+Route::resource('providentFunds', 'ProvidentFundController');
