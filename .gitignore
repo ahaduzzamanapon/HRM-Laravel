@@ -18,3 +18,9 @@ slope.zip
 *.zip
 .env
 *.env
+.env copy
+.env copy
+composer.lock
+*.json
+yarn.lock
+yarn.lock

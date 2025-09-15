@@ -41,14 +41,10 @@ class JobExperienceController extends Controller
     public function store(Request $request)
     {
         $input = $request->except('_token');
-
         $jobExperience = JobExperience::create($input);
         if($jobExperience){
-            return response()->json(['succes' => false, 'message' => ''], 200);
+            return response()->json(['success' => true, 'message' => 'Job Experience saved successfully.'], 200);
         }
-
-        Flash::success('Job Experience saved successfully.');
-        return redirect(route('jobExperiences.index'));
     }
 
     /**
@@ -81,11 +77,10 @@ class JobExperienceController extends Controller
         $users = User::pluck('name', 'id'); // Get users for dropdown
 
         if (empty($jobExperience)) {
-            Flash::error('Job Experience not found');
-            return redirect(route('jobExperiences.index'));
+            return response()->json(['error' => false, 'message' => 'Job Experience not found.'], 404);
         }
 
-        return view('job_experiences.edit')->with(['jobExperience' => $jobExperience, 'users' => $users]);
+        return response()->json(['jobExperience' => $jobExperience], 200);
     }
 
     /**
@@ -100,14 +95,18 @@ class JobExperienceController extends Controller
         $jobExperience = JobExperience::find($id);
 
         if (empty($jobExperience)) {
-            Flash::error('Job Experience not found');
-            return redirect(route('jobExperiences.index'));
+            return response()->json(['error' => true, 'message' => 'Job Experience not found.'], 404);
         }
 
-        $jobExperience->update($request->all());
+        // dd($request->all());
 
-        Flash::success('Job Experience updated successfully.');
-        return redirect(route('jobExperiences.index'));
+        $job =  $jobExperience->update($request->all());
+
+        if($job){
+            return response()->json(['success' => true, 'message' => 'Job Experience successfully update.'], 200);
+        }else{
+            return response()->json(['error' => false, 'message' => 'Failed to update Job Experience.'], 500);
+        }
     }
 
     /**
@@ -124,10 +123,14 @@ class JobExperienceController extends Controller
             Flash::error('Job Experience not found');
             return redirect(route('jobExperiences.index'));
         }
-
         $jobExperience->delete();
+        return response()->json(['success' => true, 'message' => 'Job Experience deleted successfully.'], 200);
+    }
 
-        Flash::success('Job Experience deleted successfully.');
-        return redirect(route('jobExperiences.index'));
+    public function list($user_id)
+    {
+        $users = JobExperience::where('user_id', $user_id)->get();
+
+        return response()->json(['sucess' => true,'jobExperience' => $users]);
     }
 }

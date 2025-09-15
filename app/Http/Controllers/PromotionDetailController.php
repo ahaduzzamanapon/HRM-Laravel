@@ -40,7 +40,7 @@ class PromotionDetailController extends Controller
      */
     public function store(Request $request)
     {
-        $input = $request->all();
+        $input = $request->except('_token');
 
         if ($request->hasFile('document')) {
             $file = $request->file('document');
@@ -51,8 +51,7 @@ class PromotionDetailController extends Controller
 
         PromotionDetail::create($input);
 
-        Flash::success('Promotion Detail saved successfully.');
-        return redirect(route('promotionDetails.index'));
+        return response()->json(['success' => true, 'message' => 'Promotion Detail saved successfully.']);
     }
 
     /**
@@ -66,8 +65,7 @@ class PromotionDetailController extends Controller
         $promotionDetail = PromotionDetail::find($id);
 
         if (empty($promotionDetail)) {
-            Flash::error('Promotion Detail not found');
-            return redirect(route('promotionDetails.index'));
+            return response()->json(['success' => false, 'message' => 'Promotion Detail not found']);
         }
 
         return view('promotion_details.show')->with('promotionDetail', $promotionDetail);
@@ -89,7 +87,7 @@ class PromotionDetailController extends Controller
             return redirect(route('promotionDetails.index'));
         }
 
-        return view('promotion_details.edit')->with(['promotionDetail' => $promotionDetail, 'users' => $users]);
+        return response()->json(['promotionDetail' => $promotionDetail, 'users' => $users]);
     }
 
     /**
@@ -121,8 +119,7 @@ class PromotionDetailController extends Controller
 
         $promotionDetail->update($input);
 
-        Flash::success('Promotion Detail updated successfully.');
-        return redirect(route('promotionDetails.index'));
+        return response()->json(['success' => true, 'message' => 'Promotion Detail updated successfully.']);
     }
 
     /**
@@ -147,7 +144,11 @@ class PromotionDetailController extends Controller
 
         $promotionDetail->delete();
 
-        Flash::success('Promotion Detail deleted successfully.');
-        return redirect(route('promotionDetails.index'));
+        return response()->json(['success' => true, 'message' => 'Promotion Detail deleted successfully.']);
+    }
+    public function list($user_id)
+    {
+        $users = PromotionDetail::where('user_id', $user_id)->get();
+        return response()->json(['success' => true, 'promotionDetail' => $users]);
     }
 }

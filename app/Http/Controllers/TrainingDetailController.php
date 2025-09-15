@@ -148,7 +148,14 @@ class TrainingDetailController extends Controller
 
         $trainingDetail->delete();
 
-        Flash::success('Training Detail deleted successfully.');
-        return redirect(route('trainingDetails.index'));
+        return response()->json(['success' => true, 'message' => 'Training Detail deleted successfully.'], 200);
+    }
+
+
+    public function list($user_id)
+    {
+        $users = TrainingDetail::where('user_id', $user_id)->get();
+
+        return response()->json(['sucess' => true,'trainingDetail' => $users]);
     }
 }

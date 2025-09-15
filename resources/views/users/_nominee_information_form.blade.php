@@ -3,17 +3,12 @@
 
         <div class="d-flex justify-content-between align-items-center">
             <h4>Nominee Information</h4>
-            <button type="button" class="btn btn-primary btn-sm" id="add-new-nominee-information-btn" data-toggle="collapse" data-target="#collapseFour">Add New Nominee</button>
+            <button class="btn btn-primary btn-sm  col-md-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour"><i class="im im-icon-Add"></i> Add New</button>
         </div>
 
         <!-- Accordion Form for Add/Edit (moved to top) -->
         <div class="accordion mb-4" id="nomineeInformationAccordion">
             <div class="accordion-item">
-                <h2 class="accordion-header" id="headingFour">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                        Nominee Information Form
-                    </button>
-                </h2>
                 <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#nomineeInformationAccordion">
                     <div class="accordion-body">
                         <form id="nominee-information-form" enctype="multipart/form-data">
@@ -109,102 +104,176 @@
 </div>
 
 @push('scripts')
-    <script>
-        $(document).ready(function() {
-            const nomineeInformationForm = $('#nominee-information-form');
-            const nomineeInformationAccordionCollapse = new bootstrap.Collapse($('#collapseFour'), { toggle: false });
+<script>
+    $(document).ready(function() {
+        const userId = "{{ $users->id }}";
+        const nomineeInformationForm = $('#nominee-information-form');
+        const nomineeInformationAccordionCollapse = new bootstrap.Collapse($('#collapseFour'), { toggle: false });
 
-            // Show form for adding new nominee information
-            $('#add-new-nominee-information-btn').click(function() {
-                nomineeInformationForm[0].reset(); // Clear form
-                $('#nominee-information-id').val(''); // Clear ID for new entry
-                $('#current-photo-link').html(''); // Clear photo link
-                nomineeInformationAccordionCollapse.show(); // Show accordion
-            });
+        // -------------------------
+        // Load nominee information
+        // -------------------------
+        function loadNomineeInformation() {
+            $.ajax({
+                url: `/nomineeInformation/list/${userId}`,
+                type: 'GET',
+                dataType: 'json',
+                success: function(res) {
+                    let tableData = '';
 
-            // Cancel button for form
-            $('#cancel-nominee-information-edit-btn').click(function() {
-                nomineeInformationAccordionCollapse.hide(); // Hide accordion
-            });
+                    if (res.nomineeInformation.length > 0) {
+                        res.nomineeInformation.forEach(nominee => {
+                            tableData += `<tr data-id="${nominee.id}">
+                                <td>${nominee.nominee_name}</td>
+                                <td>${nominee.relation}</td>
+                                <td>${nominee.voter_id}</td>
+                                <td>${nominee.photo ? `<a href="{{asset('/')}}${nominee.photo}" target="_blank">View</a>` : 'N/A'}</td>
+                                <td>${nominee.percentage}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-info edit-nominee-information" data-id="${nominee.id}">Edit</button>
+                                    <button type="button" class="btn btn-sm btn-danger delete-nominee-information" data-id="${nominee.id}">Delete</button>
+                                </td>
+                            </tr>`;
+                        });
+                    } else {
+                        tableData = '<tr><td colspan="6" class="text-center">No nominee information found.</td></tr>';
+                    }
 
-            // Save Nominee Information (Add/Edit)
-            nomineeInformationForm.submit(function(e) {
-                e.preventDefault();
-                const formData = new FormData(this);
-                const nomineeInformationId = $('#nominee-information-id').val();
-                const url = nomineeInformationId ? `/nomineeInformation/${nomineeInformationId}` : '/nomineeInformation';
-                const method = nomineeInformationId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
-
-                if (nomineeInformationId) {
-                    formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
+                    $('#nominee-information-table-body').html(tableData);
+                },
+                error: function(xhr) {
+                    console.error('Error loading nominee information:', xhr.responseText);
                 }
-
-                $.ajax({
-                    url: url,
-                    type: method,
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        alert(response.message);
-                        nomineeInformationAccordionCollapse.hide();
-                        location.reload(); // For simplicity, reload page. In production, update table dynamically.
-                    },
-                    error: function(xhr) {
-                        alert('Error saving nominee information: ' + xhr.responseText);
-                    }
-                });
             });
+        }
 
-            // Edit Nominee Information
-            $(document).on('click', '.edit-nominee-information', function() {
-                const nomineeInformationId = $(this).data('id');
-                $.ajax({
-                    url: `/nomineeInformation/${nomineeInformationId}/edit`, // Laravel's edit route returns data for form
-                    type: 'GET',
-                    success: function(response) {
-                        $('#nominee-information-id').val(response.id);
-                        $('#nominee_name').val(response.nominee_name);
-                        $('#relation').val(response.relation);
-                        $('#voter_id').val(response.voter_id);
-                        $('#percentage').val(response.percentage);
-                        if (response.photo) {
-                            $('#current-photo-link').html(`<a href="${response.photo}" target="_blank">View Current Photo</a>`);
-                        } else {
-                            $('#current-photo-link').html('');
-                        }
-                        nomineeInformationAccordionCollapse.show(); // Show accordion
-                    },
-                    error: function(xhr) {
-                        alert('Error fetching nominee information: ' + xhr.responseText);
-                    }
-                });
-            });
+        // Initial load
+        loadNomineeInformation();
 
-            // Delete Nominee Information
-            $(document).on('click', '.delete-nominee-information', function() {
-                if (confirm('Are you sure you want to delete this nominee information?')) {
-                    const nomineeInformationId = $(this).data('id');
-                    $.ajax({
-                        url: `/nomineeInformation/${nomineeInformationId}`,
-                        type: 'POST', // Laravel uses POST for DELETE with _method field
-                        data: {
-                            _method: 'DELETE',
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function(response) {
-                            alert(response.message);
-                            $(`tr[data-id="${nomineeInformationId}"]`).remove();
-                            if ($('#nominee-information-table-body tr').length === 0) {
-                                $('#nominee-information-table-body').html('<tr><td colspan="6" class="text-center">No nominee information found.</td></tr>');
-                            }
-                        },
-                        error: function(xhr) {
-                            alert('Error deleting nominee information: ' + xhr.responseText);
-                        }
-                    });
+        $('button[data-bs-toggle="collapse"]').on('click', function() {
+            const targetSelector = $(this).data('bs-target');
+            const $collapseElement = $(targetSelector);
+            const $form = $collapseElement.find('form');
+
+            if ($form.length) {
+                $form[0].reset();
+                $('#educational-qualification-id').val('');
+                $('#current-document-link').html('');
+            }
+        });
+
+        // -------------------------
+        // Show form for adding new nominee information
+        // -------------------------
+        $('#add-new-nominee-information-btn').click(function() {
+            nomineeInformationForm[0].reset();
+            $('#nominee-information-id').val('');
+            $('#current-photo-link').html('');
+            nomineeInformationAccordionCollapse.show();
+        });
+
+        // -------------------------
+        // Cancel button
+        // -------------------------
+        $('#cancel-nominee-information-edit-btn').click(function() {
+            nomineeInformationForm[0].reset();
+            $('#nominee-information-id').val('');
+            $('#current-photo-link').html('');
+            nomineeInformationAccordionCollapse.hide();
+        });
+
+        // -------------------------
+        // Save Nominee Information (Add/Edit)
+        // -------------------------
+        nomineeInformationForm.submit(function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const nomineeId = $('#nominee-information-id').val();
+            const url = nomineeId ? `/nomineeInformation/${nomineeId}` : '/nomineeInformation';
+            const method = 'POST';
+
+            if (nomineeId) formData.append('_method', 'PATCH');
+
+            $.ajax({
+                url: url,
+                type: method,
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    loadNomineeInformation();
+                    alert(response.message);
+                    nomineeInformationForm[0].reset();
+                    $('#nominee-information-id').val('');
+                    $('#current-photo-link').html('');
+                    nomineeInformationAccordionCollapse.hide();
+                     // Reload table dynamically
+                },
+                error: function(xhr) {
+                    alert('Error saving nominee information: ' + xhr.responseText);
                 }
             });
         });
-    </script>
+
+        // -------------------------
+        // Edit Nominee Information
+        // -------------------------
+        $(document).on('click', '.edit-nominee-information', function() {
+            const nomineeId = $(this).data('id');
+
+            $.ajax({
+                url: `/nomineeInformation/${nomineeId}/edit`,
+                type: 'GET',
+                success: function(response) {
+                    loadNomineeInformation();
+                    const nominee = response.nomineeInformation;
+                    $('#nominee-information-id').val(nominee.id);
+                    $('#nominee_name').val(nominee.nominee_name);
+                    $('#relation').val(nominee.relation);
+                    $('#voter_id').val(nominee.voter_id);
+                    $('#percentage').val(nominee.percentage);
+
+                    if (nominee.photo) {
+                        $('#current-photo-link').html(`<a href="${nominee.photo}" target="_blank">View Current Photo</a>`);
+                    } else {
+                        $('#current-photo-link').html('');
+                    }
+
+                    nomineeInformationAccordionCollapse.show();
+                },
+                error: function(xhr) {
+                    alert('Error fetching nominee information: ' + xhr.responseText);
+                }
+            });
+        });
+
+        // -------------------------
+        // Delete Nominee Information
+        // -------------------------
+        $(document).on('click', '.delete-nominee-information', function() {
+            const nomineeId = $(this).data('id');
+
+            if (!confirm('Are you sure you want to delete this nominee information?')) return;
+
+            $.ajax({
+                url: `/nomineeInformation/${nomineeId}`,
+                type: 'POST',
+                data: {
+                    _method: 'DELETE',
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    loadNomineeInformation();
+                    alert(response.message);
+                    loadNomineeInformation(); // Reload table dynamically
+                },
+                error: function(xhr) {
+                    alert('Error deleting nominee information: ' + xhr.responseText);
+                }
+            });
+        });
+
+    });
+</script>
+
 @endpush

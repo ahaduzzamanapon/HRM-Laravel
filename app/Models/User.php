@@ -100,6 +100,7 @@ class User extends Authenticatable
         return in_array($key, $dateColumns);
     }
 
+
     public function trainingDetails()
     {
         return $this->hasMany(TrainingDetail::class);
