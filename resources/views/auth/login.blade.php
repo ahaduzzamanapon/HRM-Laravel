@@ -22,6 +22,7 @@
             margin: 0;
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 
 <body id="sign-up" style="background-image: url('{{ asset('images/login-bg.jpg') }}'); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh;">
@@ -48,6 +49,11 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-12">
+                                        @if (session('status'))
+                                            <div class="alert alert-success" role="alert">
+                                                {{ session('status') }}
+                                            </div>
+                                        @endif
                                         <form action="{{ route('login') }}" id="authentication" method="post"
                                             class="sign_validator">
                                             @csrf
@@ -94,12 +100,9 @@
                                             </div>
 
                                         </form>
-                                        <div class="d-none">New Member?
-                                            <a href="{{ route('register')}}">
-                                                <strong>Sign Up</strong>
-                                            </a>
-                                            | <small><a href="{{ route('password.request') }}"
-                                                    class="text-decoration-none text-muted">Forgot your
+                                        <div class="text-center">
+                                            <small><a href="{{ route('password.request') }}"
+                                                    class="text-decoration-none">Forgot your
                                                     password?</a></small>
                                         </div>
                                     </div>
@@ -115,6 +118,18 @@
 
 
     </div>
+    <script>
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#password');
+
+        togglePassword.addEventListener('click', function (e) {
+            // toggle the type attribute
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            // toggle the eye slash icon
+            this.classList.toggle('fa-eye-slash');
+        });
+    </script>
     </body>
 
 </html>

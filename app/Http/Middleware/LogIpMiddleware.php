@@ -19,10 +19,10 @@ class LogIpMiddleware
     {
         $ipAddress = request()->getClientIp();
 
-        DB::table('ips')->updateOrInsert(
-            ['ip_address' => $ipAddress],
-            ['created_at' => now()]
-        );
+        // DB::table('ips')->updateOrInsert(
+        //     ['ip_address' => $ipAddress],
+        //     ['created_at' => now()]
+        // );
 
         return $next($request);
     }
