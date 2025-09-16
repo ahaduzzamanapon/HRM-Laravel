@@ -75,7 +75,7 @@
 @endforeach
 
 @push('scripts')
-    <script>
+    {{-- <script>
         $(document).ready(function() {
             $('.weekend-checkbox').change(function() {
                 const day = $(this).data('day');
@@ -88,5 +88,5 @@
                 $(`input[name="${day}_lunch_end_time"]`).prop('disabled', isChecked).val('');
             }).trigger('change'); // Trigger on load to set initial state
         });
-    </script>
+    </script> --}}
 @endpush

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class ResetPasswordController extends Controller
 {
@@ -54,16 +55,20 @@ class ResetPasswordController extends Controller
 
         $passwordReset = DB::table('password_resets')
             ->where('email', $request->email)
-            ->where('token', $request->otp)
             ->first();
 
-        if (!$passwordReset || Carbon::parse($passwordReset->created_at)->addMinutes(60)->isPast()) {
+        if (!$passwordReset || !Hash::check($request->otp, $passwordReset->token) || Carbon::parse($passwordReset->created_at)->addMinutes(60)->isPast()) {
             return back()->withErrors(['otp' => 'Invalid or expired OTP.']);
         }
 
-        // The OTP is correct. Now we can show the reset password form.
-        // We will pass the token to the reset password form.
-        return redirect()->route('password.reset', ['token' => $request->otp])->with('email', $request->email);
+        // The OTP is correct. Generate a new secure token.
+        $token = Str::random(60);
+
+        DB::table('password_resets')->where('email', $request->email)->update([
+            'token' => $token,
+        ]);
+
+        return redirect()->route('password.reset', ['token' => $token])->with('email', $request->email);
     }
 
     /**
@@ -85,8 +90,8 @@ class ResetPasswordController extends Controller
             ->where('token', $request->token)
             ->first();
 
-        if (!$passwordReset || Carbon::parse($passwordReset->created_at)->addMinutes(60)->isPast()) {
-            return back()->withErrors(['token' => 'Invalid or expired OTP.']);
+        if (!$passwordReset) {
+            return back()->withErrors(['email' => 'Invalid token or email.']);
         }
 
         DB::table('users')
