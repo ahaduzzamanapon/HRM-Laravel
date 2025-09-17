@@ -10,6 +10,7 @@ class AttendanceTime extends Model
     use HasFactory;
 
     protected $table = 'attendance_time';
+    protected $primaryKey = 'time_attendance_id';
 
     protected $fillable = [
         'employee_id',

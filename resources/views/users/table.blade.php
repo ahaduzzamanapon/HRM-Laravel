@@ -7,6 +7,7 @@
                 <th>Name</th>
                 <th>Group</th>
                 <th>Designation</th>
+                <th>Shift</th>
                 <th>Email</th>
                 <th>Action</th>
             </tr>
@@ -19,6 +20,7 @@
             <td>{{ $users->name }} {{ $users->last_name }}</td>
             <td>{{ $users->role }}</td>
             <td>{{ $users->designation }}</td>
+            <td>{{ $users->shift }}</td>
             <td>{{ $users->email }}</td>
                 <td>
                     <div class='btn-group'>

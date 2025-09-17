@@ -41,6 +41,7 @@ Route::get('attendance/process', [App\Http\Controllers\AttendanceProcessControll
 Route::post('attendance/process', [App\Http\Controllers\AttendanceProcessController::class, 'process'])->name('attendance.process.store');
 Route::get('attendance/filter', [App\Http\Controllers\AttendanceProcessController::class, 'filterUsers'])->name('attendance.filter');
 
+
 Route::get('/', function () {
     return view('index');
 })->middleware('auth');

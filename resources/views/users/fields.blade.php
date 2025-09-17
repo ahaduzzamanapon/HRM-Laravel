@@ -94,6 +94,17 @@
 </div>
 
 @php
+    $shifts = \App\Models\Shift::all()->pluck('shift_name','id')->prepend('Select Shift', '')->toArray();
+@endphp
+<!-- Shift Id Field -->
+<div class="col-md-3">
+    <div class="form-group">
+        {!! Form::label('shift_id', 'Shift:',['class'=>'control-label']) !!}
+        {!! Form::select('shift_id',$shifts, null, ['class' => 'form-control','required']) !!}
+    </div>
+</div>
+
+@php
     $roles = \App\Models\RoleAndPermission::all()->pluck('name','id')->toArray();
 @endphp
 <!-- Group Id Field -->

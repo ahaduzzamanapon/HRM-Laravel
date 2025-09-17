@@ -5,6 +5,35 @@ Attendance Process @parent
 @stop
 
 @section('content')
+    <style>
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite;
+            animation: spin 2s linear infinite;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            margin-top: -60px;
+            margin-left: -60px;
+            z-index: 9999;
+            display: none;
+        }
+
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    <div class="loader"></div>
     <section class="content-header">
         <h1>Attendance Process</h1>
     </section>
@@ -19,7 +48,7 @@ Attendance Process @parent
                             <div class="form-group col-sm-6">
                                 {!! Form::label('from_date', 'From Date:') !!}
                                 <input type="text" name="from_date" class="form-control" id="from_date"
-                                    value="{{ request('from_date') }}" autocomplete="off">
+                                    value="{{ request('from_date', date('Y-m-d')) }}" autocomplete="off">
                             </div>
                             <div class="form-group col-sm-6">
                                 {!! Form::label('to_date', 'To Date:') !!}
@@ -28,15 +57,18 @@ Attendance Process @parent
                             </div>
                             <div class="form-group col-sm-4">
                                 {!! Form::label('branch_id', 'Branch:') !!}
-                                {!! Form::select('branch_id', ['' => 'All'] + $branches->toArray(), request('branch_id'), ['class' => 'form-control', 'id' => 'branch_id']) !!}
+                                {!! Form::select('branch_id', ['' => 'All'] + $branches->toArray(), request('branch_id'), ['class' => 'form-control', 'id' => 'branch_id'])
+                                !!}
                             </div>
                             <div class="form-group col-sm-4">
                                 {!! Form::label('department_id', 'Department:') !!}
-                                {!! Form::select('department_id', ['' => 'All'] + $departments->toArray(), request('department_id'), ['class' => 'form-control', 'id' => 'department_id']) !!}
+                                {!! Form::select('department_id', ['' => 'All'] + $departments->toArray(), request('department_id'), ['class' => 'form-control', 'id' => 'department_id'])
+                                !!}
                             </div>
                             <div class="form-group col-sm-4">
                                 {!! Form::label('designation_id', 'Designation:') !!}
-                                {!! Form::select('designation_id', ['' => 'All'] + $designations->toArray(), request('designation_id'), ['class' => 'form-control', 'id' => 'designation_id']) !!}
+                                {!! Form::select('designation_id', ['' => 'All'] + $designations->toArray(), request('designation_id'), ['class' => 'form-control', 'id' => 'designation_id'])
+                                !!}
                             </div>
                         </div>
                         <div class="form-group col-sm-12">
@@ -74,20 +106,8 @@ Attendance Process @parent
     @push('scripts')
         <script>
             $(function () {
-                console.log("Attendance process script loaded.");
-
-                $('#from_date').datepicker({
+                $('#from_date, #to_date').datepicker({
                     dateFormat: 'yy-mm-dd',
-                    onSelect: function (dateText) {
-                        filterAttendance();
-                    }
-                });
-
-                $('#to_date').datepicker({
-                    dateFormat: 'yy-mm-dd',
-                    onSelect: function (dateText) {
-                        filterAttendance();
-                    }
                 });
 
                 $('#select-all').on('click', function () {
@@ -95,16 +115,14 @@ Attendance Process @parent
                 });
 
                 $('#branch_id, #department_id, #designation_id').on('change', function () {
-                    filterAttendance();
+                    filterUsers();
                 });
 
-                function filterAttendance() {
+                function filterUsers() {
                     var data = {
                         branch_id: $('#branch_id').val(),
                         department_id: $('#department_id').val(),
                         designation_id: $('#designation_id').val(),
-                        from_date: $('#from_date').val(),
-                        to_date: $('#to_date').val()
                     };
 
                     $.ajax({
@@ -121,17 +139,45 @@ Attendance Process @parent
                                     '</tr>';
                                 tbody.append(row);
                             });
-                        },
-                        error: function (xhr, status, error) {
-                            console.error("AJAX Error: " + status + " - " + error);
-                            console.error(xhr.responseText);
-                            alert("An error occurred while filtering users. Please check the console for details.");
-                        },
-                        complete: function () {
-                            console.log("AJAX request completed.");
                         }
                     });
                 }
+
+                $('#attendance-form').on('submit', function (e) {
+                    e.preventDefault();
+                    $('.loader').show();
+                    var formData = $(this).serialize();
+
+                    $.ajax({
+                        type: 'POST',
+                        url: $(this).attr('action'),
+                        data: formData,
+                        success: function (response) {
+                            $('.loader').hide();
+                            if(response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success',
+                                    text: response.message,
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: response.message,
+                                });
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            $('.loader').hide();
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred: ' + error,
+                            });
+                        }
+                    });
+                });
             });
         </script>
     @endpush

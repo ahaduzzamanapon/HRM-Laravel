@@ -43,17 +43,19 @@ class AttendanceProcessController extends Controller
     public function process(Request $request)
     {
         $fromDate = $request->input('from_date');
-        //$toDate = $request->input('to_date');
         $userIds = $request->input('users');
+
+        if (empty($userIds)) {
+            return response()->json(['success' => false, 'message' => 'Please select at least one user.']);
+        }
 
         $result = $this->attendanceService->attn_process($fromDate,  $userIds);
 
         if (empty($result['errors'])) {
-            Flash::success($result['message']);
+            return response()->json(['success' => true, 'message' => $result['message']]);
         } else {
-            Flash::error($result['message'] . ": " . implode("; ", $result['errors']));
+            return response()->json(['success' => false, 'message' => $result['message'] . ": " . implode("; ", $result['errors'])]);
         }
-        return redirect()->back();
     }
 
     public function filterUsers(Request $request)
