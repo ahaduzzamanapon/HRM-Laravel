@@ -43,10 +43,10 @@ class AttendanceProcessController extends Controller
     public function process(Request $request)
     {
         $fromDate = $request->input('from_date');
-        $toDate = $request->input('to_date');
+        //$toDate = $request->input('to_date');
         $userIds = $request->input('users');
 
-        $result = $this->attendanceService->attn_process($fromDate, $toDate, $userIds);
+        $result = $this->attendanceService->attn_process($fromDate,  $userIds);
 
         if (empty($result['errors'])) {
             Flash::success($result['message']);

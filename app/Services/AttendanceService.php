@@ -12,33 +12,18 @@ class AttendanceService
 
     public function __construct()
     {
-        // You might need to inject the DB instance here if not using Laravel's default DB facade
-        // For CodeIgniter-like $this->db, it's often globally available or injected differently.
-        // For Laravel, you'd typically use Eloquent or DB facade directly.
+     
     }
 
     public function attn_process($process_date, $emp_ids, $status = null)
     {
-        $processed_employees = 0;
-        $successful_updates = 0;
-        $failed_updates = 0;
-        $successful_inserts = 0;
-        $failed_inserts = 0;
-        $errors = [];
-
-        $process_date_carbon = Carbon::parse($process_date);
-        $check_day = $process_date_carbon->copy()->subDay()->format('Y-m-d');
-
-        // Assuming AttendanceTime is a Laravel Eloquent model
-        $att_check = AttendanceTime::where('attendance_date', $check_day)->get();
-
-        // Assuming get_employees is a method within this service or a helper
+        //dd($emp_ids);
         $employees = $this->get_employees($emp_ids, $status = null);
 
+        //dd($employees);
         foreach ($employees as $row) {
-            $processed_employees++;
+           
             try {
-                // Original logic from user's provided function
                 $joining_date = $row->date_of_joining;
                 $emp_id      = $row->user_id;
                 $shift_id = $row->shift_id;
@@ -54,6 +39,7 @@ class AttendanceService
 
                 // Assuming these are methods or properties available
                 $shift_schedule  = $this->get_shift_schedule($emp_id, $process_date, $shift_id);
+                dd($shift_schedule);
                 $proxi_id   = $this->get_proxi($emp_id);
 
                 // Ensure shift_schedule is not null before accessing properties
@@ -259,44 +245,15 @@ class AttendanceService
 
                 if($attendanceRecord) {
                     $attendanceRecord->update($data);
-                    $successful_updates++;
                 } else {
                     AttendanceTime::create($data);
-                    $successful_inserts++;
                 }
-
-                if ($status == 'Absent') {
-                    $this->checking_absent_after_offday_holiday($emp_id, $check_day);
-                } elseif ($status == 'Leave') {
-                    $this->checking_absent_after_offday_holiday($emp_id, $check_day);
-                } elseif ($astatus == 'Holiday') {
-                    $this->checking_absent_after_offday_holiday($emp_id, $check_day);
-                    $this->checking_absent_after_before_holiday($emp_id, $check_day);
-                }
-                if ($status == 'Off Day') {
-                    $this->checking_absent_after_before_offday_holiday($emp_id, $check_day);
-                }
-                $this->leave_cal_all($emp_id,$process_date);
-
             } catch (\Exception $e) {
                 $errors[] = "Error processing employee {$emp_id} for date {$process_date}: " . $e->getMessage();
-                // Log the error (conceptual)
-                // Log::error("Attendance Process Error: " . $e->getMessage() . " for employee " . $emp_id);
-                if (isset($attendanceRecord) && $attendanceRecord) {
-                    $failed_updates++;
-                } else {
-                    $failed_inserts++;
-                }
             }
         }
 
         return [
-            'processed_employees' => $processed_employees,
-            'successful_updates' => $successful_updates,
-            'failed_updates' => $failed_updates,
-            'successful_inserts' => $successful_inserts,
-            'failed_inserts' => $failed_inserts,
-            'errors' => $errors,
             'message' => empty($errors) ? 'Successfully Process Done' : 'Process completed with errors',
         ];
     }
@@ -304,8 +261,8 @@ class AttendanceService
     // Placeholder for helper functions - you need to implement these based on your application's logic
     protected function get_employees($emp_ids, $status = null)
     {
-        // Example: return User::whereIn('id', $emp_ids)->get();
-        return collect(); // Return an empty collection for now
+        return User::whereIn('id', $emp_ids)->get();
+      
     }
 
     protected function get_shift_schedule($emp_id, $process_date, $shift_id)

@@ -77,6 +77,7 @@
 @push('scripts')
     {{-- <script>
         $(document).ready(function() {
+        
             $('.weekend-checkbox').change(function() {
                 const day = $(this).data('day');
                 const isChecked = $(this).is(':checked');
