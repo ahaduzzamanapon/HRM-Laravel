@@ -15,9 +15,10 @@ class UserController extends Controller
     public function index(Request $request)
     {
         /** @var User $users */
-        $users = User::select('users.*', 'roles.name as role', 'designations.desi_name as designation')
+                $users = User::select('users.*', 'roles.name as role', 'designations.desi_name as designation', 'shifts.shift_name as shift')
             ->leftjoin('roles', 'users.group_id', '=', 'roles.id')
             ->leftjoin('designations', 'users.designation_id', '=', 'designations.id')
+            ->leftjoin('shifts', 'users.shift_id', '=', 'shifts.id')
             ->paginate(10);
 
         $branches = \App\Models\Branch::pluck('branch_name', 'id'); // Get branches for dropdown

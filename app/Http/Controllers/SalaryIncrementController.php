@@ -40,7 +40,8 @@ class SalaryIncrementController extends Controller
      */
     public function store(Request $request)
     {
-        $input = $request->all();
+        // dd($request->all());
+        $input = $request->except('_token');
 
         if ($request->hasFile('document')) {
             $file = $request->file('document');
@@ -51,8 +52,7 @@ class SalaryIncrementController extends Controller
 
         SalaryIncrement::create($input);
 
-        Flash::success('Salary Increment saved successfully.');
-        return redirect(route('salaryIncrements.index'));
+        return response()->json(['message' => 'Salary Increment saved successfully.'], 201);
     }
 
     /**
@@ -66,8 +66,7 @@ class SalaryIncrementController extends Controller
         $salaryIncrement = SalaryIncrement::find($id);
 
         if (empty($salaryIncrement)) {
-            Flash::error('Salary Increment not found');
-            return redirect(route('salaryIncrements.index'));
+            return response()->json(['error' => 'Salary Increment not found'], 404);
         }
 
         return view('salary_increments.show')->with('salaryIncrement', $salaryIncrement);
@@ -85,11 +84,10 @@ class SalaryIncrementController extends Controller
         $users = User::pluck('name', 'id'); // Get users for dropdown
 
         if (empty($salaryIncrement)) {
-            Flash::error('Salary Increment not found');
-            return redirect(route('salaryIncrements.index'));
+            return response()->json(['error' => 'Salary Increment not found'], 404);
         }
 
-        return view('salary_increments.edit')->with(['salaryIncrement' => $salaryIncrement, 'users' => $users]);
+        return response()->json(['salaryIncrements' => $salaryIncrement, 'users' => $users]);
     }
 
     /**
@@ -104,8 +102,7 @@ class SalaryIncrementController extends Controller
         $salaryIncrement = SalaryIncrement::find($id);
 
         if (empty($salaryIncrement)) {
-            Flash::error('Salary Increment not found');
-            return redirect(route('salaryIncrements.index'));
+            return response()->json(['error' => 'Salary Increment not found'], 404);
         }
 
         $input = $request->all();
@@ -121,8 +118,7 @@ class SalaryIncrementController extends Controller
 
         $salaryIncrement->update($input);
 
-        Flash::success('Salary Increment updated successfully.');
-        return redirect(route('salaryIncrements.index'));
+        return response()->json(['success' => true, 'message' => 'Salary Increment updated successfully.'], 200);
     }
 
     /**
@@ -136,8 +132,7 @@ class SalaryIncrementController extends Controller
         $salaryIncrement = SalaryIncrement::find($id);
 
         if (empty($salaryIncrement)) {
-            Flash::error('Salary Increment not found');
-            return redirect(route('salaryIncrements.index'));
+            return response()->json(['error' => 'Salary Increment not found'], 404);
         }
 
         // Delete associated document if exists
@@ -147,7 +142,12 @@ class SalaryIncrementController extends Controller
 
         $salaryIncrement->delete();
 
-        Flash::success('Salary Increment deleted successfully.');
-        return redirect(route('salaryIncrements.index'));
+        return response()->json(['success' => true, 'message' => 'Salary Increment deleted successfully.'], 200);
+    }
+
+    public function list($user_id)
+    {
+        $users = SalaryIncrement::where('user_id', $user_id)->get();
+        return response()->json(['salaryIncrements' => $users], 200);
     }
 }

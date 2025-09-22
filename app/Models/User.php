@@ -37,6 +37,7 @@ class User extends Authenticatable
         'designation_id',
         'branch_id',
         'department_id', // Added
+        'shift_id',
         'date_of_birth',
         'date_of_join',
         'gender',
@@ -99,6 +100,7 @@ class User extends Authenticatable
 
         return in_array($key, $dateColumns);
     }
+
 
     public function trainingDetails()
     {
@@ -163,5 +165,10 @@ class User extends Authenticatable
     public function designation()
     {
         return $this->belongsTo(Designation::class);
+    }
+
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class);
     }
 }

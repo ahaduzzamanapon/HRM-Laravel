@@ -2,6 +2,7 @@
     <table class="table" id="employee-children-education-supports-table">
         <thead>
             <tr>
+                <th>SL</th>
                 <th>Employee</th>
                 <th>Child Name</th>
                 <th>Exam Name</th>
@@ -13,8 +14,9 @@
             </tr>
         </thead>
         <tbody>
-        @foreach($employeeChildrenEducationSupports as $employeeChildrenEducationSupport)
+        @foreach($employeeChildrenEducationSupports as $key => $employeeChildrenEducationSupport)
             <tr>
+                <td>{{ $key + 1 }}</td>
                 <td>{{ $employeeChildrenEducationSupport->employee->name }}</td>
                 <td>{{ $employeeChildrenEducationSupport->child_name }}</td>
                 <td>{{ $employeeChildrenEducationSupport->exam_name }}</td>

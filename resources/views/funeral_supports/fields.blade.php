@@ -20,22 +20,14 @@
 <div class="col-md-3">
     <div class="form-group">
         {!! Form::label('support_date', 'Support Date:') !!}
-        {!! Form::text('support_date', null, ['class' => 'form-control','id'=>'support_date'])
+        {!! Form::date('support_date', null, ['class' => 'form-control','id'=>'support_date'])
         !!}
     </div>
 </div>
 
-@push('scripts')
-    <script type="text/javascript">
-        $('#support_date').datetimepicker({
-            format: 'YYYY-MM-DD HH:mm:ss',
-            useCurrent: false
-        })
-    </script>
-@endpush
 
 <!-- Remarks Field -->
-<div class="col-md-6">
+<div class="col-md-12">
     <div class="form-group">
         {!! Form::label('remarks', 'Remarks:') !!}
         {!! Form::textarea('remarks', null, ['class' => 'form-control'])

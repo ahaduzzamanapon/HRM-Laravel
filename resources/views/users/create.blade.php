@@ -22,6 +22,9 @@ User @parent
                         @include('users.fields')
                     </div>
 
+
+                    <button type="submit" class="btn btn-primary">Create User</button>
+
                     {!! Form::close() !!}
                 </div>
             </div>

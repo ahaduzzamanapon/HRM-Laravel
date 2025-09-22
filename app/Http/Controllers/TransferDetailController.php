@@ -64,8 +64,7 @@ class TransferDetailController extends Controller
             }
         }
 
-        Flash::success('Transfer Detail saved successfully.');
-        return redirect()->back();
+        return response()->json(['success' => true, 'message' => 'Transfer Detail saved successfully.']);
     }
 
     /**
@@ -96,13 +95,11 @@ class TransferDetailController extends Controller
     {
         $transferDetail = TransferDetail::find($id);
         $users = User::pluck('name', 'id'); // Get users for dropdown
-
         if (empty($transferDetail)) {
-            Flash::error('Transfer Detail not found');
-            return redirect(route('transferDetails.index'));
+            return response()->json(['error' => true, 'message' => 'Transfer Detail not found'], 404);
         }
 
-        return view('transfer_details.edit')->with(['transferDetail' => $transferDetail, 'users' => $users]);
+        return response()->json(['transferDetails' => $transferDetail, 'users' => $users], 200);
     }
 
     /**
@@ -115,14 +112,10 @@ class TransferDetailController extends Controller
     public function update(Request $request, $id)
     {
         $transferDetail = TransferDetail::find($id);
-
         if (empty($transferDetail)) {
-            Flash::error('Transfer Detail not found');
-            return redirect(route('transferDetails.index'));
+            return response()->json(['error' => true, 'message' => 'Transfer Detail not found'], 404);
         }
-
         $input = $request->except(['_token']); // Exclude _token
-
         if ($request->hasFile('document')) {
             $file = $request->file('document');
             $folder = 'documents/transfer';
@@ -131,10 +124,8 @@ class TransferDetailController extends Controller
         } else {
             unset($input['document']); // Don't update document if not provided
         }
-
         // Update transfer details
         $transferDetail->update($input);
-
         // Update user's branch only if status is Approved and new_branch is provided and different
         if (isset($input['status']) && $input['status'] === 'Approved') {
             $user = User::find($input['user_id']);
@@ -143,9 +134,7 @@ class TransferDetailController extends Controller
                 $user->save();
             }
         }
-
-        Flash::success('Transfer Detail updated successfully.');
-        return redirect()->back();
+        return response()->json(['success' => true, 'message' => 'Transfer Detail updated successfully.']);
     }
 
     /**
@@ -159,18 +148,20 @@ class TransferDetailController extends Controller
         $transferDetail = TransferDetail::find($id);
 
         if (empty($transferDetail)) {
-            Flash::error('Transfer Detail not found');
-            return redirect(route('transferDetails.index'));
+            return response()->json(['success' => false, 'message' => 'Transfer Detail not found'], 404);
         }
 
         // Delete associated document if exists
         if ($transferDetail->document && file_exists(public_path($transferDetail->document))) {
             unlink(public_path($transferDetail->document));
         }
-
         $transferDetail->delete();
-
-        Flash::success('Transfer Detail deleted successfully.');
-        return redirect()->back();
+        return response()->json(['success' => true, 'message' => 'Transfer Detail deleted successfully.']);
+    }
+    public function list($user_id)
+    {
+        $transferDetails = TransferDetail::where('user_id', $user_id)->get();
+        $users = User::pluck('name', 'id'); // Get users for dropdown
+        return response()->json(['transferDetails' => $transferDetails, 'users' => $users], 200);
     }
 }

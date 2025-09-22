@@ -299,6 +299,36 @@
 </li>
 @endif
 
+@if(can('provident_fund'))
+<li class="nav-item">
+    <a class="nav-link {!! (Request::is('providentFundSettings*') || Request::is('providentFunds*') ? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#provident_fund_menu" role="button" aria-expanded="false" aria-controls="provident_fund_menu">
+        <i class="icon im im-icon-Safe-Box"></i>
+        <span class="item-name">Provident Fund</span>
+        <i class="right-icon im im-icon-Arrow-Right"></i>
+    </a>
+    <ul class="sub-nav collapse  {!!  Request::is('providentFundSettings*') || Request::is('providentFunds*') ? 'show' : ''  !!}" id="provident_fund_menu" data-bs-parent="#sidebar-menu">
+        @if(can('manage_provident_fund_settings'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('providentFundSettings*') ? 'active' : '' !!}" href="{{ route('providentFundSettings.index') }}">
+                <i class="icon im im-icon-Gear"></i>
+                <i class="sidenav-mini-icon"> S </i>
+                <span class="item-name">Settings</span>
+            </a>
+        </li>
+        @endif
+        @if(can('view_provident_fund_statements'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('providentFunds*') ? 'active' : '' !!}" href="{{ route('providentFunds.index') }}">
+                <i class="icon im im-icon-File-Chart"></i>
+                <i class="sidenav-mini-icon"> S </i>
+                <span class="item-name">Statements</span>
+            </a>
+        </li>
+        @endif
+    </ul>
+</li>
+@endif
+
 {{-- Settings --}}
 @if(can('settings'))
 <li class="nav-item">

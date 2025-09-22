@@ -2,6 +2,7 @@
     <table class="table" id="funeral-supports-table">
         <thead>
             <tr>
+                <th>SL</th>
                 <th>Employee</th>
                 <th>Amount</th>
                 <th>Support Date</th>
@@ -10,8 +11,9 @@
             </tr>
         </thead>
         <tbody>
-        @foreach($funeralSupports as $funeralSupport)
+        @foreach($funeralSupports as $key => $funeralSupport)
             <tr>
+                <td>{{ $key + 1 }}</td>
                 <td>{{ $funeralSupport->employee->name }}</td>
                 <td>{{ $funeralSupport->amount }}</td>
                 <td>{{ $funeralSupport->support_date }}</td>
