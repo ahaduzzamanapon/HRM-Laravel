@@ -187,9 +187,10 @@
             </a>
         </li>
         @endif
-        </ul>
+    </ul>
 </li>
 
+{{-- Payroll --}}
 @if(can('payroll'))
     <li class="nav-item">
         <a class="nav-link {!! (Request::is('payroll*')? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#payroll_menu" role="button" aria-expanded="false" aria-controls="payroll_menu">
@@ -201,7 +202,7 @@
             @if(can('view_employees'))
             <li class="nav-item">
                 <a class="nav-link {!! Request::is('payroll*') ? 'active' : '' !!}" href="{{ route('payroll.index') }}">
-                    <i class="icon im im-icon-User"></i>
+                    <i class="icon im im-icon-Clock-Forward"></i>
                     <i class="sidenav-mini-icon"> P </i>
                     <span class="item-name">Payroll Process</span>
                 </a>

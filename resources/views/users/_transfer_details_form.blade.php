@@ -85,7 +85,6 @@
                     </tr>
                 </thead>
                 <tbody id="transfer-details-table-body">
-                    {{-- @dd($users->transferDetails) --}}
                     @if(isset($users) && $users->transferDetails->count() > 0)
                     @foreach($users->transferDetails as $transferDetail)
                             <tr data-id="{{ $transferDetail->id }}">
@@ -95,7 +94,7 @@
                                 <td>{{ $transferDetail->reason }}</td>
                                 <td>{{ $transferDetail->status }}</td>
                                 <td>
-                                    @if($transferDetail->document)
+                                    @if(isset($transferDetail) && !is_null($transferDetail->document))
                                         <a href="{{ asset($transferDetail->document) }}" target="_blank">View</a>
                                     @else
                                         N/A
@@ -143,15 +142,15 @@
                                     <td>${ tr.reason }</td>
                                     <td>${ tr.status }</td>
                                     <td>
-                                        @if($transferDetail->document)
+                                        @if(isset($transferDetail) && $transferDetail->document)
                                             <a href="{{ asset($transferDetail->document) }}" target="_blank">View</a>
                                         @else
                                             N/A
                                         @endif
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-primary edit-transfer-btn" data-id="{{ $transferDetail->id }}">Edit</button>
-                                        <button class="btn btn-sm btn-danger delete-transfer-btn" data-id="{{ $transferDetail->id }}">Delete</button>
+                                        <button class="btn btn-sm btn-primary edit-transfer-btn" data-id="{{ isset($transferDetail) ? $transferDetail->id : '' }}">Edit</button>
+                                        <button class="btn btn-sm btn-danger delete-transfer-btn" data-id="{{ isset($transferDetail) ? $transferDetail->id : '' }}">Delete</button>
                                     </td>
                                 </tr>
                             `;
@@ -204,7 +203,7 @@
                 success: function(response) {
                     alert(response.message);
                     transferAccordionCollapse.hide();
-                    loadTransferDetails(); 
+                    loadTransferDetails();
                 },
                 error: function(xhr) {
                     alert('Error saving transfer detail: ' + xhr.responseText);
