@@ -58,6 +58,19 @@ class AttendanceProcessController extends Controller
         }
     }
 
+    public function getReportData(Request $request)
+    {
+        $reportType = $request->input('report_type');
+        $filterType = $request->input('filter_type');
+        $fromDate = $request->input('from_date');
+        $toDate = $request->input('to_date');
+        $userIds = $request->input('user_ids');
+
+        $data = $this->attendanceService->getReportData($reportType, $filterType, $fromDate, $toDate, $userIds);
+
+        return \DataTables::of($data)->make(true);
+    }
+
     public function filterUsers(Request $request)
     {
         $users = User::with(['branch', 'department', 'designation'])

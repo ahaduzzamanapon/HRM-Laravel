@@ -4,6 +4,11 @@
 Attendance Process @parent
 @stop
 
+@push('css')
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css">
+@endpush
+
 @section('content')
     <style>
         .loader {
@@ -24,26 +29,43 @@ Attendance Process @parent
         }
 
         @-webkit-keyframes spin {
-            0% { -webkit-transform: rotate(0deg); }
-            100% { -webkit-transform: rotate(360deg); }
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .nav_t {
+            background: #cdcece;
+            padding: 11px;
+        }
+
+        .nav-tabs .nav-link {
+
+            font-weight: 700;
         }
     </style>
     <div class="loader"></div>
-    <section class="content-header">
-        <h1>Attendance Process</h1>
-    </section>
     <div class="content">
         @include('adminlte-templates::common.errors')
-        {!! Form::open(['route' => 'attendance.process.store', 'id' => 'attendance-form']) !!}
         <div class="row">
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-body">
+                        <h1>Attendance Process</h1>
                         <div class="row">
                             <div class="form-group col-sm-6">
                                 {!! Form::label('from_date', 'From Date:') !!}
@@ -58,21 +80,78 @@ Attendance Process @parent
                             <div class="form-group col-sm-4">
                                 {!! Form::label('branch_id', 'Branch:') !!}
                                 {!! Form::select('branch_id', ['' => 'All'] + $branches->toArray(), request('branch_id'), ['class' => 'form-control', 'id' => 'branch_id'])
-                                !!}
+                                    !!}
                             </div>
                             <div class="form-group col-sm-4">
                                 {!! Form::label('department_id', 'Department:') !!}
                                 {!! Form::select('department_id', ['' => 'All'] + $departments->toArray(), request('department_id'), ['class' => 'form-control', 'id' => 'department_id'])
-                                !!}
+                                    !!}
                             </div>
                             <div class="form-group col-sm-4">
                                 {!! Form::label('designation_id', 'Designation:') !!}
                                 {!! Form::select('designation_id', ['' => 'All'] + $designations->toArray(), request('designation_id'), ['class' => 'form-control', 'id' => 'designation_id'])
-                                !!}
+                                    !!}
                             </div>
                         </div>
                         <div class="form-group col-sm-12">
-                            {!! Form::submit('Process', ['class' => 'btn btn-primary']) !!}
+                            <button class="btn btn-primary" id="process-attendance-btn">Process</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <ul class="nav nav-tabs nav_t" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="daily-tab" data-bs-toggle="tab" data-bs-target="#daily"
+                                    type="button" role="tab" aria-controls="daily" aria-selected="true">Daily</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="monthly-tab" data-bs-toggle="tab" data-bs-target="#monthly"
+                                    type="button" role="tab" aria-controls="monthly" aria-selected="false">Monthly</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="continue-tab" data-bs-toggle="tab" data-bs-target="#continue"
+                                    type="button" role="tab" aria-controls="continue"
+                                    aria-selected="false">Continue</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade show active" id="daily" role="tabpanel" aria-labelledby="daily-tab">
+                                <div class="my-3">
+                                    <button class="btn btn-sm btn-primary filter-btn" data-filter="all">All
+                                        Attendance</button>
+                                    <button class="btn btn-sm btn-success filter-btn" data-filter="present">All
+                                        Present</button>
+                                    <button class="btn btn-sm btn-danger filter-btn" data-filter="absent">All
+                                        Absent</button>
+                                    <button class="btn btn-sm btn-warning filter-btn" data-filter="leave">All Leave</button>
+                                </div>
+                                <table class="table table-bordered" id="daily-report-table"></table>
+                            </div>
+                            <div class="tab-pane fade" id="monthly" role="tabpanel" aria-labelledby="monthly-tab">
+                                <div class="my-3">
+                                    <button class="btn btn-sm btn-primary filter-btn" data-filter="all">All
+                                        Attendance</button>
+                                    <button class="btn btn-sm btn-success filter-btn" data-filter="present">All
+                                        Present</button>
+                                    <button class="btn btn-sm btn-danger filter-btn" data-filter="absent">All
+                                        Absent</button>
+                                    <button class="btn btn-sm btn-warning filter-btn" data-filter="leave">All Leave</button>
+                                </div>
+                                <table class="table table-bordered" id="monthly-report-table"></table>
+                            </div>
+                            <div class="tab-pane fade" id="continue" role="tabpanel" aria-labelledby="continue-tab">
+                                <div class="my-3">
+                                    <button class="btn btn-sm btn-primary filter-btn" data-filter="all">All
+                                        Attendance</button>
+                                    <button class="btn btn-sm btn-success filter-btn" data-filter="present">All
+                                        Present</button>
+                                    <button class="btn btn-sm btn-danger filter-btn" data-filter="absent">All
+                                        Absent</button>
+                                    <button class="btn btn-sm btn-warning filter-btn" data-filter="leave">All Leave</button>
+                                </div>
+                                <table class="table table-bordered" id="continue-report-table"></table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -101,9 +180,15 @@ Attendance Process @parent
                 </div>
             </div>
         </div>
-        {!! Form::close() !!}
     </div>
     @push('scripts')
+        <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
         <script>
             $(function () {
                 $('#from_date, #to_date').datepicker({
@@ -143,18 +228,28 @@ Attendance Process @parent
                     });
                 }
 
-                $('#attendance-form').on('submit', function (e) {
+                $('#process-attendance-btn').on('click', function (e) {
                     e.preventDefault();
                     $('.loader').show();
-                    var formData = $(this).serialize();
+
+                    var userIds = [];
+                    $('.user-checkbox:checked').each(function () {
+                        userIds.push($(this).val());
+                    });
+
+                    var data = {
+                        from_date: $('#from_date').val(),
+                        users: userIds,
+                        _token: '{{ csrf_token() }}'
+                    };
 
                     $.ajax({
                         type: 'POST',
-                        url: $(this).attr('action'),
-                        data: formData,
+                        url: '{{ route("attendance.process.store") }}',
+                        data: data,
                         success: function (response) {
                             $('.loader').hide();
-                            if(response.success) {
+                            if (response.success) {
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Success',
@@ -176,6 +271,42 @@ Attendance Process @parent
                                 text: 'An error occurred: ' + error,
                             });
                         }
+                    });
+                });
+
+                // Report filtering
+                $('.filter-btn').on('click', function () {
+                    var reportType = $(this).closest('.tab-pane').attr('id');
+                    var tableId = '#' + reportType + '-report-table';
+                    if ($.fn.DataTable.isDataTable(tableId)) {
+                        $(tableId).DataTable().destroy();
+                    }
+                    var table = $(tableId).DataTable({
+                        processing: true,
+                        serverSide: true,
+                        ajax: {
+                            url: '{{ route("attendance.report") }}',
+                            data: function (d) {
+                                d.report_type = reportType;
+                                d.filter_type = $(this).data('filter');
+                                d.from_date = $('#from_date').val();
+                                d.to_date = $('#to_date').val();
+                                d.user_ids = $('.user-checkbox:checked').map(function () {
+                                    return $(this).val();
+                                }).get();
+                            }.bind(this)
+                        },
+                        columns: [
+                            { data: 'user.name', name: 'user.name' },
+                            { data: 'attendance_date', name: 'attendance_date' },
+                            { data: 'status', name: 'status' },
+                            { data: 'clock_in', name: 'clock_in' },
+                            { data: 'clock_out', name: 'clock_out' },
+                        ],
+                        dom: 'Bfrtip',
+                        buttons: [
+                            'copy', 'csv', 'excel', 'pdf', 'print'
+                        ]
                     });
                 });
             });

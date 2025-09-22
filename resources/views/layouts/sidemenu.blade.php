@@ -164,7 +164,7 @@
         @if(can('leave_applications'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('leaveApplications*') ? 'active' : '' !!}" href="{{ route('leaveApplications.index') }}">
-                <i class="icon im im-icon-File-Edit"></i>
+                <i class="icon im im-icon-Calendar-4"></i>
                 <i class="sidenav-mini-icon"> LA </i>
                 <span class="item-name">Leave Applications</span>
             </a>

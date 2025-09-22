@@ -34,7 +34,6 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     $(document).ready(function () {
-        console.log('Layout scripts loaded');
 
         $('.table-responsive').on('show.bs.dropdown', function () {
             $('.btn-group').css('position', 'static');
@@ -68,3 +67,24 @@
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
     integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+
+    <script>
+
+$(document).ready(function() {
+            $('#loader_div').hide();
+        });
+        $(document).on('ajaxStart', function() {
+            $('#loader_div').show();
+        }).on('ajaxStop', function() {
+            $('#loader_div').hide();
+        });
+        $(window).on('beforeunload', function() {
+            $('#loader_div').show();
+        });
+        $(window).on('pageshow', function(event) {
+            if (event.originalEvent.persisted) {
+                $('#loader_div').hide();
+            }
+        });
+
+</script>
