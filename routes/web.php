@@ -22,6 +22,7 @@ include 'web_builder.php';
 */
 include 'bulder_route.php';
 
+Route::get('/payroll', [App\Http\Controllers\PayrollController::class, 'index'])->name('payroll.index');
 Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
 Auth::routes();

@@ -1,28 +1,28 @@
 {{-- User Info Section --}}
 @auth
-<style>
-.user-panel {
-    background-image: url("{{ asset('assets/images/user-panel-img.jpg') }}");
-    background-size: cover;
-    background-position: center;
-    position: relative;
-}
+    <style>
+        .user-panel {
+            background-image: url("{{ asset('assets/images/user-panel-img.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
 
-.user-panel::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-</style>
-<div class="user-info text-center py-3 user-panel">
-    <img src="{{ asset(Auth::user()->image ?? 'assets/images/avatars/01.png') }}" alt="User Image" class="img-fluid rounded-circle mb-2" style="width: 60px;height: 60px;bject-fit: cover;">
-    <h5 style="color: white;" class="mb-0">{{ Auth::user()->name }} {{ Auth::user()->last_name }}</h5>
-    <p  style="color: white;"class="mb-0">{{ Auth::user()->email }}</p>
-    <p style="color: white;" class="mb-0"><small>{{ Auth::user()->role->name ?? 'N/A' }}</small></p>
-</div>
+        .user-panel::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <div class="user-info text-center py-3 user-panel">
+        <img src="{{ asset(Auth::user()->image ?? 'assets/images/avatars/01.png') }}" alt="User Image" class="img-fluid rounded-circle mb-2" style="width: 60px;height: 60px;bject-fit: cover;">
+        <h5 style="color: white;" class="mb-0">{{ Auth::user()->name }} {{ Auth::user()->last_name }}</h5>
+        <p  style="color: white;"class="mb-0">{{ Auth::user()->email }}</p>
+        <p style="color: white;" class="mb-0"><small>{{ Auth::user()->role->name ?? 'N/A' }}</small></p>
+    </div>
 @endauth
 
 {{-- Dashboard --}}
@@ -116,8 +116,7 @@
 </li>
 @endif
 
-
-
+{{-- HR --}}
 <li class="nav-item">
     <a class="nav-link {!! (Request::is('holydays*') || Request::is('shifts*') || Request::is('attendanceFileUploads*') || Request::is('leaveTypes*') || Request::is('leaveApplications*') ? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#hr_menu" role="button" aria-expanded="false" aria-controls="settings_menu">
         <i class="icon im im-icon-Gear"></i>
@@ -190,6 +189,27 @@
         @endif
         </ul>
 </li>
+
+@if(can('payroll'))
+    <li class="nav-item">
+        <a class="nav-link {!! (Request::is('payroll*')? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#payroll_menu" role="button" aria-expanded="false" aria-controls="payroll_menu">
+            <i class="icon im im-icon-User"></i>
+            <span class="item-name">Payroll</span>
+            <i class="right-icon im im-icon-Arrow-Right"></i>
+        </a>
+        <ul class="sub-nav collapse {!! (Request::is('payroll*') ? 'show' : '') !!}" id="payroll_menu" data-bs-parent="#sidebar-menu">
+            @if(can('view_employees'))
+            <li class="nav-item">
+                <a class="nav-link {!! Request::is('payroll*') ? 'active' : '' !!}" href="{{ route('payroll.index') }}">
+                    <i class="icon im im-icon-User"></i>
+                    <i class="sidenav-mini-icon"> P </i>
+                    <span class="item-name">Payroll Process</span>
+                </a>
+            </li>
+            @endif
+        </ul>
+    </li>
+@endif
 
 @if(can('welfare_fund'))
 <li class="nav-item">
@@ -347,7 +367,7 @@
             </a>
         </li>
         @endif
-     
+
         @if(can('manage_roles_and_permissions'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('roleAndPermissions*') ? 'active' : '' !!}" href="{{ route('roleAndPermissions.index') }}">
