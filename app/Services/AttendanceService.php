@@ -27,15 +27,18 @@ class AttendanceService
 
                 $shift_schedule  = $this->get_shift_schedule($emp_id, $process_date, $shift_id);
 
-                if (!$shift_schedule) {
-                    $data = array(
-                        'employee_id'       => $emp_id,
-                        'office_shift_id'   => $shift_id,
-                        'attendance_date'   => $process_date,
-                        'attendance_status' => 'Absent',
-                        'status'            => 'Absent',
+                                if (!$shift_schedule) {
+                    AttendanceTime::updateOrCreate(
+                        [
+                            'employee_id' => $emp_id,
+                            'attendance_date' => $process_date
+                        ],
+                        [
+                            'office_shift_id'   => $shift_id,
+                            'attendance_status' => 'Absent',
+                            'status'            => 'Absent',
+                        ]
                     );
-                    AttendanceTime::create($data);
                     $errors[] = "Shift schedule not found for employee {$emp_id} on {$process_date}. Marked as Absent.";
                     continue; // Skip to next employee
                 }
@@ -105,15 +108,13 @@ class AttendanceService
                     'early_out_status'  => 0,
                 );
 
-                $attendanceRecord = AttendanceTime::where('employee_id', $emp_id)
-                                                ->where('attendance_date', $process_date)
-                                                ->first();
-
-                if($attendanceRecord) {
-                    $attendanceRecord->update($data);
-                } else {
-                    AttendanceTime::create($data);
-                }
+                                AttendanceTime::updateOrCreate(
+                    [
+                        'employee_id' => $emp_id,
+                        'attendance_date' => $process_date
+                    ],
+                    $data
+                );
             } catch (\Exception $e) {
                 $errors[] = "Error processing employee {$emp_id} for date {$process_date}: " . $e->getMessage();
             }
@@ -155,5 +156,33 @@ class AttendanceService
             ];
         }
         return null;
+    }
+
+    public function getReportData($reportType, $filterType, $fromDate, $toDate, $userIds)
+    {
+        $query = AttendanceTime::with('user');
+
+        if ($reportType == 'daily') {
+            $query->whereDate('attendance_date', $fromDate);
+        } elseif ($reportType == 'monthly') {
+            $query->whereMonth('attendance_date', Carbon::parse($fromDate)->month);
+            $query->whereYear('attendance_date', Carbon::parse($fromDate)->year);
+        } elseif ($reportType == 'continue') {
+            $query->whereBetween('attendance_date', [$fromDate, $toDate]);
+        }
+
+        if ($filterType != 'all') {
+            if ($filterType == 'leave') {
+                $query->where('status', 'Leave')->orWhere('status', 'HLeave');
+            } else {
+                $query->where('status', $filterType);
+            }
+        }
+
+        if (!empty($userIds)) {
+            $query->whereIn('employee_id', $userIds);
+        }
+
+        return $query->get();
     }
 }

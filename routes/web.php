@@ -41,6 +41,7 @@ Route::patch('users/update-salary/{id}', [App\Http\Controllers\UserController::c
 Route::get('attendance/process', [App\Http\Controllers\AttendanceProcessController::class, 'index'])->name('attendance.process.index');
 Route::post('attendance/process', [App\Http\Controllers\AttendanceProcessController::class, 'process'])->name('attendance.process.store');
 Route::get('attendance/filter', [App\Http\Controllers\AttendanceProcessController::class, 'filterUsers'])->name('attendance.filter');
+Route::get('attendance/report', [App\Http\Controllers\AttendanceProcessController::class, 'getReportData'])->name('attendance.report');
 
 
 Route::get('/', function () {
