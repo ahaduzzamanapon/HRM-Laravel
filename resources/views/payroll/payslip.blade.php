@@ -1,135 +1,168 @@
 <style>
 /* Container */
-.table-responsive {
-    width: 100%;
+.payslip-container {
+    width: 700px;
     margin: 20px auto;
-    padding: 10px;
+    padding: 20px;
     font-family: 'Arial', sans-serif;
     background-color: #fff;
     border: 1px solid #ccc;
-    border-radius: 6px;
+    border-radius: 8px;
 }
 
-/* Table Styling */
-.table {
+/* Header */
+.payslip-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.payslip-header img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+.payslip-header h2 {
+    margin: 5px 0 2px;
+    font-size: 22px;
+}
+.payslip-header p {
+    margin: 2px 0;
+    font-size: 12px;
+}
+
+/* Employee Info */
+.employee-info, .salary-info {
+    width: 100%;
+    margin-bottom: 20px;
+    border-collapse: collapse;
+}
+.employee-info td, .salary-info td {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+}
+.employee-info td:first-child, .salary-info td:first-child {
+    font-weight: bold;
+    width: 30%;
+}
+
+/* Section Titles */
+.section-title {
+    font-weight: bold;
+    margin: 10px 0;
+    font-size: 16px;
+    text-decoration: underline;
+}
+
+/* Salary Table */
+.salary-table {
     width: 100%;
     border-collapse: collapse;
-    border: 1px solid #ccc;
 }
-
-/* Table Header */
-.table thead th {
-    background-color: #2c3e50; /* Dark header */
-    color: #ecf0f1; /* White text */
-    font-weight: bold;
-    text-align: center;
-    padding: 8px;
+.salary-table th, .salary-table td {
+    padding: 8px 10px;
     border: 1px solid #ccc;
+    text-align: right;
 }
-
-/* Table Body */
-.table tbody td {
-    text-align: center;
-    padding: 6px 8px;
-    border: 1px solid #ccc;
+.salary-table th {
+    background-color: #2c3e50;
+    color: #fff;
 }
-
-/* Zebra Striping */
-.table tbody tr:nth-child(even) {
+.salary-table tbody tr:nth-child(even) {
     background-color: #f8f9fa;
 }
-
-/* Hover Effect */
-.table tbody tr:hover {
-    background-color: #dff0d8;
-}
-
-/* Payslip Title */
-.payslip-title {
-    text-align: center;
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 15px;
-}
-
-/* Highlight Totals Row */
-.table tfoot td {
+.salary-table tfoot td {
     font-weight: bold;
     background-color: #f1c40f;
     color: #2c3e50;
 }
 
-/* Responsive for small screens */
-@media (max-width: 768px) {
-    .table thead th, .table tbody td {
-        font-size: 12px;
-        padding: 4px;
-    }
-    .payslip-title {
-        font-size: 18px;
-    }
+/* Footer */
+.payslip-footer {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 12px;
+    color: #777;
 }
 </style>
+{{-- @dd($salary_reports) --}}
+@foreach ($salary_reports as $report)
+<div class="payslip-container">
+    <div class="payslip-header">
+        {{-- <img src="logo.png" alt="Company Logo"> --}}
+        <h2>Company Name</h2>
+        <p>Dhaka-1207</p>
+        <h3>Payslip for the month of {{ \Carbon\Carbon::parse($report->salary_month)->format('F, Y') }}</h3>
+    </div>
 
+    <table class="employee-info">
+        <tr>
+            <td>Name</td>
+            <td>{{ $report->name }}</td>
+            <td>Employee ID</td>
+            <td>{{ $report->emp_status }}</td>
+        </tr>
+        <tr>
+            <td>Designation</td>
+            <td>{{ $report->desig_id }}</td>
+            <td>Department</td>
+            <td>{{ $report->dept_id }}</td>
+        </tr>
+        <tr>
+            <td>Salary Month</td>
+            <td>{{ \Carbon\Carbon::parse($report->salary_month)->format('F, Y') }}</td>
+            <td>Number of Days</td>
+            <td>{{ $report->n_days }}</td>
+        </tr>
+        <tr>
+            <td>Present</td>
+            <td>{{ $report->present }}</td>
+            <td>Absent</td>
+            <td>{{ $report->absent }}</td>
+        </tr>
+        <tr>
+            <td>Leave</td>
+            <td>{{ $report->leave }}</td>
+            <td>LOP</td>
+            <td>{{ $report->absent_deduct }}</td>
+        </tr>
+    </table>
 
-<div class="table-responsive">
-<div class="payslip-title">Salary Payslip</div>
-    <table class="table table-bordered">
+    <div class="section-title">Earnings & Deductions</div>
+    <table class="salary-table">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Department</th>
-                <th>Designation</th>
-                <th>Salary Month</th>
-                <th>Days</th>
-                <th>Present</th>
-                <th>Absent</th>
-                <th>Leave</th>
-                <th>Weekend</th>
-                <th>Holiday</th>
-                <th>Pay Day</th>
-                <th>Basic Salary</th>
-                <th>Gross Salary</th>
-                <th>Pay Salary</th>
-                <th>Total Allow</th>
-                <th>All Allowances</th>
-                <th>Absent Deduct</th>
-                <th>Loan Deduct</th>
-                <th>PF Deduct</th>
-                <th>Others Deduct</th>
-                <th>Total Deduct</th>
-                <th>Net Salary</th>
+                <th>Earnings</th>
+                <th>Amount</th>
+                <th>Deductions</th>
+                <th>Amount</th>
             </tr>
         </thead>
         <tbody>
-        @foreach ($salary_reports as $report)
             <tr>
-                <td>{{ $report->name }}</td>
-                <td>{{ $report->dept_id }}</td>
-                <td>{{ $report->desig_id }}</td>
-                <td>{{ $report->salary_month }}</td>
-                <td>{{ $report->n_days }}</td>
-                <td>{{ $report->present }}</td>
-                <td>{{ $report->absent }}</td>
-                <td>{{ $report->leave }}</td>
-                <td>{{ $report->weekend }}</td>
-                <td>{{ $report->holiday }}</td>
-                <td>{{ $report->pay_day }}</td>
-                <td>{{ $report->b_salary }}</td>
-                <td>{{ $report->g_salary }}</td>
-                <td>{{ $report->pay_salary }}</td>
-                <td>{{ $report->total_allow }}</td>
-                <td>{{ $report->all_allows }}</td>
-                <td>{{ $report->absent_deduct }}</td>
-                <td>{{ $report->loan_deduct }}</td>
-                <td>{{ $report->pf_deduct }}</td>
-                <td>{{ $report->others_deduct }}</td>
-                <td>{{ $report->total_deduct }}</td>
-                <td>{{ $report->net_salary }}</td>
+                <td>Basic</td>
+                <td>{{ number_format($report->b_salary, 2) }}</td>
+                <td>PF Deduction</td>
+                <td>{{ number_format($report->pf_deduct, 2) }}</td>
             </tr>
-        @endforeach
+            <tr>
+                <td>Gross Salary</td>
+                <td>{{ number_format($report->g_salary, 2) }}</td>
+                <td>Loan Deduction</td>
+                <td>{{ number_format($report->loan_deduct, 2) }}</td>
+            </tr>
+            <tr>
+                <td>Total Allowances</td>
+                <td>{{ number_format((int)$report->all_allows, 2) }}</td>
+                <td>Other Deductions</td>
+                <td>{{ number_format($report->others_deduct, 2) }}</td>
+            </tr>
+            <tr>
+                <td>Payable Salary</td>
+                <td>{{ number_format($report->pay_salary, 2) }}</td>
+                <td></td>
+                <td></td>
+            </tr>
         </tbody>
     </table>
 </div>
-</div>
+@endforeach
 

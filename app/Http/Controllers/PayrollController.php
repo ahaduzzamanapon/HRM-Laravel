@@ -70,11 +70,11 @@ class PayrollController extends Controller
     }
     public function payslip(Request $request)
     {
-        $salary_reports = Payroll::join('users', 'payrolls.user_id', '=', 'users.id')
-            ->whereIn('payrolls.user_id', $request->users)
-            ->select('payrolls.*', 'users.name')
+        $salary_reports = Payroll::select('payrolls.*', 'users.name')
+            ->join('users', 'payrolls.user_id', '=', 'users.id','LEFT')
+            ->where('payrolls.user_id', $request->users)
+            // ->groupBy('payrolls.id')
             ->get();
-        // dd($salary_reports);
         return view('payroll.payslip', compact('salary_reports'));
     }
 
