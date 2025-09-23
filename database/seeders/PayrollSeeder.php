@@ -30,6 +30,7 @@ class PayrollSeeder extends Seeder
 
             Payroll::create([
                 'user_id' => $user->id,
+                'branch_id' => $user->branch_id,
                 'emp_status' => 1,
                 'dept_id' => $user->department_id,
                 'desig_id' => $user->designation_id,

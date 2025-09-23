@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AttendanceTime;
+use App\Models\LeaveApplication;
 use App\Models\User;
 use Carbon\Carbon;
 
@@ -10,7 +11,7 @@ class AttendanceService
 {
     public function __construct()
     {
-     
+
     }
 
     public function attn_process($process_date, $emp_ids)
@@ -19,7 +20,7 @@ class AttendanceService
         $errors = [];
 
         foreach ($employees as $row) {
-           
+
             try {
                 $joining_date = $row->date_of_joining;
                 $emp_id      = $row->id;
@@ -27,7 +28,7 @@ class AttendanceService
 
                 $shift_schedule  = $this->get_shift_schedule($emp_id, $process_date, $shift_id);
 
-                                if (!$shift_schedule) {
+                if (!$shift_schedule) {
                     AttendanceTime::updateOrCreate(
                         [
                             'employee_id' => $emp_id,
@@ -43,7 +44,7 @@ class AttendanceService
                     continue; // Skip to next employee
                 }
 
-                                $in_time  = null;
+                $in_time  = null;
                 $out_time = null;
 
                 $punch_id = $row->punch_id;
@@ -75,9 +76,13 @@ class AttendanceService
                     $late_time = Carbon::parse($in_time)->diffInMinutes(Carbon::parse($process_date . ' ' . $shift_schedule->in_time));
                 }
 
-                                $attendance_status = 'Absent';
-                $status = 'Absent';
+                // check leave
+                $leave = $this->leave_chech($process_date, $emp_id);
+                // $off_day = $this->dayoff_check($process_date);
+                // $holiday_day = $this->holiday_check($process_date);
 
+                $attendance_status = 'Absent';
+                $status = 'Absent';
                 if ($in_time && $out_time && $in_time != $out_time) {
                     $attendance_status = 'Present';
                     $status = 'Present';
@@ -88,6 +93,9 @@ class AttendanceService
                 } elseif ($in_time || $out_time) {
                     $attendance_status = 'HalfDay';
                     $status = 'HalfDay';
+                }  elseif ($leave['leave'] == true) {
+                    $attendance_status = 'Leave';
+                    $status = 'Leave';
                 }
 
                 $data = array(
@@ -108,7 +116,7 @@ class AttendanceService
                     'early_out_status'  => 0,
                 );
 
-                                AttendanceTime::updateOrCreate(
+                AttendanceTime::updateOrCreate(
                     [
                         'employee_id' => $emp_id,
                         'attendance_date' => $process_date
@@ -156,6 +164,28 @@ class AttendanceService
             ];
         }
         return null;
+    }
+
+    public function leave_check($process_date, $emp_id)
+    {
+        $query = LeaveApplication::where('from_date', '<=', $process_date)
+            ->where('to_date', '>=', $process_date)
+            ->where('employee_id', $emp_id)
+            ->where('status', 2)
+            ->get();
+
+        if(!empty($query)){
+            $leave = array(
+                'HLeave' => false,
+                'leave'  => true
+            );
+        } else {
+            $leave = array(
+                'HLeave' => false,
+                'leave'  => false
+            );
+        }
+        return $leave;
     }
 
     public function getReportData($reportType, $filterType, $fromDate, $toDate, $userIds)
