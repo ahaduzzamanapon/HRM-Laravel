@@ -34,7 +34,7 @@ class PayrollSeeder extends Seeder
                 'emp_status' => 1,
                 'dept_id' => $user->department_id,
                 'desig_id' => $user->designation_id,
-                'salary_month' => Carbon::now()->format('Y-m-d'),
+                'salary_month' => Carbon::now()->format('Y-m-01'),
                 'n_days' => $n_days,
                 'present' => $present,
                 'absent' => $absent,
