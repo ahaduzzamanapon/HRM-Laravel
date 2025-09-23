@@ -30,10 +30,11 @@ class PayrollSeeder extends Seeder
 
             Payroll::create([
                 'user_id' => $user->id,
+                'branch_id' => $user->branch_id,
                 'emp_status' => 1,
                 'dept_id' => $user->department_id,
                 'desig_id' => $user->designation_id,
-                'salary_month' => Carbon::now()->format('Y-m-d'),
+                'salary_month' => Carbon::now()->format('Y-m-01'),
                 'n_days' => $n_days,
                 'present' => $present,
                 'absent' => $absent,

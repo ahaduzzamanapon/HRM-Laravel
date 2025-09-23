@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
         $this->call(PermissionSeeder::class);
         $this->call(RoleHasPermissionsSeeder::class);
         $this->call(UserSeeder::class);
+                // \App\Models\User::factory(10)->create();
         $this->call(SiteSettingSeeder::class);
         $this->call(DesignationSeeder::class);
         $this->call(TrainingDetailSeeder::class);
@@ -30,15 +31,15 @@ class DatabaseSeeder extends Seeder
         $this->call(SalaryIncrementSeeder::class);
         $this->call(TransferDetailSeeder::class);
         $this->call(PersonalDocumentSeeder::class);
-      
+
         $this->call(HolydaySeeder::class);
         $this->call(ShiftSeeder::class);
         $this->call(ShiftDetailSeeder::class);
         $this->call(LeaveTypeSeeder::class); // Added
         $this->call(AllowanceSettingSeeder::class);
-        
-        
-        
+
+
+
         $this->call(LoanTypeSeeder::class);
         $this->call(LoanSeeder::class);
         $this->call(LoanRepaymentSeeder::class);
