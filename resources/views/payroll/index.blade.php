@@ -182,12 +182,14 @@
                         alert('No users selected!');
                         return;
                     }
+                    salary_month = $('#salary_month').val();
                     // Send data via AJAX POST
                     $.ajax({
                         url: '{{ route("payroll.salarySheet") }}', // Your Laravel route
                         type: 'POST',
                         data: {
-                            users: userIds,
+                            user_ids: userIds,
+                            salary_month: salary_month,
                             _token: '{{ csrf_token() }}' // CSRF token for Laravel
                         },
                         success: function(response) {
@@ -216,7 +218,8 @@
                         url: '{{ route("payroll.payslip") }}', // Your Laravel route
                         type: 'POST',
                         data: {
-                            users: userIds,
+                            user_ids: userIds,
+                            salary_month: $('#salary_month').val(),
                             _token: '{{ csrf_token() }}' // CSRF token for Laravel
                         },
                         success: function(response) {

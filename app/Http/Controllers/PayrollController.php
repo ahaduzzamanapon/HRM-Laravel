@@ -61,21 +61,26 @@ class PayrollController extends Controller
 
     public function salaryReport(Request $request)
     {
-        $salary_reports = Payroll::join('users', 'payrolls.user_id', '=', 'users.id')
-            ->whereIn('payrolls.user_id', $request->users)
-            ->select('payrolls.*', 'users.name')
+           $salary_reports = Payroll::select('payrolls.*', 'users.name')
+            ->join('users', 'payrolls.user_id', '=', 'users.id','LEFT')
+            ->whereIn('payrolls.user_id', $request->user_ids)
+            ->where('payrolls.salary_month', date('Y-m-01', strtotime($request->salary_month)))
             ->get();
-        // dd($salary_reports);
-        return view('payroll.salary_report', compact('salary_reports'));
+        $salary_month = $request->salary_month;
+        // dd($salary_reports/);
+        return view('payroll.salary_report', compact('salary_reports', 'salary_month'));
     }
     public function payslip(Request $request)
     {
         $salary_reports = Payroll::select('payrolls.*', 'users.name')
             ->join('users', 'payrolls.user_id', '=', 'users.id','LEFT')
-            ->where('payrolls.user_id', $request->users)
+            ->whereIn('payrolls.user_id', $request->user_ids)
+            ->where('payrolls.salary_month', date('Y-m-01', strtotime($request->salary_month)))
             // ->groupBy('payrolls.id')
             ->get();
-        return view('payroll.payslip', compact('salary_reports'));
+        // dd($salary_reports);
+        $salary_month = $request->salary_month;
+        return view('payroll.payslip', compact('salary_reports', 'salary_month'));
     }
 
 }

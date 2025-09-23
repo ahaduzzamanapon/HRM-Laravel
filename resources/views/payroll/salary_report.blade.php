@@ -56,17 +56,23 @@
         text-align: center;
     }
 }
+.payslip-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
 </style>
-
+{{-- @dd($salary_month) --}}
 <div class="table-responsive">
-    <h3 class="text-center">Salary Report</h3>
+    <div class="payslip-header">
+        <h2>Company Name</h2>
+        <p>Dhaka-1207</p>
+        <h3>Payslip for the month of {{ \Carbon\Carbon::parse($salary_month)->format('F, Y') }}</h3>
+    </div>
+    {{-- <h3 class="text-center">Salary Report</h3> --}}
     <table class="table table-bordered">
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Department ID</th>
-                <th>Designation ID</th>
-                <th>Salary Month</th>
                 <th>Number of Days</th>
                 <th>Present</th>
                 <th>Absent</th>
@@ -78,7 +84,7 @@
                 <th>Gross Salary</th>
                 <th>Pay Salary</th>
                 <th>Total Allowance</th>
-                <th>All Allowances</th>
+                {{-- <th>All Allowances</th> --}}
                 <th>Absent Deduction</th>
                 <th>Loan Deduction</th>
                 <th>PF Deduction</th>
@@ -91,9 +97,8 @@
         @foreach ($salary_reports as $report)
             <tr>
                 <td>{{ $report->name }}</td>
-                <td>{{ $report->dept_id }}</td>
-                <td>{{ $report->desig_id }}</td>
-                <td>{{ $report->salary_month }}</td>
+                {{-- <td>{{ $report->dept_id }}</td>
+                <td>{{ $report->desig_id }}</td> --}}
                 <td>{{ $report->n_days }}</td>
                 <td>{{ $report->present }}</td>
                 <td>{{ $report->absent }}</td>
@@ -101,17 +106,17 @@
                 <td>{{ $report->weekend }}</td>
                 <td>{{ $report->holiday }}</td>
                 <td>{{ $report->pay_day }}</td>
-                <td>{{ $report->b_salary }}</td>
-                <td>{{ $report->g_salary }}</td>
-                <td>{{ $report->pay_salary }}</td>
-                <td>{{ $report->total_allow }}</td>
-                <td>{{ $report->all_allows }}</td>
-                <td>{{ $report->absent_deduct }}</td>
-                <td>{{ $report->loan_deduct }}</td>
-                <td>{{ $report->pf_deduct }}</td>
-                <td>{{ $report->others_deduct }}</td>
-                <td>{{ $report->total_deduct }}</td>
-                <td>{{ $report->net_salary }}</td>
+                <td>{{ $report->b_salary== null ? 12345 : number_format($report->b_salary, 2) }}</td>
+                <td>{{ $report->g_salary== null ? 12345 : number_format($report->g_salary, 2) }}</td>
+                <td>{{ $report->pay_salary== null ? 12345 : number_format($report->pay_salary, 2) }}</td>
+                <td>{{ $report->total_allow== null ? 12345 : number_format($report->total_allow, 2) }}</td>
+                {{-- <td>{{ $report->all_allows }}</td> --}}
+                <td>{{ $report->absent_deduct== null ? 12345 : number_format($report->absent_deduct, 2) }}</td>
+                <td>{{ $report->loan_deduct== null ? 12345 : number_format($report->loan_deduct, 2) }}</td>
+                <td>{{ $report->pf_deduct== null ? 12345 : number_format($report->pf_deduct, 2) }}</td>
+                <td>{{ $report->others_deduct== null ? 12345 : number_format($report->others_deduct, 2) }}</td>
+                <td>{{ $report->total_deduct== null ? 12345 : number_format($report->total_deduct, 2) }}</td>
+                <td>{{ $report->net_salary== null ? 12345 : number_format($report->net_salary, 2) }}</td>
             </tr>
         @endforeach
         </tbody>
