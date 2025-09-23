@@ -29,14 +29,10 @@ Leave Applications @parent
                         <tr>
                             <th>Employee</th>
                             <th>Leave Type</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Half Day</th>
+                            <th>Date</th>
                             <th>Requested Days</th>
-                            <th>Reason</th>
                             <th>Status</th>
-                            <th>Approved By</th>
-                            <th>Approved At</th>
+                            <th>Current Approver</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -45,26 +41,36 @@ Leave Applications @parent
                             <tr>
                                 <td>{{ $application->user->name ?? 'N/A' }}</td>
                                 <td>{{ $application->leaveType->name ?? 'N/A' }}</td>
-                                <td>{{ $application->start_date->format('Y-m-d') }}</td>
-                                <td>{{ $application->end_date->format('Y-m-d') }}</td>
-                                <td>{{ $application->is_half_day ? 'Yes' : 'No' }}</td>
+                                <td>{{ $application->start_date->format('Y-m-d') }} <br> to <br> {{ $application->end_date->format('Y-m-d') }}</td>
                                 <td>{{ $application->requested_days }}</td>
-                                <td>{{ $application->reason }}</td>
                                 <td>{{ $application->status }}</td>
-                                <td>{{ $application->approver->name ?? 'N/A' }}</td>
-                                <td>{{ $application->approved_at ? $application->approved_at->format('Y-m-d H:i') : 'N/A' }}</td>
+                                <td>
+                                    @if($application->status == 'First Level Approved')
+                                        {{ $application->finalApprover->name ?? 'N/A' }}
+                                    @else
+                                        {{ $application->approver->name ?? 'N/A' }}
+                                    @endif
+                                </td>
                                 <td>
                                     <div class='btn-group'>
                                         <a href="{{ route('leaveApplications.show', [$application->id]) }}" class='btn btn-primary btn-xs'>View</a>
                                         @if($application->status === 'Pending')
-                                            <a href="{{ route('leaveApplications.edit', [$application->id]) }}" class='btn btn-primary btn-xs'>Edit</a>
-                                            {!! Form::open(['route' => ['leaveApplications.destroy', $application->id], 'method' => 'delete', 'class' => 'd-inline']) !!}
-                                            <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Are you sure you want to delete this leave application?')">Delete</button>
+                                            {!! Form::open(['route' => ['leaveApplications.first.approve', $application->id], 'method' => 'post', 'class' => 'd-inline'])
+                                            !!}
+                                            <button type="submit" class="btn btn-success btn-xs">First Approve</button>
                                             {!! Form::close() !!}
-                                            @if(Auth::check() && Auth::user()->can('approve_leave'))
-                                                <a href="{{ route('leaveApplications.approve', [$application->id]) }}" class='btn btn-success btn-xs' onclick="return confirm('Are you sure you want to approve this leave application?')">Approve</a>
-                                                <a href="{{ route('leaveApplications.reject', [$application->id]) }}" class='btn btn-warning btn-xs' onclick="return confirm('Are you sure you want to reject this leave application?')">Reject</a>
-                                            @endif
+                                        @endif
+                                        @if($application->status === 'First Level Approved')
+                                            {!! Form::open(['route' => ['leaveApplications.final.approve', $application->id], 'method' => 'post', 'class' => 'd-inline'])
+                                            !!}
+                                            <button type="submit" class="btn btn-success btn-xs">Final Approve</button>
+                                            {!! Form::close() !!}
+                                        @endif
+                                        @if($application->status !== 'Approved' && $application->status !== 'Rejected')
+                                            {!! Form::open(['route' => ['leaveApplications.reject', $application->id], 'method' => 'post', 'class' => 'd-inline'])
+                                            !!}
+                                            <button type="submit" class="btn btn-danger btn-xs">Reject</button>
+                                            {!! Form::close() !!}
                                         @endif
                                     </div>
                                 </td>
@@ -73,7 +79,6 @@ Leave Applications @parent
                     </tbody>
                 </table>
             </div>
-            {{-- Pagination Links --}}
             <div class="d-flex justify-content-center">
                 {!! $leaveApplications->links() !!}
             </div>
