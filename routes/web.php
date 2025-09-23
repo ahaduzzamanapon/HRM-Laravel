@@ -26,6 +26,12 @@ Auth::routes();
 
 Route::get('/payroll', [App\Http\Controllers\PayrollController::class, 'index'])->name('payroll.index');
 Route::post('payroll/process', [App\Http\Controllers\PayrollController::class, 'process'])->name('payroll.process');
+
+
+Route::post('payroll/salary-report', [App\Http\Controllers\PayrollController::class, 'salaryReport'])->name('payroll.salarySheet');
+
+Route::post('payroll/payslip', [App\Http\Controllers\PayrollController::class, 'payslip'])->name('payroll.payslip');
+
 Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
 
@@ -45,6 +51,10 @@ Route::post('attendance/process', [App\Http\Controllers\AttendanceProcessControl
 Route::get('attendance/filter', [App\Http\Controllers\AttendanceProcessController::class, 'filterUsers'])->name('attendance.filter');
 Route::get('attendance/report', [App\Http\Controllers\AttendanceProcessController::class, 'getReportData'])->name('attendance.report');
 Route::post('attendance/manual', [App\Http\Controllers\AttendanceProcessController::class, 'storeManualAttendance'])->name('attendance.manual.store');
+
+Route::post('leave-applications/{id}/first-approve', [App\Http\Controllers\LeaveApplicationController::class, 'firstLevelApprove'])->name('leaveApplications.first.approve');
+Route::post('leave-applications/{id}/final-approve', [App\Http\Controllers\LeaveApplicationController::class, 'finalApprove'])->name('leaveApplications.final.approve');
+Route::post('leave-applications/{id}/reject', [App\Http\Controllers\LeaveApplicationController::class, 'reject'])->name('leaveApplications.reject');
 
 
 Route::get('/', function () {
