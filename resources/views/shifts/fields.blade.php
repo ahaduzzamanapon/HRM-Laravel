@@ -74,19 +74,3 @@
 </div>
 @endforeach
 
-@push('scripts')
-    <script>
-        $(document).ready(function() {
-            $('.weekend-checkbox').change(function() {
-                const day = $(this).data('day');
-                const isChecked = $(this).is(':checked');
-
-                $(`input[name="${day}_in_time"]`).prop('disabled', isChecked).val('');
-                $(`input[name="${day}_out_time"]`).prop('disabled', isChecked).val('');
-                $(`input[name="${day}_late_start_time"]`).prop('disabled', isChecked).val('');
-                $(`input[name="${day}_lunch_start_time"]`).prop('disabled', isChecked).val('');
-                $(`input[name="${day}_lunch_end_time"]`).prop('disabled', isChecked).val('');
-            }).trigger('change'); // Trigger on load to set initial state
-        });
-    </script>
-@endpush

@@ -204,7 +204,7 @@
                 success: function(response) {
                     alert(response.message);
                     transferAccordionCollapse.hide();
-                    loadTransferDetails(); 
+                    loadTransferDetails();
                 },
                 error: function(xhr) {
                     alert('Error saving transfer detail: ' + xhr.responseText);
