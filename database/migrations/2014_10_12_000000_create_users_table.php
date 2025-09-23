@@ -24,8 +24,10 @@ return new class extends Migration
             $table->string('gender')->nullable();
             $table->string('address')->nullable();
             $table->string('phone_number')->nullable();
+            $table->string('shift_id')->nullable();
             $table->text('image')->nullable();
             $table->integer('salary')->nullable();
+            $table->integer('net_salary')->nullable();
             $table->string('nid')->nullable();
             $table->integer('group_id')->nullable();
             $table->text('education')->nullable();

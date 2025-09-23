@@ -43,17 +43,32 @@ class AttendanceProcessController extends Controller
     public function process(Request $request)
     {
         $fromDate = $request->input('from_date');
-        $toDate = $request->input('to_date');
         $userIds = $request->input('users');
 
-        $result = $this->attendanceService->attn_process($fromDate, $toDate, $userIds);
+        if (empty($userIds)) {
+            return response()->json(['success' => false, 'message' => 'Please select at least one user.']);
+        }
+
+        $result = $this->attendanceService->attn_process($fromDate,  $userIds);
 
         if (empty($result['errors'])) {
-            Flash::success($result['message']);
+            return response()->json(['success' => true, 'message' => $result['message']]);
         } else {
-            Flash::error($result['message'] . ": " . implode("; ", $result['errors']));
+            return response()->json(['success' => false, 'message' => $result['message'] . ": " . implode("; ", $result['errors'])]);
         }
-        return redirect()->back();
+    }
+
+    public function getReportData(Request $request)
+    {
+        $reportType = $request->input('report_type');
+        $filterType = $request->input('filter_type');
+        $fromDate = $request->input('from_date');
+        $toDate = $request->input('to_date');
+        $userIds = $request->input('user_ids');
+
+        $data = $this->attendanceService->getReportData($reportType, $filterType, $fromDate, $toDate, $userIds);
+
+        return \DataTables::of($data)->make(true);
     }
 
     public function filterUsers(Request $request)

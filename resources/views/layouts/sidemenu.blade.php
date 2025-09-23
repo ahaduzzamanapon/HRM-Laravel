@@ -1,28 +1,28 @@
 {{-- User Info Section --}}
 @auth
-<style>
-.user-panel {
-    background-image: url("{{ asset('assets/images/user-panel-img.jpg') }}");
-    background-size: cover;
-    background-position: center;
-    position: relative;
-}
+    <style>
+        .user-panel {
+            background-image: url("{{ asset('assets/images/user-panel-img.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
 
-.user-panel::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-</style>
-<div class="user-info text-center py-3 user-panel">
-    <img src="{{ asset(Auth::user()->image ?? 'assets/images/avatars/01.png') }}" alt="User Image" class="img-fluid rounded-circle mb-2" style="width: 60px;height: 60px;bject-fit: cover;">
-    <h5 style="color: white;" class="mb-0">{{ Auth::user()->name }} {{ Auth::user()->last_name }}</h5>
-    <p  style="color: white;"class="mb-0">{{ Auth::user()->email }}</p>
-    <p style="color: white;" class="mb-0"><small>{{ Auth::user()->role->name ?? 'N/A' }}</small></p>
-</div>
+        .user-panel::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <div class="user-info text-center py-3 user-panel">
+        <img src="{{ asset(Auth::user()->image ?? 'assets/images/avatars/01.png') }}" alt="User Image" class="img-fluid rounded-circle mb-2" style="width: 60px;height: 60px;bject-fit: cover;">
+        <h5 style="color: white;" class="mb-0">{{ Auth::user()->name }} {{ Auth::user()->last_name }}</h5>
+        <p  style="color: white;"class="mb-0">{{ Auth::user()->email }}</p>
+        <p style="color: white;" class="mb-0"><small>{{ Auth::user()->role->name ?? 'N/A' }}</small></p>
+    </div>
 @endauth
 
 {{-- Dashboard --}}
@@ -116,8 +116,7 @@
 </li>
 @endif
 
-
-
+{{-- HR --}}
 <li class="nav-item">
     <a class="nav-link {!! (Request::is('holydays*') || Request::is('shifts*') || Request::is('attendanceFileUploads*') || Request::is('leaveTypes*') || Request::is('leaveApplications*') ? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#hr_menu" role="button" aria-expanded="false" aria-controls="settings_menu">
         <i class="icon im im-icon-Gear"></i>
@@ -125,6 +124,42 @@
         <i class="right-icon im im-icon-Arrow-Right"></i>
     </a>
     <ul class="sub-nav collapse  {!!  Request::is('holydays*') || Request::is('shifts*') || Request::is('attendanceFileUploads*') || Request::is('leaveTypes*') || Request::is('leaveApplications*') ? 'show' : ''  !!}" id="hr_menu" data-bs-parent="#sidebar-menu">
+        @if(can('upload_attendance_files'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('attendanceFileUploads*') ? 'active' : '' !!}" href="{{ route('attendanceFileUploads.index') }}">
+                <i class="icon im im-icon-Upload-toCloud"></i>
+                <i class="sidenav-mini-icon"> AF </i>
+                <span class="item-name">Attendance File Upload</span>
+            </a>
+        </li>
+        @endif
+        @if(can('process_attendance'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('attendance/process*') ? 'active' : '' !!}" href="{{ route('attendance.process.index') }}">
+                <i class="icon im im-icon-Clock-Forward"></i>
+                <i class="sidenav-mini-icon"> AP </i>
+                <span class="item-name">Attendance Process</span>
+            </a>
+        </li>
+        @endif
+        @if(can('leave_applications'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('leaveApplications*') ? 'active' : '' !!}" href="{{ route('leaveApplications.index') }}">
+                <i class="icon im im-icon-Calendar-4"></i>
+                <i class="sidenav-mini-icon"> LA </i>
+                <span class="item-name">Leave Applications</span>
+            </a>
+        </li>
+        @endif
+        @if(can('movements'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('movements*') ? 'active' : '' !!}" href="{{ route('movements.index') }}">
+                <i class="icon im im-icon-Location-2"></i>
+                <i class="sidenav-mini-icon"> M </i>
+                <span class="item-name">Movements</span>
+            </a>
+        </li>
+        @endif
         @if(can('manage_holidays'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('holydays*') ? 'active' : '' !!}" href="{{ route('holydays.index') }}">
@@ -143,15 +178,6 @@
             </a>
         </li>
         @endif
-        @if(can('upload_attendance_files'))
-        <li class="nav-item">
-            <a class="nav-link {!! Request::is('attendanceFileUploads*') ? 'active' : '' !!}" href="{{ route('attendanceFileUploads.index') }}">
-                <i class="icon im im-icon-Upload-toCloud"></i>
-                <i class="sidenav-mini-icon"> AF </i>
-                <span class="item-name">Attendance File Upload</span>
-            </a>
-        </li>
-        @endif
         @if(can('manage_leave_types'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('leaveTypes*') ? 'active' : '' !!}" href="{{ route('leaveTypes.index') }}">
@@ -161,35 +187,30 @@
             </a>
         </li>
         @endif
-        @if(can('leave_applications'))
-        <li class="nav-item">
-            <a class="nav-link {!! Request::is('leaveApplications*') ? 'active' : '' !!}" href="{{ route('leaveApplications.index') }}">
-                <i class="icon im im-icon-File-Edit"></i>
-                <i class="sidenav-mini-icon"> LA </i>
-                <span class="item-name">Leave Applications</span>
-            </a>
-        </li>
-        @endif
-        @if(can('movements'))
-        <li class="nav-item">
-            <a class="nav-link {!! Request::is('movements*') ? 'active' : '' !!}" href="{{ route('movements.index') }}">
-                <i class="icon im im-icon-Location-2"></i>
-                <i class="sidenav-mini-icon"> M </i>
-                <span class="item-name">Movements</span>
-            </a>
-        </li>
-        @endif
-        @if(can('process_attendance'))
-        <li class="nav-item">
-            <a class="nav-link {!! Request::is('attendance/process*') ? 'active' : '' !!}" href="{{ route('attendance.process.index') }}">
-                <i class="icon im im-icon-Clock-Forward"></i>
-                <i class="sidenav-mini-icon"> AP </i>
-                <span class="item-name">Attendance Process</span>
-            </a>
-        </li>
-        @endif
-        </ul>
+    </ul>
 </li>
+
+{{-- Payroll --}}
+@if(can('payroll'))
+    <li class="nav-item">
+        <a class="nav-link {!! (Request::is('payroll*')? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#payroll_menu" role="button" aria-expanded="false" aria-controls="payroll_menu">
+            <i class="icon im im-icon-User"></i>
+            <span class="item-name">Payroll</span>
+            <i class="right-icon im im-icon-Arrow-Right"></i>
+        </a>
+        <ul class="sub-nav collapse {!! (Request::is('payroll*') ? 'show' : '') !!}" id="payroll_menu" data-bs-parent="#sidebar-menu">
+            @if(can('payroll_process'))
+            <li class="nav-item">
+                <a class="nav-link {!! Request::is('payroll*') ? 'active' : '' !!}" href="{{ route('payroll.index') }}">
+                    <i class="icon im im-icon-Clock-Forward"></i>
+                    <i class="sidenav-mini-icon"> P </i>
+                    <span class="item-name">Payroll Process</span>
+                </a>
+            </li>
+            @endif
+        </ul>
+    </li>
+@endif
 
 @if(can('welfare_fund'))
 <li class="nav-item">
@@ -299,6 +320,36 @@
 </li>
 @endif
 
+@if(can('provident_fund'))
+<li class="nav-item">
+    <a class="nav-link {!! (Request::is('providentFundSettings*') || Request::is('providentFunds*') ? 'active' : '' ) !!}" data-bs-toggle="collapse" href="#provident_fund_menu" role="button" aria-expanded="false" aria-controls="provident_fund_menu">
+        <i class="icon im im-icon-Safe-Box"></i>
+        <span class="item-name">Provident Fund</span>
+        <i class="right-icon im im-icon-Arrow-Right"></i>
+    </a>
+    <ul class="sub-nav collapse  {!!  Request::is('providentFundSettings*') || Request::is('providentFunds*') ? 'show' : ''  !!}" id="provident_fund_menu" data-bs-parent="#sidebar-menu">
+        @if(can('manage_provident_fund_settings'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('providentFundSettings*') ? 'active' : '' !!}" href="{{ route('providentFundSettings.index') }}">
+                <i class="icon im im-icon-Gear"></i>
+                <i class="sidenav-mini-icon"> S </i>
+                <span class="item-name">Settings</span>
+            </a>
+        </li>
+        @endif
+        @if(can('view_provident_fund_statements'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('providentFunds*') ? 'active' : '' !!}" href="{{ route('providentFunds.index') }}">
+                <i class="icon im im-icon-File-Chart"></i>
+                <i class="sidenav-mini-icon"> S </i>
+                <span class="item-name">Statements</span>
+            </a>
+        </li>
+        @endif
+    </ul>
+</li>
+@endif
+
 {{-- Settings --}}
 @if(can('settings'))
 <li class="nav-item">
@@ -317,7 +368,7 @@
             </a>
         </li>
         @endif
-     
+
         @if(can('manage_roles_and_permissions'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('roleAndPermissions*') ? 'active' : '' !!}" href="{{ route('roleAndPermissions.index') }}">

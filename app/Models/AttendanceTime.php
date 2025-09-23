@@ -10,8 +10,9 @@ class AttendanceTime extends Model
     use HasFactory;
 
     protected $table = 'attendance_time';
+    protected $primaryKey = 'time_attendance_id';
 
-    protected $fillable = [
+        protected $fillable = [
         'employee_id',
         'office_shift_id',
         'attendance_date',
@@ -28,4 +29,9 @@ class AttendanceTime extends Model
         'lunch_late_status',
         'early_out_status',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'employee_id');
+    }
 }

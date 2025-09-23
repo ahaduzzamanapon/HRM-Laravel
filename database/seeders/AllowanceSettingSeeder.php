@@ -15,24 +15,21 @@ class AllowanceSettingSeeder extends Seeder
      */
     public function run()
     {
-        AllowanceSetting::create([
-            'name' => 'House Rent',
+        AllowanceSetting::updateOrCreate(['name' => 'House Rent'],[
             'type' => 'percentage',
             'value' => 10,
             'tax_free_limit' => 25000,
             'is_active' => true,
         ]);
 
-        AllowanceSetting::create([
-            'name' => 'Medical Allowance',
+        AllowanceSetting::updateOrCreate(['name' => 'Medical Allowance'],[
             'type' => 'fixed',
             'value' => 1500,
             'tax_free_limit' => 120000,
             'is_active' => true,
         ]);
 
-        AllowanceSetting::create([
-            'name' => 'Transport Allowance',
+        AllowanceSetting::updateOrCreate(['name' => 'Transport Allowance'],[
             'type' => 'fixed',
             'value' => 1000,
             'tax_free_limit' => 30000,

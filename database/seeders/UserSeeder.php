@@ -37,6 +37,11 @@ class UserSeeder extends Seeder
 
         $this->command->info('User account created with following details: admin@admin.com, password');
 
+        $employeeRole = RoleAndPermission::where('name', 'Employee')->first();
+        if ($employeeRole) {
+            User::factory()->count(10)->create(['group_id' => $employeeRole->id]);
+        }
+
         // Re-enable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
     }

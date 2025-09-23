@@ -94,6 +94,17 @@
 </div>
 
 @php
+    $shifts = \App\Models\Shift::all()->pluck('shift_name','id')->prepend('Select Shift', '')->toArray();
+@endphp
+<!-- Shift Id Field -->
+<div class="col-md-3">
+    <div class="form-group">
+        {!! Form::label('shift_id', 'Shift:',['class'=>'control-label']) !!}
+        {!! Form::select('shift_id',$shifts, null, ['class' => 'form-control','required']) !!}
+    </div>
+</div>
+
+@php
     $roles = \App\Models\RoleAndPermission::all()->pluck('name','id')->toArray();
 @endphp
 <!-- Group Id Field -->
@@ -164,6 +175,14 @@
     <div class="form-group">
         {!! Form::label('punch_id', 'Punch Id:',['class'=>'control-label']) !!}
         {!! Form::text('punch_id', null, ['class' => 'form-control']) !!}
+    </div>
+</div>
+
+<!-- Is PF Member Field -->
+<div class="col-md-3">
+    <div class="form-group">
+        {!! Form::label('is_pf_member', 'Is PF Member:',['class'=>'control-label']) !!}
+        {!! Form::checkbox('is_pf_member', 1, null) !!}
     </div>
 </div>
 

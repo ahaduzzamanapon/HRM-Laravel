@@ -71,5 +71,15 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'Manage Allowance Settings', 'key' => 'manage_allowance_settings', 'parent_id' => $settings->id]);
         Permission::create(['name' => 'Manage notices', 'key' => 'notices', 'parent_id' => $settings->id]);
         Permission::create(['name' => 'Add notices', 'key' => 'add_notices', 'parent_id' => $settings->id]);
+
+
+        $provident_fund = Permission::create(['name' => 'provident_fund', 'key' => 'provident_fund']);
+        Permission::create(['name' => 'manage_provident_fund_settings', 'key' => 'manage_provident_fund_settings', 'parent_id' => $provident_fund->id]);
+        Permission::create(['name' => 'view_provident_fund_statements', 'key' => 'view_provident_fund_statements', 'parent_id' => $provident_fund->id]);
+
+        $payroll = Permission::create(['name' => 'payroll', 'key' => 'payroll']);
+        Permission::create(['name' => 'payroll_process', 'key' => 'payroll_process', 'parent_id' => $payroll->id]);
+
+
     }
 }
