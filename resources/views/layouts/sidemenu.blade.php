@@ -124,24 +124,6 @@
         <i class="right-icon im im-icon-Arrow-Right"></i>
     </a>
     <ul class="sub-nav collapse  {!!  Request::is('holydays*') || Request::is('shifts*') || Request::is('attendanceFileUploads*') || Request::is('leaveTypes*') || Request::is('leaveApplications*') ? 'show' : ''  !!}" id="hr_menu" data-bs-parent="#sidebar-menu">
-        @if(can('manage_holidays'))
-        <li class="nav-item">
-            <a class="nav-link {!! Request::is('holydays*') ? 'active' : '' !!}" href="{{ route('holydays.index') }}">
-                <i class="icon im im-icon-Teacher"></i>
-                <i class="sidenav-mini-icon"> H </i>
-                <span class="item-name">Holyday Management</span>
-            </a>
-        </li>
-        @endif
-        @if(can('manage_shifts'))
-        <li class="nav-item">
-            <a class="nav-link {!! Request::is('shifts*') ? 'active' : '' !!}" href="{{ route('shifts.index') }}">
-                <i class="icon im im-icon-Time-Window"></i>
-                <i class="sidenav-mini-icon"> SM </i>
-                <span class="item-name">Shift Management</span>
-            </a>
-        </li>
-        @endif
         @if(can('upload_attendance_files'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('attendanceFileUploads*') ? 'active' : '' !!}" href="{{ route('attendanceFileUploads.index') }}">
@@ -151,12 +133,12 @@
             </a>
         </li>
         @endif
-        @if(can('manage_leave_types'))
+        @if(can('process_attendance'))
         <li class="nav-item">
-            <a class="nav-link {!! Request::is('leaveTypes*') ? 'active' : '' !!}" href="{{ route('leaveTypes.index') }}">
-                <i class="icon im im-icon-Calendar-4"></i>
-                <i class="sidenav-mini-icon"> LT </i>
-                <span class="item-name">Leave Types</span>
+            <a class="nav-link {!! Request::is('attendance/process*') ? 'active' : '' !!}" href="{{ route('attendance.process.index') }}">
+                <i class="icon im im-icon-Clock-Forward"></i>
+                <i class="sidenav-mini-icon"> AP </i>
+                <span class="item-name">Attendance Process</span>
             </a>
         </li>
         @endif
@@ -178,12 +160,30 @@
             </a>
         </li>
         @endif
-        @if(can('process_attendance'))
+        @if(can('manage_holidays'))
         <li class="nav-item">
-            <a class="nav-link {!! Request::is('attendance/process*') ? 'active' : '' !!}" href="{{ route('attendance.process.index') }}">
-                <i class="icon im im-icon-Clock-Forward"></i>
-                <i class="sidenav-mini-icon"> AP </i>
-                <span class="item-name">Attendance Process</span>
+            <a class="nav-link {!! Request::is('holydays*') ? 'active' : '' !!}" href="{{ route('holydays.index') }}">
+                <i class="icon im im-icon-Teacher"></i>
+                <i class="sidenav-mini-icon"> H </i>
+                <span class="item-name">Holyday Management</span>
+            </a>
+        </li>
+        @endif
+        @if(can('manage_shifts'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('shifts*') ? 'active' : '' !!}" href="{{ route('shifts.index') }}">
+                <i class="icon im im-icon-Time-Window"></i>
+                <i class="sidenav-mini-icon"> SM </i>
+                <span class="item-name">Shift Management</span>
+            </a>
+        </li>
+        @endif
+        @if(can('manage_leave_types'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('leaveTypes*') ? 'active' : '' !!}" href="{{ route('leaveTypes.index') }}">
+                <i class="icon im im-icon-Calendar-4"></i>
+                <i class="sidenav-mini-icon"> LT </i>
+                <span class="item-name">Leave Types</span>
             </a>
         </li>
         @endif
@@ -199,7 +199,7 @@
             <i class="right-icon im im-icon-Arrow-Right"></i>
         </a>
         <ul class="sub-nav collapse {!! (Request::is('payroll*') ? 'show' : '') !!}" id="payroll_menu" data-bs-parent="#sidebar-menu">
-            @if(can('view_employees'))
+            @if(can('payroll_process'))
             <li class="nav-item">
                 <a class="nav-link {!! Request::is('payroll*') ? 'active' : '' !!}" href="{{ route('payroll.index') }}">
                     <i class="icon im im-icon-Clock-Forward"></i>
