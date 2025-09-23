@@ -77,7 +77,7 @@ class AttendanceService
                 }
 
                 // check leave
-                $leave = $this->leave_chech($process_date, $emp_id);
+                $leave = $this->leave_check($process_date, $emp_id);
                 // $off_day = $this->dayoff_check($process_date);
                 // $holiday_day = $this->holiday_check($process_date);
 
@@ -136,7 +136,7 @@ class AttendanceService
 
     protected function get_employees($emp_ids)
     {
-        return User::whereIn('id', $emp_ids)->get();
+        return User::whereIn('id', $emp_ids)->where('id', '!=', 1)->get();
     }
 
     protected function get_shift_schedule($emp_id, $process_date, $shift_id)
@@ -146,7 +146,6 @@ class AttendanceService
         $shiftDetail = \App\Models\ShiftDetail::where('shift_id', $shift_id)
                                             ->where('day_of_week', $day_of_week)
                                             ->first();
-
         if ($shiftDetail) {
             $lunch_start = Carbon::parse($shiftDetail->lunch_start_time);
             $lunch_end = Carbon::parse($shiftDetail->lunch_end_time);
@@ -168,9 +167,9 @@ class AttendanceService
 
     public function leave_check($process_date, $emp_id)
     {
-        $query = LeaveApplication::where('from_date', '<=', $process_date)
-            ->where('to_date', '>=', $process_date)
-            ->where('employee_id', $emp_id)
+        $query = LeaveApplication::where('start_date', '<=', $process_date)
+            ->where('end_date', '>=', $process_date)
+            ->where('user_id', $emp_id)
             ->where('status', 2)
             ->get();
 

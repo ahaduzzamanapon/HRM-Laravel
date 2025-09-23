@@ -22,7 +22,7 @@ class UserFactory extends Factory
             'branch_id' => rand(1, 3),
             'department_id' => rand(1, 3),
             'designation_id' => rand(1, 3),
-            'punch_id' => rand(100, 130),
+            'punch_id' => rand(120, 140),
             'shift_id' => 1,
             'date_of_birth' => fake()->date(),
             'date_of_join' => fake()->date(),
