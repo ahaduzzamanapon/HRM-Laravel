@@ -47,8 +47,6 @@ class SalaryService
 
                 //=======PRESENT STATUS ======
                 $rows = $this->count_attendance_status_wise($emp_id,$first_date,$end_date);
-                $leave = $this->get_monthly_leave($emp_id,$first_date,$end_date);
-                //dd($rows);
 
                 $present = ($rows->attend + $rows->HalfDay) - ($rows->present_error2 + $rows->present_error1);
 
@@ -207,31 +205,26 @@ class SalaryService
         return $total_days + 1;
     }
 
-    public function getReportData($reportType, $filterType, $fromDate, $toDate, $userIds)
+    function count_attendance_status_wise($emp_id,$FS_on_date,$FS_off_date)
     {
-        $query = AttendanceTime::with('user');
+        $query = AttendanceTime::where('employee_id', $emp_id)
+            ->whereBetween('attendance_date', [$FS_on_date, $FS_off_date])
+            ->selectRaw("
+                SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END ) AS attend,
+                SUM(CASE WHEN status = 'Absent'   THEN 1 ELSE 0 END ) AS absent,
+                SUM(CASE WHEN status = 'Off Day'  THEN 1 ELSE 0 END ) AS weekend,
+                SUM(CASE WHEN status = 'Holiday'  THEN 1 ELSE 0 END ) AS holiday,
+                SUM(CASE WHEN attendance_status = 'HalfDay'  THEN 0.5 ELSE 0 END ) AS HalfDay,
+                SUM(CASE WHEN status = 'Present' AND clock_in = '' AND clock_out != '' THEN 0.5 ELSE 0 END ) AS present_error1,
+                SUM(CASE WHEN status = 'Present' AND clock_in != '' AND clock_out = '' THEN 0.5 ELSE 0 END ) AS present_error2,
+                SUM(CASE WHEN extra_ap = 1 THEN 1 ELSE 0 END) AS extra_p,
+                SUM(CASE WHEN late_status = '1' THEN 1 ELSE 0 END ) AS late_status,
+            ")
+            ->first();
+            
+        return $query;
 
-        if ($reportType == 'daily') {
-            $query->whereDate('attendance_date', $fromDate);
-        } elseif ($reportType == 'monthly') {
-            $query->whereMonth('attendance_date', Carbon::parse($fromDate)->month);
-            $query->whereYear('attendance_date', Carbon::parse($fromDate)->year);
-        } elseif ($reportType == 'continue') {
-            $query->whereBetween('attendance_date', [$fromDate, $toDate]);
-        }
-
-        if ($filterType != 'all') {
-            if ($filterType == 'leave') {
-                $query->where('status', 'Leave')->orWhere('status', 'HLeave');
-            } else {
-                $query->where('status', $filterType);
-            }
-        }
-
-        if (!empty($userIds)) {
-            $query->whereIn('employee_id', $userIds);
-        }
-
-        return $query->get();
     }
+
+
 }
