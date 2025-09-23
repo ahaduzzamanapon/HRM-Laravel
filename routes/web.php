@@ -22,11 +22,12 @@ include 'web_builder.php';
 */
 include 'bulder_route.php';
 
+Auth::routes();
+
 Route::get('/payroll', [App\Http\Controllers\PayrollController::class, 'index'])->name('payroll.index');
 Route::post('payroll/process', [App\Http\Controllers\PayrollController::class, 'process'])->name('payroll.process');
 Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
-Auth::routes();
 
 Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
 Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
