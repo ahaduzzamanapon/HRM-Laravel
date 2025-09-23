@@ -71,6 +71,41 @@ class AttendanceProcessController extends Controller
         return \DataTables::of($data)->make(true);
     }
 
+    public function storeManualAttendance(Request $request)
+    {
+        $userIds = $request->input('users');
+        $date = $request->input('date');
+        $clockIn = $request->input('clock_in');
+        $clockOut = $request->input('clock_out');
+
+        if (empty($userIds)) {
+            return response()->json(['success' => false, 'message' => 'Please select at least one user.']);
+        }
+
+        $users = User::whereIn('id', $userIds)->get();
+
+        foreach ($users as $user) {
+            if ($user->punch_id) {
+                if ($clockIn) {
+                    \App\Models\AttMachineData::create([
+                        'punch_id' => $user->punch_id,
+                        'date_time' => $date . ' ' . $clockIn . ':00',
+                    ]);
+                }
+                if ($clockOut) {
+                    \App\Models\AttMachineData::create([
+                        'punch_id' => $user->punch_id,
+                        'date_time' => $date . ' ' . $clockOut . ':00',
+                    ]);
+                }
+            }
+        }
+
+        $this->attendanceService->attn_process($date, $userIds);
+
+        return response()->json(['success' => true, 'message' => 'Manual attendance saved and processed successfully.']);
+    }
+
     public function filterUsers(Request $request)
     {
         $users = User::with(['branch', 'department', 'designation'])

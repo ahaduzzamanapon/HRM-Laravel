@@ -95,7 +95,24 @@ Attendance Process @parent
                         </div>
                         <div class="form-group col-sm-12">
                             <button class="btn btn-primary" id="process-attendance-btn">Process</button>
+                            <button class="btn btn-secondary" id="manual-attendance-btn">Manual Attendance</button>
                         </div>
+                    </div>
+                </div>
+                <div class="card" id="manual-attendance-card" style="display: none;">
+                    <div class="card-body">
+                        <h3>Manual Attendance</h3>
+                        <div class="row">
+                            <div class="form-group col-sm-6">
+                                {!! Form::label('manual_clock_in', 'Clock In:') !!}
+                                <input type="time" name="manual_clock_in" class="form-control" id="manual_clock_in">
+                            </div>
+                            <div class="form-group col-sm-6">
+                                {!! Form::label('manual_clock_out', 'Clock Out:') !!}
+                                <input type="time" name="manual_clock_out" class="form-control" id="manual_clock_out">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" id="save-manual-attendance-btn">Save</button>
                     </div>
                 </div>
                 <div class="card">
@@ -195,6 +212,10 @@ Attendance Process @parent
                     dateFormat: 'yy-mm-dd',
                 });
 
+                $('#manual-attendance-btn').on('click', function() {
+                    $('#manual-attendance-card').toggle();
+                });
+
                 $('#select-all').on('click', function () {
                     $('.user-checkbox').prop('checked', $(this).prop('checked'));
                 });
@@ -270,6 +291,34 @@ Attendance Process @parent
                                 title: 'Error',
                                 text: 'An error occurred: ' + error,
                             });
+                        }
+                    });
+                });
+
+                $('#save-manual-attendance-btn').on('click', function() {
+                    var userIds = [];
+                    $('.user-checkbox:checked').each(function() {
+                        userIds.push($(this).val());
+                    });
+
+                    var data = {
+                        users: userIds,
+                        date: $('#from_date').val(),
+                        clock_in: $('#manual_clock_in').val(),
+                        clock_out: $('#manual_clock_out').val(),
+                        _token: '{{ csrf_token() }}'
+                    };
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '{{ route("attendance.manual.store") }}',
+                        data: data,
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire('Success', response.message, 'success');
+                            } else {
+                                Swal.fire('Error', response.message, 'error');
+                            }
                         }
                     });
                 });
