@@ -21,6 +21,7 @@ return new class extends Migration
             $table->foreign('leave_type_id')->references('id')->on('leave_types')->onDelete('cascade');
             $table->date('start_date');
             $table->date('end_date');
+            $table->decimal('requested_days', 5, 2)->default(0);
             $table->boolean('is_half_day')->nullable();
             $table->text('reason');
             $table->string('status')->default('Pending'); // Pending, Approved, Rejected

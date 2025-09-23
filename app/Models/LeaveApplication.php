@@ -21,6 +21,9 @@ class LeaveApplication extends Model
         'status',
         'approved_by',
         'approved_at',
+        'approver_id',
+        'approver_level',
+        'final_approver_id',
     ];
 
     protected $casts = [
@@ -42,6 +45,11 @@ class LeaveApplication extends Model
 
     public function approver()
     {
-        return $this->belongsTo(User::class, 'approved_by');
+        return $this->belongsTo(User::class, 'approver_id');
+    }
+
+    public function finalApprover()
+    {
+        return $this->belongsTo(User::class, 'final_approver_id');
     }
 }
