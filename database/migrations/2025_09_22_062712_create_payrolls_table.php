@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('payrolls', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id')->unsigned()->index();
+            $table->integer('branch_id');
             $table->integer('emp_status');
             $table->string('dept_id')->nullable();
             $table->string('desig_id')->nullable();

@@ -24,6 +24,12 @@ include 'bulder_route.php';
 
 Route::get('/payroll', [App\Http\Controllers\PayrollController::class, 'index'])->name('payroll.index');
 Route::post('payroll/process', [App\Http\Controllers\PayrollController::class, 'process'])->name('payroll.process');
+
+
+Route::post('payroll/salary-report', [App\Http\Controllers\PayrollController::class, 'salaryReport'])->name('payroll.salarySheet');
+
+Route::post('payroll/payslip', [App\Http\Controllers\PayrollController::class, 'payslip'])->name('payroll.payslip');
+
 Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
 Auth::routes();

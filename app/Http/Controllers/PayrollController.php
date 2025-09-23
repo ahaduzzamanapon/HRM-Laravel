@@ -8,6 +8,8 @@ use App\Models\Designation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\SalaryService;
+use App\Models\Payroll;
+
 
 class PayrollController extends Controller
 {
@@ -54,6 +56,26 @@ class PayrollController extends Controller
         } else {
             return response()->json(['success' => false, 'message' => $result['message'] . ": " . implode("; ", $result['errors'])]);
         }
+    }
+
+
+    public function salaryReport(Request $request)
+    {
+        $salary_reports = Payroll::join('users', 'payrolls.user_id', '=', 'users.id')
+            ->whereIn('payrolls.user_id', $request->users)
+            ->select('payrolls.*', 'users.name')
+            ->get();
+        // dd($salary_reports);
+        return view('payroll.salary_report', compact('salary_reports'));
+    }
+    public function payslip(Request $request)
+    {
+        $salary_reports = Payroll::join('users', 'payrolls.user_id', '=', 'users.id')
+            ->whereIn('payrolls.user_id', $request->users)
+            ->select('payrolls.*', 'users.name')
+            ->get();
+        // dd($salary_reports);
+        return view('payroll.payslip', compact('salary_reports'));
     }
 
 }

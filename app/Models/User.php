@@ -19,6 +19,9 @@ use App\Models\TransferDetail; // Import the TransferDetail model
 use App\Models\PersonalDocument; // Import the PersonalDocument model
 use App\Models\Branch; // Import the Branch model
 use App\Models\UserAllowance; // Import the UserAllowance model
+use App\Models\RoleAndPermission; // Import the RoleAndPermission model
+use App\Models\Designation; // Import the Designation model
+use App\Models\Shift; // Import the Shift model
 
 
 class User extends Authenticatable
@@ -170,5 +173,10 @@ class User extends Authenticatable
     public function shift()
     {
         return $this->belongsTo(Shift::class);
+    }
+
+    public function payroll()
+    {
+        return $this->hasMany(Payroll::class);
     }
 }
