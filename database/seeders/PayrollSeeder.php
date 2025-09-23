@@ -22,8 +22,9 @@ class PayrollSeeder extends Seeder
             $n_days = Carbon::now()->daysInMonth;
             $present = rand(20, $n_days);
             $absent = $n_days - $present;
-            $b_salary = $user->salary;
-            $pay_salary = ($b_salary / $n_days) * $present;
+            $g_salary = $user->gross_salary;
+            $b_salary = $user->basic_salary;
+            $pay_salary = ($g_salary / $n_days) * $present;
             $total_allow = rand(1000, 5000);
             $total_deduct = rand(500, 2000);
             $net_salary = $pay_salary + $total_allow - $total_deduct;
@@ -43,7 +44,7 @@ class PayrollSeeder extends Seeder
                 'holiday' => 0,
                 'pay_day' => $present,
                 'b_salary' => $b_salary,
-                'g_salary' => $b_salary,
+                'g_salary' => $g_salary,
                 'pay_salary' => $pay_salary,
                 'total_allow' => $total_allow,
                 'all_allows' => '[]',
