@@ -43,6 +43,7 @@ class DatabaseSeeder extends Seeder
         $this->call(LoanSeeder::class);
         $this->call(LoanRepaymentSeeder::class);
         $this->call(ProvidentFundPermissionsSeeder::class);
+        $this->call(PayrollSeeder::class);
         // \App\Models\User::factory(10)->create();
 
         // \App\Models\User::factory()->create([
