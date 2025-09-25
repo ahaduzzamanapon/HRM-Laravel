@@ -400,3 +400,16 @@
     </ul>
 </li>
 @endif
+
+{{-- Logout --}}
+<li class="nav-item" style="left: 15px; font-weight: bold;">
+    <a href="{{ route('logout') }}"
+        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+            <i class="icon im im-icon-Security-Settings"></i>
+            <span style="margin-left: 15px;" class="item-name">Logout</span>
+    </a>
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        @csrf
+    </form>
+</li>
+<br><br>
