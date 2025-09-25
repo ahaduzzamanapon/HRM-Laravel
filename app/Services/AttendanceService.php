@@ -195,7 +195,6 @@ class AttendanceService
             $query->whereDate('attendance_date', $fromDate);
         } elseif ($reportType == 'monthly') {
             $query->whereMonth('attendance_date', Carbon::parse($fromDate)->month);
-            $query->whereYear('attendance_date', Carbon::parse($fromDate)->year);
         } elseif ($reportType == 'continue') {
             $query->whereBetween('attendance_date', [$fromDate, $toDate]);
         }
