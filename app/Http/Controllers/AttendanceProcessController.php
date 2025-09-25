@@ -66,6 +66,11 @@ class AttendanceProcessController extends Controller
         $toDate = $request->input('to_date');
         $userIds = $request->input('user_ids');
 
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if ($user->role->name == 'Employee') {
+            $userIds = [$user->id];
+        }
+
         $data = $this->attendanceService->getReportData($reportType, $filterType, $fromDate, $toDate, $userIds);
 
         return \DataTables::of($data)->make(true);

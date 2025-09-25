@@ -16,7 +16,14 @@ class ProvidentFundController extends Controller
      */
     public function index(Request $request)
     {
-        $users = User::where('is_pf_member', true)->paginate(10);
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $query = User::where('is_pf_member', true);
+
+        if ($user->role->name == 'Employee') {
+            $query->where('id', $user->id);
+        }
+
+        $users = $query->paginate(10);
         return view('provident_funds.index', compact('users'));
     }
 
@@ -50,6 +57,13 @@ class ProvidentFundController extends Controller
     public function show($id)
     {
         $user = User::with('providentFundContributions')->find($id);
+        $authUser = \Illuminate\Support\Facades\Auth::user();
+
+        if ($authUser->role->name == 'Employee' && $authUser->id != $id) {
+            Flash::error('You are not authorized to view this page.');
+            return redirect(route('providentFunds.index'));
+        }
+
         if (empty($user) || !$user->is_pf_member) {
             Flash::error('Provident Fund member not found');
             return redirect(route('providentFunds.index'));

@@ -20,7 +20,14 @@ class LeaveApplicationController extends Controller
      */
     public function index()
     {
-        $leaveApplications = LeaveApplication::with(['user', 'leaveType', 'approver', 'finalApprover'])->paginate(10);
+        $user = Auth::user();
+        $query = LeaveApplication::with(['user', 'leaveType', 'approver', 'finalApprover']);
+
+        if ($user->role->name == 'Employee') {
+            $query->where('user_id', $user->id);
+        }
+
+        $leaveApplications = $query->paginate(10);
         return view('leave_applications.index')->with('leaveApplications', $leaveApplications);
     }
 

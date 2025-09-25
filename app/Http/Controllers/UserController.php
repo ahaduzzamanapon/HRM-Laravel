@@ -128,6 +128,12 @@ class UserController extends Controller
 
     public function show($id)
     {
+        $authUser = \Illuminate\Support\Facades\Auth::user();
+        if ($authUser->role->name == 'Employee' && $authUser->id != $id) {
+            Flash::error('You are not authorized to view this page.');
+            return redirect(route('users.index'));
+        }
+
         /** @var User $users */
         $users = User::with([
             'trainingDetails',
@@ -152,6 +158,12 @@ class UserController extends Controller
 
     public function edit($id)
     {
+        $authUser = \Illuminate\Support\Facades\Auth::user();
+        if ($authUser->role->name == 'Employee' && $authUser->id != $id) {
+            Flash::error('You are not authorized to view this page.');
+            return redirect(route('users.index'));
+        }
+
         /** @var User $users */
         $users = User::with([
             'trainingDetails',
