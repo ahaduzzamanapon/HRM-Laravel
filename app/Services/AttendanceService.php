@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AttendanceTime;
 use App\Models\LeaveApplication;
+use App\Models\Holyday;
 use App\Models\User;
 use Carbon\Carbon;
 
@@ -25,6 +26,7 @@ class AttendanceService
                 $joining_date = $row->date_of_joining;
                 $emp_id      = $row->id;
                 $shift_id = $row->shift_id;
+                $branch_id = $row->branch_id;
 
                 $shift_schedule  = $this->get_shift_schedule($emp_id, $process_date, $shift_id);
 
@@ -78,12 +80,17 @@ class AttendanceService
 
                 // check leave
                 $leave = $this->leave_check($process_date, $emp_id);
-                // $off_day = $this->dayoff_check($process_date);
-                // $holiday_day = $this->holiday_check($process_date);
+                $holiday_day = $this->holiday_check($process_date, $branch_id);
 
                 $attendance_status = 'Absent';
                 $status = 'Absent';
-                if ($in_time && $out_time && $in_time != $out_time) {
+                if ($holiday_day == true) {
+                    $attendance_status = 'Holiday';
+                    $status = 'Holiday';
+                } elseif ($shift_schedule->is_weekend == 1) {
+                    $attendance_status = 'Off Day';
+                    $status = 'Off Day';
+                } elseif ($in_time && $out_time && $in_time != $out_time) {
                     $attendance_status = 'Present';
                     $status = 'Present';
                 } elseif ($in_time && ($out_time == null || $in_time == $out_time)) {
@@ -93,7 +100,7 @@ class AttendanceService
                 } elseif ($in_time || $out_time) {
                     $attendance_status = 'HalfDay';
                     $status = 'HalfDay';
-                }  elseif ($leave['leave'] == true) {
+                } elseif ($leave['leave'] == true) {
                     $attendance_status = 'Leave';
                     $status = 'Leave';
                 }
@@ -143,9 +150,8 @@ class AttendanceService
     {
         $day_of_week = Carbon::parse($process_date)->format('l');
 
-        $shiftDetail = \App\Models\ShiftDetail::where('shift_id', $shift_id)
-                                            ->where('day_of_week', $day_of_week)
-                                            ->first();
+        $shiftDetail = \App\Models\ShiftDetail::where('shift_id', $shift_id)->where('day_of_week', $day_of_week)->first();
+
         if ($shiftDetail) {
             $lunch_start = Carbon::parse($shiftDetail->lunch_start_time);
             $lunch_end = Carbon::parse($shiftDetail->lunch_end_time);
@@ -160,6 +166,7 @@ class AttendanceService
                 'lunch_minute' => $lunch_minute,
                 'ot_start_time' => $shiftDetail->out_time,
                 'in_time' => $shiftDetail->in_time,
+                'is_weekend' => $shiftDetail->is_weekend
             ];
         }
         return null;
@@ -170,10 +177,10 @@ class AttendanceService
         $query = LeaveApplication::where('start_date', '<=', $process_date)
             ->where('end_date', '>=', $process_date)
             ->where('user_id', $emp_id)
-            ->where('status', 2)
+            ->where('status', 'approved')
             ->get();
 
-        if(!empty($query)){
+        if(!empty($query[0])){
             $leave = array(
                 'HLeave' => false,
                 'leave'  => true
@@ -185,6 +192,19 @@ class AttendanceService
             );
         }
         return $leave;
+    }
+    public function holiday_check($process_date, $branch_id)
+    {
+        $query = Holyday::where('date', '=', $process_date)
+            ->where('branch_id', $branch_id)
+            ->where('status', 'Published')
+            ->first();
+
+        if(empty($query)){
+            return false;
+        } else {
+            return true;
+        }
     }
 
     public function getReportData($reportType, $filterType, $fromDate, $toDate, $userIds)
