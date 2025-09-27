@@ -172,7 +172,7 @@ class AttendanceService
         return null;
     }
 
-    public function leave_check($process_date, $embuilder.blade.phpp_id)
+    public function leave_check($process_date, $emp_id)
     {
         $query = LeaveApplication::where('start_date', '<=', $process_date)
             ->where('end_date', '>=', $process_date)

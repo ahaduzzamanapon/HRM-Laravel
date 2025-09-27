@@ -55,6 +55,10 @@ User @parent
                                 data-bs-toggle="pill" data-bs-target="#v-pills-salary-structure" type="button" role="tab"
                                 aria-controls="v-pills-salary-structure" aria-selected="false"><i
                                     class="im im-icon-Money-Bag"></i> Salary Structure</button>
+                            <button style="width: 100%;" class="nav-link" id="v-pills-child-allowance-tab"
+                                data-bs-toggle="pill" data-bs-target="#v-pills-child-allowance" type="button" role="tab"
+                                aria-controls="v-pills-child-allowance" aria-selected="false"><i
+                                    class="im im-icon-Add-User"></i> Child Allowance</button>
                         </div>
                     </div>
                     <div class="col-md-9">
@@ -107,6 +111,10 @@ User @parent
                             <div class="tab-pane fade" id="v-pills-salary-structure" role="tabpanel"
                                 aria-labelledby="v-pills-salary-structure-tab">
                                 @include('users._salary_structure_form')
+                            </div>
+                            <div class="tab-pane fade" id="v-pills-child-allowance" role="tabpanel"
+                                aria-labelledby="v-pills-child-allowance-tab">
+                                @include('users._child_allowance_form')
                             </div>
                         </div>
                     </div>

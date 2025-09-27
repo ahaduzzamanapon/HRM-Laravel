@@ -48,3 +48,10 @@ Route::resource('loanRepayments', 'LoanRepaymentController');
 
 Route::resource('providentFundSettings', 'ProvidentFundSettingController');
 Route::resource('providentFunds', 'ProvidentFundController');
+
+Route::resource('salaryGrades', 'SalaryGradeController');
+Route::resource('bankSetups', 'BankSetupController');
+Route::resource('childAllowances', 'ChildAllowanceController');
+Route::get('childAllowances/list/{user_id}', [\App\Http\Controllers\ChildAllowanceController::class, 'list']);
+
+Route::resource('taxSetups', 'TaxSetupController');

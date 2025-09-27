@@ -19,7 +19,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="increment_date">Increment Date:</label>
-                                        <input type="date" name="increment_date" id="increment_date" class="form-control">
+                                        <input type="date" name="increment_date" id="increment_date" class="form-control" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -28,12 +28,35 @@
                                         <input type="number" name="old_salary" id="old_salaryy" class="form-control" step="0.01">
                                     </div>
                                 </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="old_grade_id">Old Grade:</label>
+                                        <select name="old_grade_id" id="old_grade_id" class="form-control">
+                                            <option value="">Select Old Grade</option>
+                                            @foreach($salaryGrades as $grade)
+                                                <option value="{{ $grade->id }}" {{ $users->salary_grade_id == $grade->id ? 'selected' : '' }}>{{ $grade->grade }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="new_salary">New Salary:</label>
                                         <input type="number" name="new_salary" id="new_salaryy" class="form-control" step="0.01">
+                                        <small id="new_salary_error" class="text-danger"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="new_grade_id">New Grade:</label>
+                                        <select name="new_grade_id" id="new_grade_id" class="form-control">
+                                            <option value="">Select New Grade</option>
+                                            @foreach($salaryGrades as $grade)
+                                                <option value="{{ $grade->id }}" data-min="{{ $grade->starting_salary }}" data-max="{{ $grade->end_salary }}">{{ $grade->grade }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -44,9 +67,9 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="document">Document:</label>
-                                <input type="file" name="document" id="document" class="form-control">
-                                <span id="current-document-link"></span>
+                                <label for="document_increment">Document:</label>
+                                <input type="file" name="document" id="document_increment" class="form-control">
+                                <span id="current-document-link-increment"></span>
                             </div>
 
                             <button type="submit" class="btn btn-success" id="save-salary-increment-btn">Save Increment</button>
@@ -66,6 +89,8 @@
                         <th>Old Salary</th>
                         <th>New Salary</th>
                         <th>Increment Amount</th>
+                        <th>Old Grade</th>
+                        <th>New Grade</th>
                         <th>Document</th>
                         <th>Actions</th>
                     </tr>
@@ -78,6 +103,8 @@
                                 <td>{{ $salaryIncrement->old_salary }}</td>
                                 <td>{{ $salaryIncrement->new_salary }}</td>
                                 <td>{{ $salaryIncrement->increment_amount }}</td>
+                                <td>{{ $salaryIncrement->oldGrade->grade ?? 'N/A' }}</td>
+                                <td>{{ $salaryIncrement->newGrade->grade ?? 'N/A' }}</td>
                                 <td>
                                     @if($salaryIncrement->document)
                                         <a href="{{ asset($salaryIncrement->document) }}" target="_blank">View</a>
@@ -109,6 +136,49 @@
         const salaryIncrementsAccordionCollapse = new bootstrap.Collapse($('#collapseSix'), { toggle: false });
         const userId = "{{ $users->id }}"; // Laravel Blade user id
 
+        const newGradeSelect = document.getElementById('new_grade_id');
+        const newSalaryInput = document.getElementById('new_salaryy');
+        const newSalaryError = document.getElementById('new_salary_error');
+
+        function validateNewSalary() {
+            const selectedOption = newGradeSelect.options[newGradeSelect.selectedIndex];
+            if (!selectedOption || !selectedOption.value) {
+                newSalaryInput.min = '';
+                newSalaryInput.max = '';
+                newSalaryError.textContent = '';
+                return;
+            }
+
+            const min = parseFloat(selectedOption.dataset.min);
+            const max = parseFloat(selectedOption.dataset.max);
+            const newSalary = parseFloat(newSalaryInput.value);
+
+            newSalaryInput.min = min;
+            newSalaryInput.max = max;
+
+            if (newSalary < min || newSalary > max) {
+                newSalaryError.textContent = `New salary must be between ${min} and ${max}.`;
+            } else {
+                newSalaryError.textContent = '';
+            }
+        }
+
+        newGradeSelect.addEventListener('change', validateNewSalary);
+        newSalaryInput.addEventListener('input', validateNewSalary);
+
+        const oldSalaryInput = document.getElementById('old_salaryy');
+        const incrementAmountInput = document.getElementById('increment_amount');
+
+        function calculateIncrementAmount() {
+            const oldSalary = parseFloat(oldSalaryInput.value) || 0;
+            const newSalary = parseFloat(newSalaryInput.value) || 0;
+            const incrementAmount = newSalary - oldSalary;
+            incrementAmountInput.value = incrementAmount.toFixed(2);
+        }
+
+        oldSalaryInput.addEventListener('input', calculateIncrementAmount);
+        newSalaryInput.addEventListener('input', calculateIncrementAmount);
+
         function loadSalaryIncrements() {
             $.ajax({
                 url: `/salaryIncrements/list/${userId}`, // Laravel route for increments list
@@ -124,6 +194,8 @@
                                     <td>${inc.old_salary}</td>
                                     <td>${inc.new_salary}</td>
                                     <td>${inc.increment_amount}</td>
+                                    <td>${inc.old_grade ? inc.old_grade.grade : 'N/A'}</td>
+                                    <td>${inc.new_grade ? inc.new_grade.grade : 'N/A'}</td>
                                     <td>
                                         ${inc.document 
                                             ? `<a href="{{asset('/')}}${inc.document}" target="_blank">View Document</a>` 
@@ -163,10 +235,12 @@
         });
 
         // Show form for adding new salary increment
-        $('#add-new-salary-increment-btn').click(function() {
+        $('button[data-bs-target="#collapseSix"]').click(function() {
             salaryIncrementForm[0].reset();
             $('#salary-increment-id').val('');
             $('#current-document-link').html('');
+            $('#old_salaryy').val('{{ $users->basic_salary }}');
+            $('#old_grade_id').val('{{ $users->salary_grade_id }}');
             salaryIncrementsAccordionCollapse.show();
         });
 
@@ -216,11 +290,13 @@
                     $('#old_salaryy').val(response.salaryIncrements.old_salary);
                     $('#new_salaryy').val(response.salaryIncrements.new_salary);
                     $('#increment_amount').val(response.salaryIncrements.increment_amount);
+                    $('#old_grade_id').val(response.salaryIncrements.old_grade_id);
+                    $('#new_grade_id').val(response.salaryIncrements.new_grade_id);
 
                     if (response.salaryIncrements.document) {
-                        $('#current-document-link').html(`<a href="${response.salaryIncrements.document}" target="_blank">View Current Document</a>`);
+                        $('#current-document-link-increment').html(`<a href="${response.salaryIncrements.document}" target="_blank">View Current Document</a>`);
                     } else {
-                        $('#current-document-link').html('');
+                        $('#current-document-link-increment').html('');
                     }
                     salaryIncrementsAccordionCollapse.show();
                 },

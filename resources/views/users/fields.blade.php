@@ -2,7 +2,7 @@
 <div class="col-md-3">
     <div class="form-group">
         {!! Form::label('emp_id', 'Emp Id:',['class'=>'control-label']) !!}
-        {!! Form::text('emp_id', null , ['class' => 'form-control', 'readonly','required']) !!}
+        {!! Form::text('emp_id', null , ['class' => 'form-control','required']) !!}
     </div>
 </div>
 
@@ -167,6 +167,30 @@
     <div class="form-group">
         {!! Form::label('marital_status', 'Marital Status:',['class'=>'control-label']) !!}
         {!! Form::select('marital_status', ['Single' => 'Single', 'Married' => 'Married'], null, ['class' => 'form-control']) !!}
+    </div>
+</div>
+
+<!-- Emp Type Field -->
+<div class="col-md-3">
+    <div class="form-group">
+        {!! Form::label('emp_type', 'Employee Type:',['class'=>'control-label']) !!}
+        {!! Form::select('emp_type', ['staff' => 'Staff', 'officer' => 'Officer'], null, ['class' => 'form-control']) !!}
+    </div>
+</div>
+
+<!-- Bank ID Field -->
+<div class="col-md-3">
+    <div class="form-group">
+        {!! Form::label('bank_id', 'Bank Name:',['class'=>'control-label']) !!}
+        {!! Form::select('bank_id', $banks, null, ['class' => 'form-control']) !!}
+    </div>
+</div>
+
+<!-- Account No Field -->
+<div class="col-md-3">
+    <div class="form-group">
+        {!! Form::label('account_no', 'Account No:',['class'=>'control-label']) !!}
+        {!! Form::text('account_no', null, ['class' => 'form-control']) !!}
     </div>
 </div>
 

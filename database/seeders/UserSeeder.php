@@ -20,6 +20,8 @@ class UserSeeder extends Seeder
         // Disable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
+        $salaryGrades = \App\Models\SalaryGrade::pluck('id')->toArray();
+
         User::truncate();
 
         $adminUser = User::create([
@@ -29,6 +31,7 @@ class UserSeeder extends Seeder
             'designation_id' => 1,
             'email' => 'admin@admin.com',
             'password' => Hash::make('password'),
+            'salary_grade_id' => $salaryGrades[array_rand($salaryGrades)],
         ]);
 
         // Assign Admin role to the admin user
@@ -42,7 +45,10 @@ class UserSeeder extends Seeder
 
         $employeeRole = RoleAndPermission::where('name', 'Employee')->first();
         if ($employeeRole) {
-            User::factory()->count(10)->create(['group_id' => $employeeRole->id]);
+            User::factory()->count(10)->create([
+                'group_id' => $employeeRole->id,
+                'salary_grade_id' => $salaryGrades[array_rand($salaryGrades)],
+            ]);
         }
 
         // Re-enable foreign key checks

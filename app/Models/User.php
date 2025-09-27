@@ -54,7 +54,12 @@ class User extends Authenticatable
         'punch_id',
         'password',
         'basic_salary',
-        'gross_salary'
+        'gross_salary',
+        'bank_id',
+        'account_no',
+        'salary_grade_id',
+        'emp_type',
+        'emp_id'
     ];
 
     protected $dates = []; // Laravel will automatically cast 'updated_at'
@@ -178,5 +183,10 @@ class User extends Authenticatable
     public function payroll()
     {
         return $this->hasMany(Payroll::class);
+    }
+
+    public function childAllowances()
+    {
+        return $this->hasMany(ChildAllowance::class);
     }
 }

@@ -22,9 +22,9 @@
                                 <input type="text" name="document_type" id="document_type" class="form-control">
                             </div>
                             <div class="form-group">
-                                <label for="document_file">Document File:</label>
-                                <input type="file" name="document_file" id="document_file" class="form-control">
-                                <span id="current-document-link"></span>
+                                <label for="document_file_personal">Document File:</label>
+                                <input type="file" name="document_file" id="document_file_personal" class="form-control">
+                                <span id="current-document-link-personal"></span>
                             </div>
                             <div class="form-group">
                                 <label for="description">Description:</label>
@@ -189,9 +189,9 @@
                     $('#document_type').val(response.personalDocument.document_type);
                     $('#descriptions').val(response.personalDocument.description);
                     if (response.personalDocument.document_file) {
-                        $('#current-document-link').html(`<a href="{{asset('${response.personalDocument.document_file}')}}" target="_blank">View Current Document</a>`);
+                        $('#current-document-link-personal').html(`<a href="{{asset('${response.personalDocument.document_file}')}}" target="_blank">View Current Document</a>`);
                     } else {
-                        $('#current-document-link').html('');
+                        $('#current-document-link-personal').html('');
                     }
                     personalDocumentsAccordionCollapse.show();
                 },

@@ -42,6 +42,13 @@ class PromotionDetailController extends Controller
     {
         $input = $request->except('_token');
 
+        $user = User::find($input['user_id']);
+        if (!$user) {
+            return response()->json(['message' => 'User not found.'], 404);
+        }
+
+        $input['old_grade_id'] = $user->salary_grade_id;
+
         if ($request->hasFile('document')) {
             $file = $request->file('document');
             $folder = 'documents/promotion';
@@ -50,6 +57,10 @@ class PromotionDetailController extends Controller
         }
 
         PromotionDetail::create($input);
+
+        // Update user's salary structure
+        $user->salary_grade_id = $input['new_grade_id'];
+        $user->save();
 
         return response()->json(['success' => true, 'message' => 'Promotion Detail saved successfully.']);
     }
@@ -81,13 +92,14 @@ class PromotionDetailController extends Controller
     {
         $promotionDetail = PromotionDetail::find($id);
         $users = User::pluck('name', 'id'); // Get users for dropdown
+        $salaryGrades = \App\Models\SalaryGrade::pluck('grade', 'id');
 
         if (empty($promotionDetail)) {
             Flash::error('Promotion Detail not found');
             return redirect(route('promotionDetails.index'));
         }
 
-        return response()->json(['promotionDetail' => $promotionDetail, 'users' => $users]);
+        return response()->json(['promotionDetail' => $promotionDetail, 'users' => $users, 'salaryGrades' => $salaryGrades]);
     }
 
     /**
@@ -119,6 +131,13 @@ class PromotionDetailController extends Controller
 
         $promotionDetail->update($input);
 
+        // Update user's salary structure
+        $user = User::find($promotionDetail->user_id);
+        if ($user) {
+            $user->salary_grade_id = $input['new_grade_id'];
+            $user->save();
+        }
+
         return response()->json(['success' => true, 'message' => 'Promotion Detail updated successfully.']);
     }
 
@@ -148,7 +167,7 @@ class PromotionDetailController extends Controller
     }
     public function list($user_id)
     {
-        $users = PromotionDetail::where('user_id', $user_id)->get();
+        $users = PromotionDetail::with(['oldGrade', 'newGrade'])->where('user_id', $user_id)->get();
         return response()->json(['success' => true, 'promotionDetail' => $users]);
     }
 }

@@ -4,11 +4,27 @@
         <h3>Salary Structure</h3>
         <p>Define the basic salary and manage active allowances for this user.</p>
 
+        <!-- Salary Grade Dropdown -->
+        <div class="form-group row border-bottom pb-2 mb-2">
+            <label class="col-sm-4 col-form-label">Salary Grade</label>
+            <div class="col-sm-8">
+                <select class="form-control" id="salary_grade_id" name="salary_grade_id">
+                    <option value="">Select Salary Grade</option>
+                    @foreach($salaryGrades as $grade)
+                        <option value="{{ $grade->id }}" data-min="{{ $grade->starting_salary }}" data-max="{{ $grade->end_salary }}" {{ $users->salary_grade_id == $grade->id ? 'selected' : '' }}>
+                            {{ $grade->grade }} ({{ $grade->starting_salary }} - {{ $grade->end_salary }})
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+
         <!-- Basic Salary Input -->
         <div class="form-group row border-bottom pb-2 mb-2">
             <label class="col-sm-4 col-form-label">Basic Salary</label>
             <div class="col-sm-8">
                 <input type="number" step="0.01" class="form-control" id="basic_salary" name="basic_salary" value="{{ $users->basic_salary ?? 0 }}" placeholder="Enter Basic Salary">
+                <small id="basic_salary_error" class="text-danger"></small>
             </div>
         </div>
 
@@ -75,6 +91,37 @@
         const grossSalaryDisplay = document.getElementById('gross_salary_display');
         const grossSalaryHidden = document.getElementById('gross_salary_hidden');
         const allowanceSettings = @json($allowanceSettings);
+        const salaryGradeSelect = document.getElementById('salary_grade_id');
+        const basicSalaryError = document.getElementById('basic_salary_error');
+
+        function validateBasicSalary() {
+            const selectedOption = salaryGradeSelect.options[salaryGradeSelect.selectedIndex];
+            if (!selectedOption || !selectedOption.value) {
+                basicSalaryInput.min = '';
+                basicSalaryInput.max = '';
+                basicSalaryError.textContent = '';
+                return;
+            }
+
+            const min = parseFloat(selectedOption.dataset.min);
+            const max = parseFloat(selectedOption.dataset.max);
+            const basicSalary = parseFloat(basicSalaryInput.value);
+
+            basicSalaryInput.min = min;
+            basicSalaryInput.max = max;
+
+            if (basicSalary < min || basicSalary > max) {
+                basicSalaryError.textContent = `Basic salary must be between ${min} and ${max}.`;
+            } else {
+                basicSalaryError.textContent = '';
+            }
+        }
+
+        salaryGradeSelect.addEventListener('change', validateBasicSalary);
+        basicSalaryInput.addEventListener('input', validateBasicSalary);
+
+        // Initial validation on page load
+        validateBasicSalary();
 
         /**
          * Calculates the gross salary based on the basic salary and enabled allowances.
@@ -102,7 +149,7 @@
          */
         function getAllowanceAmount(setting, basicSalary) {
             const customValueInput = document.querySelector(`input[name="user_allowances[${setting.id}][custom_value]"]`);
-            let valueToUse = setting.value;
+            let valueToUse = parseFloat(setting.value) || 0;
 
             if (customValueInput && customValueInput.value !== '') {
                 const parsedValue = parseFloat(customValueInput.value);

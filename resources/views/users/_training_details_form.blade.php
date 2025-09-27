@@ -57,9 +57,9 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="document">Document:</label>
-                                        <input type="file" name="document" id="document" class="form-control">
-                                        <span id="current-document-link"></span>
+                                        <label for="document_training">Document:</label>
+                                        <input type="file" name="document" id="document_training" class="form-control">
+                                        <span id="current-document-link-training"></span>
                                     </div>
                                 </div>
                             </div>
@@ -245,9 +245,9 @@
                         $('#end_date').val(response.trainingDetail.end_date);
                         $('#description').val(response.trainingDetail.description);
                         if (response.trainingDetail.document) {
-                            $('#current-document-link').html(`<a href="{{asset('${response.trainingDetail.document}')}}" target="_blank">View Current Document</a>`);
+                            $('#current-document-link-training').html(`<a href="{{asset('${response.trainingDetail.document}')}}" target="_blank">View Current Document</a>`);
                         } else {
-                            $('#current-document-link').html('');
+                            $('#current-document-link-training').html('');
                         }
                         trainingAccordionCollapse.show(); // Show accordion
                     },

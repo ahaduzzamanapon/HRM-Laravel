@@ -40,8 +40,14 @@ class SalaryIncrementController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
         $input = $request->except('_token');
+
+        $user = User::find($input['user_id']);
+        if (!$user) {
+            return response()->json(['message' => 'User not found.'], 404);
+        }
+
+        $input['old_grade_id'] = $user->salary_grade_id;
 
         if ($request->hasFile('document')) {
             $file = $request->file('document');
@@ -51,6 +57,11 @@ class SalaryIncrementController extends Controller
         }
 
         SalaryIncrement::create($input);
+
+        // Update user's salary structure
+        $user->basic_salary = $input['new_salary'];
+        $user->salary_grade_id = $input['new_grade_id'];
+        $user->save();
 
         return response()->json(['message' => 'Salary Increment saved successfully.'], 201);
     }
@@ -82,12 +93,13 @@ class SalaryIncrementController extends Controller
     {
         $salaryIncrement = SalaryIncrement::find($id);
         $users = User::pluck('name', 'id'); // Get users for dropdown
+        $salaryGrades = \App\Models\SalaryGrade::pluck('grade', 'id');
 
         if (empty($salaryIncrement)) {
             return response()->json(['error' => 'Salary Increment not found'], 404);
         }
 
-        return response()->json(['salaryIncrements' => $salaryIncrement, 'users' => $users]);
+        return response()->json(['salaryIncrements' => $salaryIncrement, 'users' => $users, 'salaryGrades' => $salaryGrades]);
     }
 
     /**
@@ -118,6 +130,14 @@ class SalaryIncrementController extends Controller
 
         $salaryIncrement->update($input);
 
+        // Update user's salary structure
+        $user = User::find($salaryIncrement->user_id);
+        if ($user) {
+            $user->basic_salary = $input['new_salary'];
+            $user->salary_grade_id = $input['new_grade_id'];
+            $user->save();
+        }
+
         return response()->json(['success' => true, 'message' => 'Salary Increment updated successfully.'], 200);
     }
 
@@ -147,7 +167,7 @@ class SalaryIncrementController extends Controller
 
     public function list($user_id)
     {
-        $users = SalaryIncrement::where('user_id', $user_id)->get();
+        $users = SalaryIncrement::with(['oldGrade', 'newGrade'])->where('user_id', $user_id)->get();
         return response()->json(['salaryIncrements' => $users], 200);
     }
 }

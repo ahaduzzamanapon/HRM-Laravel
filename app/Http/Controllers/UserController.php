@@ -35,7 +35,19 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('users.create');
+        $banks = \App\Models\BankSetup::pluck('bank_name', 'id');
+        $designations = \App\Models\Designation::pluck('desi_name', 'id');
+        $branches = \App\Models\Branch::pluck('branch_name', 'id');
+        $departments = \App\Models\Department::pluck('name', 'id');
+        $shifts = \App\Models\Shift::pluck('shift_name', 'id');
+        $roles = \App\Models\RoleAndPermission::pluck('name', 'id');
+        return view('users.create')
+            ->with('banks', $banks)
+            ->with('designations', $designations)
+            ->with('branches', $branches)
+            ->with('departments', $departments)
+            ->with('shifts', $shifts)
+            ->with('roles', $roles);
     }
 
 
@@ -184,9 +196,15 @@ class UserController extends Controller
         }
 
         $allowanceSettings = AllowanceSetting::all();
+        $banks = \App\Models\BankSetup::pluck('bank_name', 'id');
+        $salaryGrades = \App\Models\SalaryGrade::all();
+        $designations = \App\Models\Designation::pluck('desi_name', 'id');
         return view('users.edit')
             ->with('users', $users)
-            ->with('allowanceSettings', $allowanceSettings);
+            ->with('allowanceSettings', $allowanceSettings)
+            ->with('banks', $banks)
+            ->with('salaryGrades', $salaryGrades)
+            ->with('designations', $designations);
     }
 
 
@@ -405,7 +423,18 @@ class UserController extends Controller
             return redirect(route('users.index'));
         }
 
+        $user->salary_grade_id = $request->input('salary_grade_id');
         $user->basic_salary = $request->input('basic_salary', 0);
+
+        if ($request->has('salary_grade_id') && $request->input('salary_grade_id') != null) {
+            $salaryGrade = \App\Models\SalaryGrade::find($request->input('salary_grade_id'));
+            if ($salaryGrade) {
+                if ($user->basic_salary < $salaryGrade->starting_salary || $user->basic_salary > $salaryGrade->end_salary) {
+                    Flash::error('Basic salary must be between ' . $salaryGrade->starting_salary . ' and ' . $salaryGrade->end_salary . '.');
+                    return redirect()->back()->withInput();
+                }
+            }
+        }
 
         // Update or Create User Allowances
         if ($request->has('user_allowances') && is_array($request->user_allowances)) {

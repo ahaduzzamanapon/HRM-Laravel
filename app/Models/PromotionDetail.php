@@ -15,7 +15,25 @@ class PromotionDetail extends Model
         'old_designation',
         'pay_grade_change',
         'new_salary',
-        'document'
+        'document',
+        'old_grade_id',
+        'new_grade_id',
+        'increment_amount'
     ];
+
+    public function oldGrade()
+    {
+        return $this->belongsTo(\App\Models\SalaryGrade::class, 'old_grade_id');
+    }
+
+    public function newGrade()
+    {
+        return $this->belongsTo(\App\Models\SalaryGrade::class, 'new_grade_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class);
+    }
 }
 

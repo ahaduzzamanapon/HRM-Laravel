@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
         $this->call(RoleSeeder::class);
         $this->call(PermissionSeeder::class);
         $this->call(RoleHasPermissionsSeeder::class);
+        $this->call(SalaryGradeSeeder::class);
         $this->call(UserSeeder::class);
                 // \App\Models\User::factory(10)->create();
         $this->call(SiteSettingSeeder::class);
@@ -27,8 +28,8 @@ class DatabaseSeeder extends Seeder
         $this->call(JobExperienceSeeder::class);
         $this->call(EducationalQualificationSeeder::class);
         $this->call(NomineeInformationSeeder::class);
-        $this->call(PromotionDetailSeeder::class);
-        $this->call(SalaryIncrementSeeder::class);
+       // $this->call(PromotionDetailSeeder::class);
+       // $this->call(SalaryIncrementSeeder::class);
         $this->call(TransferDetailSeeder::class);
         $this->call(PersonalDocumentSeeder::class);
 
@@ -45,6 +46,8 @@ class DatabaseSeeder extends Seeder
         $this->call(LoanRepaymentSeeder::class);
         $this->call(ProvidentFundPermissionsSeeder::class);
         $this->call(PayrollSeeder::class);
+        //$this->call(SalaryGradeSeeder::class);
+        $this->call(BankSetupSeeder::class);
         // \App\Models\User::factory(10)->create();
 
         // \App\Models\User::factory()->create([

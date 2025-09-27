@@ -378,13 +378,30 @@
             </a>
         </li>
         @endif
+        @if(can('manage_salaryGrades'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('salaryGrades*') ? 'active' : '' !!}" href="{{ route('salaryGrades.index') }}">
+                <i class="icon im im-icon-Money-Bag"></i>
+                <i class="sidenav-mini-icon"> SG </i>
+                <span class="item-name">Salary Grades</span>
+            </a>
+        </li>
+        @endif
         @if(can('manage_allowance_settings'))
-        {{-- Allowance Settings --}}
         <li class="nav-item">
             <a class="nav-link {!! Request::is('allowanceSettings*') ? 'active' : '' !!}" href="{{ route('allowanceSettings.index') }}">
                 <i class="icon im im-icon-Money-Bag"></i>
                 <i class="sidenav-mini-icon"> AS </i>
                 <span class="item-name">Allowance Settings</span>
+            </a>
+        </li>
+        @endif
+        @if(can('bankSetups'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('bankSetups*') ? 'active' : '' !!}" href="{{ route('bankSetups.index') }}">
+                <i class="icon im im-icon-Money-Bag"></i>
+                <i class="sidenav-mini-icon"> BS </i>
+                <span class="item-name">Bank Setups</span>
             </a>
         </li>
         @endif
