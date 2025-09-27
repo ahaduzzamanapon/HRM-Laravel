@@ -56,7 +56,7 @@ class SalaryService
                 //=======PRESENT STATUS END======
 
                 //======= salary calculation here ==========//
-                $perday_salary = round(($gross_salary / $num_of_days), 2);
+                $perday_salary = round(($salary / $num_of_days), 2);
 
                 // before after absent deduction
                 $aba_deduct = round(($ba_absent * $perday_salary), 2);
@@ -66,35 +66,55 @@ class SalaryService
 
                 // pay salary
                 $pay_salary = round(($perday_salary * $pay_day), 2);
-                $net_salary = round(($gross_salary - ($total_deduct)), 2);
+                $net_salary = round(($salary - ($total_deduct)), 2);
 
                 $data = array(
                     'user_id'           => $emp_id,
                     'branch_id'         => $row->branch_id,
-                    'emp_status'        => 1,
+                    'emp_type'          => $row->emp_type,
                     'dept_id'           => $row->department_id,
-                    'desig_id'           => $row->designation_id,
+                    'desig_id'          => $row->designation_id,
+                    'emp_status'        => $row->status,
                     'salary_month'      => $first_date,
                     'n_days'            => $num_of_days,
                     'present'           => $present > 0 ? $present : 0,
                     'absent'            => $absent > 0 ? $absent : 0,
-                    'leave'             => $leaves > 0 ? $leaves : 0,
+                    'leaves'            => $leaves > 0 ? $leaves : 0,
                     'weekend'           => $weekend > 0 ? $weekend : 0,
                     'holiday'           => $holiday > 0 ? $holiday : 0,
                     'pay_day'           => $pay_day > 0 ? $pay_day : 0,
+                    'grade'             => $row->salary_grade_id,
                     'b_salary'          => $salary  > 0 ? $salary : 0,
                     'g_salary'          => $gross_salary > 0 ? $gross_salary : 0,
                     'pay_salary'        => $pay_salary > 0 ? $pay_salary : 0,
+
+                    'h_rent'       => 0,
+                    'm_allow'       => 0,
+                    'special_allow'       => 0,
+                    'child_allow'       => 0,
+                    'trans_allow'       => 0,
+                    'pf_allow_bank'       => 0,
                     'total_allow'       => 0,
-                    'all_allows'        => 0,
-                    'absent_deduct'     => $absent_deduct + $aba_deduct,
+                    'all_allows'       => 0,
+
+                    'gross_salary'       => 0,
+                    'absent_deduct'       => 0,
+                    'pf_deduct'       => 0,
+                    'tax_deduct'       => 0,
+                    'bene_deduct'       => 0,
+                    'auto_mobile_d'       => 0,
+                    'h_loan_deduct'       => 0,
+                    'p_loan_deduct'       => 0,
+
                     'loan_deduct'       => 0,
-                    'pf_deduct'         => 0,
+                    'stump_deduct'      => 0,
                     'others_deduct'     => 0,
                     'total_deduct'      => $total_deduct > 0 ? $total_deduct : 0,
                     'net_salary'        => $net_salary > 0 ? $net_salary : 0,
+
                     'created_at'        => date('d-m-Y h:i:s'),
-                    'updated_at'        => date('d-m-Y h:i:s')
+                    'updated_at'        => date('d-m-Y h:i:s'),
+                    'updated_by'        => auth()->user()->id
                 );
 
                 Payroll::updateOrCreate(

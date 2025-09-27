@@ -47,6 +47,7 @@ class Payroll extends Model
         'others_deduct',
         'total_deduct',
         'net_salary',
+        'updated_by',
     ];
 
     public function users()
