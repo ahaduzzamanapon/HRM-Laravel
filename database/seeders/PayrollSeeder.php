@@ -40,6 +40,7 @@ class PayrollSeeder extends Seeder
                 'pay_salary' => 55000.00,
                 'h_rent' => 10000.00,
                 'm_allow' => 2000.00,
+                'f_allow' => 200.00,
                 'special_allow' => 1000.00,
                 'child_allow' => 0.00,
                 'trans_allow' => 1000.00,

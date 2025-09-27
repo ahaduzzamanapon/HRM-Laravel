@@ -38,6 +38,7 @@ return new class extends Migration
 
             $table->decimal('h_rent', 10, 2)->nullable();
             $table->decimal('m_allow', 10, 2)->nullable();
+            $table->decimal('f_allow', 10, 2)->nullable();
             $table->decimal('special_allow', 10, 2)->nullable();
             $table->decimal('child_allow', 10, 2)->nullable();
             $table->decimal('trans_allow', 10, 2)->nullable();

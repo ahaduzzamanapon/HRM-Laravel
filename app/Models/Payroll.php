@@ -29,6 +29,7 @@ class Payroll extends Model
         'pay_salary',
         'h_rent',
         'm_allow',
+        'f_allow',
         'special_allow',
         'child_allow',
         'trans_allow',

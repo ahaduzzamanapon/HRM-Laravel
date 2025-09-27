@@ -35,5 +35,11 @@ class AllowanceSettingSeeder extends Seeder
             'tax_free_limit' => 30000,
             'is_active' => true,
         ]);
+        AllowanceSetting::updateOrCreate(['name' => 'Food Allowance'],[
+            'type' => 'fixed',
+            'value' => 200,
+            'tax_free_limit' => 30000,
+            'is_active' => true,
+        ]);
     }
 }

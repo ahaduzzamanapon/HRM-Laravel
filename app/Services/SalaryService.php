@@ -63,9 +63,10 @@ class SalaryService
                 // ------- Allowance Calculation here  ------- //
                 $allows = $this->get_allowances($emp_id);
                 // ------- Allowance Calculation end  ------- //
-
-
-
+                $h_rent = ($allows['House Rent'] > 0) ? $allows['House Rent'] : 0;
+                $m_allow = ($allows['Medical Allowance'] > 0) ? $allows['Medical Allowance'] : 0;
+                $trans_allow = ($allows['Transport Allowance'] > 0) ? $allows['Transport Allowance'] : 0;
+                $food_allow = ($allows['Food Allowance'] > 0) ? $allows['Food Allowance'] : 0;
 
 
                 // before after absent deduction
@@ -158,15 +159,19 @@ class SalaryService
             // Access allowance setting properties
             $allowanceName = $userAllowance->allowanceSetting->name;
             $allowanceType = $userAllowance->allowanceSetting->type;
+
+            if ($userAllowance->custom_value != null) {
+                $userAllowance->allowanceSetting->value = $userAllowance->custom_value;
+            }
+
             if ($allowanceType == 'percentage') {
                 $allowanceValue = $userWithAllowances->basic_salary *($userAllowance->allowanceSetting->value / 100);
             } else {
                 $allowanceValue = $userAllowance->allowanceSetting->value;
             }
             $array[$allowanceName] = $isEnabled ? number_format((float)$allowanceValue, 2, '.', '') : '0.00';
-
         }
-        dd($array);
+        return $array;
     }
 
     protected function get_employees($emp_ids)
