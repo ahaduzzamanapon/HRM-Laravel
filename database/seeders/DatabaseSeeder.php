@@ -48,6 +48,9 @@ class DatabaseSeeder extends Seeder
         $this->call(PayrollSeeder::class);
         //$this->call(SalaryGradeSeeder::class);
         $this->call(BankSetupSeeder::class);
+        $this->call(AttMachineDataSeeder::class);
+        $this->call(AttendanceTimeSeeder::class);
+        $this->call(UserAllowanceSeeder::class);
         // \App\Models\User::factory(10)->create();
 
         // \App\Models\User::factory()->create([
