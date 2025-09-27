@@ -47,7 +47,7 @@
 <div class="col-md-3">
     <div class="form-group">
         {!! Form::label('monthly_installment', 'Monthly Installment:') !!}
-        {!! Form::number('monthly_installment', null, ['class' => 'form-control', 'step' => '0.01'])
+        {!! Form::number('monthly_installment', null, ['class' => 'form-control', 'step' => '0.01', 'id' => 'monthly_installment'])
         !!}
     </div>
 </div>
@@ -92,7 +92,7 @@
 <div class="col-md-3">
     <div class="form-group">
         {!! Form::label('outstanding_balance', 'Outstanding Balance:') !!}
-        {!! Form::number('outstanding_balance', null, ['class' => 'form-control', 'step' => '0.01'])
+        {!! Form::number('outstanding_balance', null, ['class' => 'form-control', 'step' => '0.01', 'readonly'])
         !!}
     </div>
 </div>
@@ -121,3 +121,29 @@
     !!}
     <a href="{{ route('loans.index') }}" class="btn btn-default">Cancel</a>
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const amountInput = document.getElementById('amount');
+        const interestRateInput = document.getElementById('interest_rate');
+        const installmentsInput = document.getElementById('installments');
+        const monthlyInstallmentInput = document.getElementById('monthly_installment');
+
+        function calculateMonthlyInstallment() {
+            const P = parseFloat(amountInput.value) || 0;
+            const i = (parseFloat(interestRateInput.value) || 0) / 100 / 12;
+            const n = parseInt(installmentsInput.value) || 0;
+
+            if (P > 0 && i > 0 && n > 0) {
+                const M = P * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
+                monthlyInstallmentInput.value = M.toFixed(2);
+            }
+        }
+
+        amountInput.addEventListener('input', calculateMonthlyInstallment);
+        interestRateInput.addEventListener('input', calculateMonthlyInstallment);
+        installmentsInput.addEventListener('input', calculateMonthlyInstallment);
+    });
+</script>
+@endpush
