@@ -1,0 +1,3 @@
+id, user_id, child_name, child_dob, start_age, start_month, pay_year, end_month, pay_amt, created_at, updated_at, update_by  
+
+id, min_salary, max_salary, tax_yearly, tax_monthly, created_at, updated_at, update_by
