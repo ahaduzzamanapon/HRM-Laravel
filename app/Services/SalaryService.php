@@ -57,6 +57,16 @@ class SalaryService
 
                 //======= salary calculation here ==========//
                 $perday_salary = round(($salary / $num_of_days), 2);
+                // pay salary
+                $pay_salary = round(($perday_salary * $pay_day), 2);
+
+                // ------- Allowance Calculation here  ------- //
+                $allows = $this->get_allowances($emp_id);
+                // ------- Allowance Calculation end  ------- //
+
+
+
+
 
                 // before after absent deduction
                 $aba_deduct = round(($ba_absent * $perday_salary), 2);
@@ -64,8 +74,9 @@ class SalaryService
                 $absent_deduct = round(($perday_salary * $absent), 2);
                 $total_deduct = $aba_deduct + $absent_deduct;
 
-                // pay salary
-                $pay_salary = round(($perday_salary * $pay_day), 2);
+                // ======= salary calculation end ========== //
+
+
                 $net_salary = round(($salary - ($total_deduct)), 2);
 
                 $data = array(
@@ -88,23 +99,23 @@ class SalaryService
                     'g_salary'          => $gross_salary > 0 ? $gross_salary : 0,
                     'pay_salary'        => $pay_salary > 0 ? $pay_salary : 0,
 
-                    'h_rent'       => 0,
-                    'm_allow'       => 0,
-                    'special_allow'       => 0,
+                    'h_rent'            => 0,
+                    'm_allow'           => 0,
+                    'special_allow'     => 0,
                     'child_allow'       => 0,
                     'trans_allow'       => 0,
-                    'pf_allow_bank'       => 0,
+                    'pf_allow_bank'     => 0,
                     'total_allow'       => 0,
-                    'all_allows'       => 0,
+                    'all_allows'        => 0,
 
-                    'gross_salary'       => 0,
-                    'absent_deduct'       => 0,
-                    'pf_deduct'       => 0,
-                    'tax_deduct'       => 0,
+                    'gross_salary'      => 0,
+                    'absent_deduct'     => 0,
+                    'pf_deduct'         => 0,
+                    'tax_deduct'        => 0,
                     'bene_deduct'       => 0,
-                    'auto_mobile_d'       => 0,
-                    'h_loan_deduct'       => 0,
-                    'p_loan_deduct'       => 0,
+                    'auto_mobile_d'     => 0,
+                    'h_loan_deduct'     => 0,
+                    'p_loan_deduct'     => 0,
 
                     'loan_deduct'       => 0,
                     'stump_deduct'      => 0,
@@ -133,6 +144,29 @@ class SalaryService
             'message' => empty($errors) ? 'Successfully Process Done' : 'Process completed with errors',
             'errors' => $errors
         ];
+    }
+
+    // allowances cal
+    function get_allowances($emp_id)
+    {
+        $userWithAllowances = User::with('userAllowances.allowanceSetting')->find($emp_id);
+        $array = array();
+        foreach ($userWithAllowances->userAllowances as $userAllowance) {
+            // Access user allowance properties
+            $isEnabled = $userAllowance->is_enabled;
+
+            // Access allowance setting properties
+            $allowanceName = $userAllowance->allowanceSetting->name;
+            $allowanceType = $userAllowance->allowanceSetting->type;
+            if ($allowanceType == 'percentage') {
+                $allowanceValue = $userWithAllowances->basic_salary *($userAllowance->allowanceSetting->value / 100);
+            } else {
+                $allowanceValue = $userAllowance->allowanceSetting->value;
+            }
+            $array[$allowanceName] = $isEnabled ? number_format((float)$allowanceValue, 2, '.', '') : '0.00';
+
+        }
+        dd($array);
     }
 
     protected function get_employees($emp_ids)
