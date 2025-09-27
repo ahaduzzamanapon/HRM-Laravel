@@ -95,6 +95,7 @@ Attendance Process @parent
                         </div>
                         <div class="form-group col-sm-12">
                             <button class="btn btn-primary" id="process-attendance-btn">Process</button>
+                            <button class="btn btn-success" id="process-date-range-btn">Process Date Range</button>
                             <button class="btn btn-secondary" id="manual-attendance-btn">Manual Attendance</button>
                         </div>
                     </div>
@@ -293,6 +294,72 @@ Attendance Process @parent
                             });
                         }
                     });
+                });
+
+                $('#process-date-range-btn').on('click', function (e) {
+                    e.preventDefault();
+                    $('.loader').show();
+
+                    var userIds = [];
+                    $('.user-checkbox:checked').each(function () {
+                        userIds.push($(this).val());
+                    });
+
+                    var fromDate = new Date($('#from_date').val());
+                    var toDate = new Date($('#to_date').val());
+
+                    var dates = [];
+                    var currentDate = fromDate;
+                    while (currentDate <= toDate) {
+                        dates.push(new Date(currentDate));
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+
+                    function processDate(index) {
+                        if (index >= dates.length) {
+                            $('.loader').hide();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: 'Attendance processed successfully for the selected date range.',
+                            });
+                            return;
+                        }
+
+                        var data = {
+                            from_date: dates[index].toISOString().slice(0, 10),
+                            users: userIds,
+                            _token: '{{ csrf_token() }}'
+                        };
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '{{ route("attendance.process.store") }}',
+                            data: data,
+                            success: function (response) {
+                                if (response.success) {
+                                    processDate(index + 1);
+                                } else {
+                                    $('.loader').hide();
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: response.message,
+                                    });
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                $('.loader').hide();
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'An error occurred: ' + error,
+                                });
+                            }
+                        });
+                    }
+
+                    processDate(0);
                 });
 
                 $('#save-manual-attendance-btn').on('click', function() {
