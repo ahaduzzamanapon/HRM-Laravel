@@ -353,7 +353,7 @@ Crud Builder @parent
 </section>
 @stop
 
-@push('scripts')
+@section('scripts')
     <script src="{{ asset('vendors/select2/js/select2.min.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.2/icheck.min.js"></script>
 
