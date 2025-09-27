@@ -60,6 +60,7 @@ return new class extends Migration
             $table->decimal('total_deduct', 10, 2)->nullable();
             $table->decimal('net_salary', 10, 2)->nullable();
             $table->timestamps();
+            $table->integer('updated_by');
         });
     }
     /**

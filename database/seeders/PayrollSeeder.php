@@ -26,7 +26,7 @@ class PayrollSeeder extends Seeder
                 'dept_id' => $user->department_id,
                 'desig_id' => $user->designation_id,
                 'emp_status' => 1, // Assuming 1 for active
-                'salary_month' => now()->format('Y-m-d'),
+                'salary_month' => now()->format('Y-m-01'),
                 'n_days' => 30,
                 'present' => 28,
                 'absent' => 2,
@@ -58,6 +58,7 @@ class PayrollSeeder extends Seeder
                 'others_deduct' => 0.00,
                 'total_deduct' => 5100.00,
                 'net_salary' => 65900.00,
+                'updated_by' => 1,
             ]);
         }
     }
