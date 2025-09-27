@@ -128,4 +128,8 @@ class AttendanceProcessController extends Controller
         return response()->json($users);
     }
 
+    public function myAttendance(Request $request)
+    {
+        return view('attendance.my_attendance');
+    }
 }

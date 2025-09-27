@@ -51,6 +51,7 @@ Route::post('attendance/process', [App\Http\Controllers\AttendanceProcessControl
 Route::get('attendance/filter', [App\Http\Controllers\AttendanceProcessController::class, 'filterUsers'])->name('attendance.filter');
 Route::get('attendance/report', [App\Http\Controllers\AttendanceProcessController::class, 'getReportData'])->name('attendance.report');
 Route::post('attendance/manual', [App\Http\Controllers\AttendanceProcessController::class, 'storeManualAttendance'])->name('attendance.manual.store');
+Route::get('my-attendance', [App\Http\Controllers\AttendanceProcessController::class, 'myAttendance'])->name('attendance.my');
 
 Route::post('leave-applications/{id}/first-approve', [App\Http\Controllers\LeaveApplicationController::class, 'firstLevelApprove'])->name('leaveApplications.first.approve');
 Route::post('leave-applications/{id}/final-approve', [App\Http\Controllers\LeaveApplicationController::class, 'finalApprove'])->name('leaveApplications.final.approve');
