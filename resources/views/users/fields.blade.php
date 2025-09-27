@@ -178,6 +178,14 @@
     </div>
 </div>
 
+<!-- Status Field -->
+<div class="col-md-3">
+    <div class="form-group">
+        {!! Form::label('status', 'Status:',['class'=>'control-label']) !!}
+        {!! Form::select('status', ['regular' => 'Regular', 'left' => 'Left', 'resign' => 'Resign', 'retired' => 'Retired', 'terminate' => 'Terminate'], null, ['class' => 'form-control']) !!}
+    </div>
+</div>
+
 <!-- Bank ID Field -->
 <div class="col-md-3">
     <div class="form-group">

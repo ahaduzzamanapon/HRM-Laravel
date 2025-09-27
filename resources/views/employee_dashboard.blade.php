@@ -77,5 +77,49 @@ Dashboard @parent
         </div>
         <!-- ./col -->
     </div>
+    <div class="row">
+        <div class="col-lg-3 col-xs-6">
+            <!-- small box -->
+            <div class="small-box" style="background-color: #605ca8; color: white;">
+                <div class="inner">
+                    <h3>{{ $mySalaryGrade }}</h3>
+                    <p>My Salary Grade</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-stairs"></i>
+                </div>
+                <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+            <!-- small box -->
+            <div class="small-box" style="background-color: #0073b7; color: white;">
+                <div class="inner">
+                    <h3>{{ $myProvidentFund }}</h3>
+                    <p>My Provident Fund</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-piggy-bank"></i>
+                </div>
+                <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+            <!-- small box -->
+            <div class="small-box" style="background-color: #ff851b; color: white;">
+                <div class="inner">
+                    <h3>{{ $myChildren }}</h3>
+                    <p>My Children for Allowance</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-child"></i>
+                </div>
+                <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <!-- ./col -->
+    </div>
 </section>
 @stop

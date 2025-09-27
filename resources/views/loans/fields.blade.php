@@ -57,6 +57,7 @@
     </div>
 </div>
 
+@if(Auth::user()->role->name == 'Admin')
 <!-- Disbursement Date Field -->
 <div class="col-md-3">
     <div class="form-group">
@@ -119,6 +120,7 @@
         !!}
     </div>
 </div>
+@endif
 
 <!-- Submit Field -->
 <div class="form-group col-sm-12">

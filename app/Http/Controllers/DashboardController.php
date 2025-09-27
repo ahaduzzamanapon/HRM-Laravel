@@ -48,8 +48,11 @@ class DashboardController extends Controller
             $pendingLeaveApplications = LeaveApplication::where('user_id', $user->id)->where('status', 'pending')->count();
             $totalLoans = Loan::where('employee_id', $user->id)->count();
             $pendingLoans = Loan::where('employee_id', $user->id)->where('status', 'pending')->count();
+            $mySalaryGrade = $user->salaryGrade->grade ?? 'N/A';
+            $myProvidentFund = ProvidentFundContribution::where('employee_id', $user->id)->sum('employee_contribution') + ProvidentFundContribution::where('employee_id', $user->id)->sum('employer_contribution');
+            $myChildren = ChildAllowance::where('user_id', $user->id)->count();
 
-            return view('employee_dashboard', compact('totalLeaveApplications', 'pendingLeaveApplications', 'totalLoans', 'pendingLoans'));
+            return view('employee_dashboard', compact('totalLeaveApplications', 'pendingLeaveApplications', 'totalLoans', 'pendingLoans', 'mySalaryGrade', 'myProvidentFund', 'myChildren'));
         }
     }
 }
