@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Payroll;
-use Carbon\Carbon;
 
 class PayrollSeeder extends Seeder
 {
@@ -19,41 +19,45 @@ class PayrollSeeder extends Seeder
         $users = User::take(5)->get();
 
         foreach ($users as $user) {
-            $n_days = Carbon::now()->daysInMonth;
-            $present = rand(20, $n_days);
-            $absent = $n_days - $present;
-            $g_salary = $user->gross_salary;
-            $b_salary = $user->basic_salary;
-            $pay_salary = ($g_salary / $n_days) * $present;
-            $total_allow = rand(1000, 5000);
-            $total_deduct = rand(500, 2000);
-            $net_salary = $pay_salary + $total_allow - $total_deduct;
-
             Payroll::create([
                 'user_id' => $user->id,
-                'branch_id' => $user->branch_id,
-                'emp_status' => 1,
+                'branch_id' => $user->branch_id ?? 1,
+                'emp_type' => 1, // Assuming 1 for full-time
                 'dept_id' => $user->department_id,
                 'desig_id' => $user->designation_id,
-                'salary_month' => Carbon::now()->format('Y-m-01'),
-                'n_days' => $n_days,
-                'present' => $present,
-                'absent' => $absent,
-                'leave' => 0,
-                'weekend' => 0,
-                'holiday' => 0,
-                'pay_day' => $present,
-                'b_salary' => $b_salary,
-                'g_salary' => $g_salary,
-                'pay_salary' => $pay_salary,
-                'total_allow' => $total_allow,
+                'emp_status' => 1, // Assuming 1 for active
+                'salary_month' => now()->format('Y-m-d'),
+                'n_days' => 30,
+                'present' => 28,
+                'absent' => 2,
+                'leaves' => 0,
+                'weekend' => 8,
+                'holiday' => 1,
+                'pay_day' => 22,
+                'grade' => 1,
+                'b_salary' => 50000.00,
+                'g_salary' => 60000.00,
+                'pay_salary' => 55000.00,
+                'h_rent' => 10000.00,
+                'm_allow' => 2000.00,
+                'special_allow' => 1000.00,
+                'child_allow' => 0.00,
+                'trans_allow' => 1000.00,
+                'pf_allow_bank' => 2000.00,
+                'total_allow' => 16000.00,
                 'all_allows' => '[]',
-                'absent_deduct' => 0,
-                'loan_deduct' => 0,
-                'pf_deduct' => 0,
-                'others_deduct' => 0,
-                'total_deduct' => $total_deduct,
-                'net_salary' => $net_salary,
+                'gross_salary' => 71000.00,
+                'absent_deduct' => 2000.00,
+                'pf_deduct' => 2000.00,
+                'tax_deduct' => 1000.00,
+                'bene_deduct' => 0.00,
+                'auto_mobile_d' => 0.00,
+                'h_loan_deduct' => 0.00,
+                'p_loan_deduct' => 0.00,
+                'stump_deduct' => 100.00,
+                'others_deduct' => 0.00,
+                'total_deduct' => 5100.00,
+                'net_salary' => 65900.00,
             ]);
         }
     }
