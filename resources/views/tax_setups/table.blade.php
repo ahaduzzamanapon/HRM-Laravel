@@ -3,7 +3,7 @@
         <thead>
             <tr>
                 <th>Id</th>
-        <th>Titel</th>
+        <th>Title</th>
         <th>Min Salary</th>
         <th>Max Salary</th>
         <th>Tax Yearly</th>
@@ -18,7 +18,7 @@
         @foreach($taxSetups as $key => $taxSetup)
             <tr>
                 <td>{{ $taxSetup->id }}</td>
-            <td>{{ $taxSetup->titel }}</td>
+            <td>{{ $taxSetup->title }}</td>
             <td>{{ $taxSetup->min_salary }}</td>
             <td>{{ $taxSetup->max_salary }}</td>
             <td>{{ $taxSetup->tax_yearly }}</td>

@@ -9,7 +9,7 @@ use Eloquent as Model;
  * @package App\Models
  * @version September 27, 2025, 9:03 am UTC
  *
- * @property string $titel
+ * @property string $title
  * @property integer $min_salary
  * @property integer $max_salary
  * @property integer $tax_yearly
@@ -25,7 +25,7 @@ class TaxSetup extends Model
 
 
     public $fillable = [
-        'titel',
+        'title',
         'min_salary',
         'max_salary',
         'tax_yearly',
@@ -40,7 +40,7 @@ class TaxSetup extends Model
      */
     protected $casts = [
         'id' => 'integer',
-        'titel' => 'string',
+        'title' => 'string',
         'min_salary' => 'integer',
         'max_salary' => 'integer',
         'tax_yearly' => 'integer',
@@ -54,7 +54,11 @@ class TaxSetup extends Model
      * @var array
      */
     public static $rules = [
-        
+        'title' => 'required',
+        'min_salary' => 'required|numeric',
+        'max_salary' => 'required|numeric|gte:min_salary',
+        'tax_yearly' => 'required|numeric',
+        'tax_monthly' => 'required|numeric'
     ];
 
     

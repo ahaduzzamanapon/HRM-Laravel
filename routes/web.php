@@ -57,9 +57,7 @@ Route::post('leave-applications/{id}/final-approve', [App\Http\Controllers\Leave
 Route::post('leave-applications/{id}/reject', [App\Http\Controllers\LeaveApplicationController::class, 'reject'])->name('leaveApplications.reject');
 
 
-Route::get('/', function () {
-    return view('index');
-})->middleware('auth');
+Route::get('/', [App\Http\Controllers\DashboardController::class, 'index'])->middleware('auth');
 
 
 

@@ -405,6 +405,15 @@
             </a>
         </li>
         @endif
+        @if(can('taxSetups'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('taxSetups*') ? 'active' : '' !!}" href="{{ route('taxSetups.index') }}">
+                <i class="icon im im-icon-Money-Bag"></i>
+                <i class="sidenav-mini-icon"> TS </i>
+                <span class="item-name">Tax Setups</span>
+            </a>
+        </li>
+        @endif
         @if(can('notices'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('notices*') ? 'active' : '' !!}" href="{{ route('notices.index') }}">

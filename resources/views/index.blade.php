@@ -24,13 +24,13 @@ Dashboard @parent
             <!-- small box -->
             <div class="small-box bg-aqua">
                 <div class="inner">
-                    <h3>150</h3>
+                    <h3>{{ $totalEmployees }}</h3>
                     <p>Total Employees</p>
                 </div>
                 <div class="icon">
                     <i class="fa fa-users"></i>
                 </div>
-                <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+                <a href="{{ route('users.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
             </div>
         </div>
         <!-- ./col -->
@@ -38,7 +38,7 @@ Dashboard @parent
             <!-- small box -->
             <div class="small-box bg-green">
                 <div class="inner">
-                    <h3>53<sup style="font-size: 20px">%</sup></h3>
+                    <h3>{{ $totalDepartments }}</h3>
                     <p>Total Departments</p>
                 </div>
                 <div class="icon">
@@ -52,8 +52,8 @@ Dashboard @parent
             <!-- small box -->
             <div class="small-box bg-yellow">
                 <div class="inner">
-                    <h3>44</h3>
-                    <p>Total Projects</p>
+                    <h3>{{ $totalBranches }}</h3>
+                    <p>Total Branches</p>
                 </div>
                 <div class="icon">
                     <i class="fa fa-briefcase"></i>
@@ -66,8 +66,8 @@ Dashboard @parent
             <!-- small box -->
             <div class="small-box bg-red">
                 <div class="inner">
-                    <h3>65</h3>
-                    <p>New Employees</p>
+                    <h3>{{ $newEmployees }}</h3>
+                    <p>New Employees (Last 30 Days)</p>
                 </div>
                 <div class="icon">
                     <i class="fa fa-user-plus"></i>
@@ -78,39 +78,134 @@ Dashboard @parent
         <!-- ./col -->
     </div>
     <div class="row">
+        <div class="col-lg-3 col-xs-6">
+            <!-- small box -->
+            <div class="small-box" style="background-color: #605ca8; color: white;">
+                <div class="inner">
+                    <h3>{{ $totalSalaryGrades }}</h3>
+                    <p>Total Salary Grades</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-stairs"></i>
+                </div>
+                <a href="{{ route('salaryGrades.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+            <!-- small box -->
+            <div class="small-box" style="background-color: #0073b7; color: white;">
+                <div class="inner">
+                    <h3>{{ $totalTaxSetups }}</h3>
+                    <p>Total Tax Setups</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-money-bill-wave"></i>
+                </div>
+                <a href="{{ route('taxSetups.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+            <!-- small box -->
+            <div class="small-box" style="background-color: #ff851b; color: white;">
+                <div class="inner">
+                    <h3>{{ $totalLeaveApplications }}</h3>
+                    <p>Total Leave Applications</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-calendar-alt"></i>
+                </div>
+                <a href="{{ route('leaveApplications.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+            <!-- small box -->
+            <div class="small-box" style="background-color: #d81b60; color: white;">
+                <div class="inner">
+                    <h3>{{ $pendingLeaveApplications }}</h3>
+                    <p>Pending Leave Applications</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-calendar-day"></i>
+                </div>
+                <a href="{{ route('leaveApplications.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <!-- ./col -->
+    </div>
+    <div class="row">
+        <div class="col-lg-3 col-xs-6">
+            <!-- small box -->
+            <div class="small-box" style="background-color: #17a2b8; color: white;">
+                <div class="inner">
+                    <h3>{{ $totalLoans }}</h3>
+                    <p>Total Loans</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-money-bill-alt"></i>
+                </div>
+                <a href="{{ route('loans.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+            <!-- small box -->
+            <div class="small-box" style="background-color: #ffc107; color: white;">
+                <div class="inner">
+                    <h3>{{ $pendingLoans }}</h3>
+                    <p>Pending Loans</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-money-bill-wave"></i>
+                </div>
+                <a href="{{ route('loans.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+            <!-- small box -->
+            <div class="small-box" style="background-color: #28a745; color: white;">
+                <div class="inner">
+                    <h3>{{ $totalChildren }}</h3>
+                    <p>Total Children for Allowance</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-child"></i>
+                </div>
+                <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+            <!-- small box -->
+            <div class="small-box" style="background-color: #dc3545; color: white;">
+                <div class="inner">
+                    <h3>{{ $totalProvidentFund }}</h3>
+                    <p>Total Provident Fund</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-piggy-bank"></i>
+                </div>
+                <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <!-- ./col -->
+    </div>
+    <div class="row">
         <div class="col-md-12">
             <div class="box">
                 <div class="box-header with-border">
-                    <h3 class="box-title">Monthly Recap Report</h3>
-                    <div class="box-tools pull-right">
-                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
-                                class="fa fa-minus"></i>
-                        </button>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-box-tool dropdown-toggle" data-toggle="dropdown">
-                                <i class="fa fa-wrench"></i></button>
-                            <ul class="dropdown-menu" role="menu">
-                                <li><a href="#">Action</a></li>
-                                <li><a href="#">Another action</a></li>
-                                <li><a href="#">Something else here</a></li>
-                                <li class="divider"></li>
-                                <li><a href="#">Separated link</a></li>
-                            </ul>
-                        </div>
-                        <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa
-  fa-times"></i></button>
-                    </div>
+                    <h3 class="box-title">Monthly Employee Join Report</h3>
                 </div>
                 <!-- /.box-header -->
                 <div class="box-body">
                     <div class="row">
                         <div class="col-md-12">
-                            <p class="text-center">
-                                <strong>Sales: 1 Jan, 2023 - 30 Jul, 2023</strong>
-                            </p>
                             <div class="chart">
                                 <!-- Sales Chart Canvas -->
-                                <canvas id="salesChart" style="height: 180px;"></canvas>
+                                <canvas id="employeeChart" style="height: 180px;"></canvas>
                             </div>
                             <!-- /.chart-responsive -->
                         </div>
@@ -118,51 +213,6 @@ Dashboard @parent
                     <!-- /.row -->
                 </div>
                 <!-- ./box-body -->
-                <div class="box-footer">
-                    <div class="row">
-                        <div class="col-sm-3 col-xs-6">
-                            <div class="description-block border-right">
-                                <span class="description-percentage text-green"><i class="fa fa-caret-up"></i>
-                                    17%</span>
-                                <h5 class="description-header">$35,210.43</h5>
-                                <span class="description-text">TOTAL REVENUE</span>
-                            </div>
-                            <!-- /.description-block -->
-                        </div>
-                        <!-- /.col -->
-                        <div class="col-sm-3 col-xs-6">
-                            <div class="description-block border-right">
-                                <span class="description-percentage text-yellow"><i class="fa fa-caret-left"></i>
-                                    0%</span>
-                                <h5 class="description-header">$10,390.90</h5>
-                                <span class="description-text">TOTAL COST</span>
-                            </div>
-                            <!-- /.description-block -->
-                        </div>
-                        <!-- /.col -->
-                        <div class="col-sm-3 col-xs-6">
-                            <div class="description-block border-right">
-                                <span class="description-percentage text-green"><i class="fa fa-caret-up"></i>
-                                    20%</span>
-                                <h5 class="description-header">$24,813.53</h5>
-                                <span class="description-text">TOTAL PROFIT</span>
-                            </div>
-                            <!-- /.description-block -->
-                        </div>
-                        <!-- /.col -->
-                        <div class="col-sm-3 col-xs-6">
-                            <div class="description-block">
-                                <span class="description-percentage text-red"><i class="fa fa-caret-down"></i>
-                                    18%</span>
-                                <h5 class="description-header">1200</h5>
-                                <span class="description-text">GOAL COMPLETIONS</span>
-                            </div>
-                            <!-- /.description-block -->
-                        </div>
-                    </div>
-                    <!-- /.row -->
-                </div>
-                <!-- /.box-footer -->
             </div>
             <!-- /.box -->
         </div>
@@ -175,24 +225,13 @@ Dashboard @parent
         $(function () {
             'use strict';
 
-            var salesChartCanvas = document.getElementById('salesChart').getContext('2d');
+            var employeeChartCanvas = document.getElementById('employeeChart').getContext('2d');
 
-            var salesChartData = {
-                labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+            var employeeChartData = {
+                labels: {!! json_encode($labels) !!},
                 datasets: [
                     {
-                        label: 'Electronics',
-                        backgroundColor: 'rgba(210, 214, 222, 1)',
-                        borderColor: 'rgba(210, 214, 222, 1)',
-                        pointRadius: false,
-                        pointColor: 'rgba(210, 214, 222, 1)',
-                        pointStrokeColor: '#c1c7d1',
-                        pointHighlightFill: '#fff',
-                        pointHighlightStroke: 'rgba(220,220,220,1)',
-                        data: [65, 59, 80, 81, 56, 55, 40]
-                    },
-                    {
-                        label: 'Digital Goods',
+                        label: 'Employees',
                         backgroundColor: 'rgba(60,141,188,0.9)',
                         borderColor: 'rgba(60,141,188,0.8)',
                         pointRadius: false,
@@ -200,12 +239,12 @@ Dashboard @parent
                         pointStrokeColor: 'rgba(60,141,188,1)',
                         pointHighlightFill: '#fff',
                         pointHighlightStroke: 'rgba(60,141,188,1)',
-                        data: [28, 48, 40, 19, 86, 27, 90]
+                        data: {!! json_encode($data) !!}
                     }
                 ]
             };
 
-            var salesChartOptions = {
+            var employeeChartOptions = {
                 maintainAspectRatio: false,
                 responsive: true,
                 legend: {
@@ -225,10 +264,10 @@ Dashboard @parent
                 }
             };
 
-            var salesChart = new Chart(salesChartCanvas, {
+            var employeeChart = new Chart(employeeChartCanvas, {
                 type: 'line',
-                data: salesChartData,
-                options: salesChartOptions
+                data: employeeChartData,
+                options: employeeChartOptions
             });
         });
     </script>

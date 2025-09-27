@@ -48,6 +48,7 @@ class TaxSetupController extends AppBaseController
     public function store(CreateTaxSetupRequest $request)
     {
         $input = $request->all();
+        $input['update_by'] = auth()->id();
 
         /** @var TaxSetup $taxSetup */
         $taxSetup = TaxSetup::create($input);
@@ -118,7 +119,10 @@ class TaxSetupController extends AppBaseController
             return redirect(route('taxSetups.index'));
         }
 
-        $taxSetup->fill($request->all());
+        $input = $request->all();
+        $input['update_by'] = auth()->id();
+
+        $taxSetup->fill($input);
         $taxSetup->save();
 
         Flash::success('Tax Setup updated successfully.');

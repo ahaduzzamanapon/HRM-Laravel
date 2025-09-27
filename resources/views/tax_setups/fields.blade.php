@@ -1,8 +1,8 @@
-<!-- Titel Field -->
+<!-- Title Field -->
 <div class="col-md-3">
     <div class="form-group">
-        {!! Form::label('titel', 'Titel:',['class'=>'control-label']) !!}
-        {!! Form::text('titel', null, ['class' => 'form-control']) !!}
+        {!! Form::label('title', 'Title:',['class'=>'control-label']) !!}
+        {!! Form::text('title', null, ['class' => 'form-control']) !!}
     </div>
 </div>
 
@@ -29,7 +29,7 @@
 <div class="col-md-3">
     <div class="form-group">
         {!! Form::label('tax_yearly', 'Tax Yearly:',['class'=>'control-label']) !!}
-        {!! Form::number('tax_yearly', null, ['class' => 'form-control']) !!}
+        {!! Form::number('tax_yearly', null, ['class' => 'form-control', 'id' => 'tax_yearly']) !!}
     </div>
 </div>
 
@@ -38,18 +38,13 @@
 <div class="col-md-3">
     <div class="form-group">
         {!! Form::label('tax_monthly', 'Tax Monthly:',['class'=>'control-label']) !!}
-        {!! Form::number('tax_monthly', null, ['class' => 'form-control']) !!}
+        {!! Form::number('tax_monthly', null, ['class' => 'form-control', 'id' => 'tax_monthly']) !!}
     </div>
 </div>
 
 
 <!-- Update By Field -->
-<div class="col-md-3">
-    <div class="form-group">
-        {!! Form::label('update_by', 'Update By:',['class'=>'control-label']) !!}
-        {!! Form::text('update_by', null, ['class' => 'form-control']) !!}
-    </div>
-</div>
+        {!! Form::hidden('update_by', auth()->id(), ['class' => 'form-control']) !!}
 
 
 <!-- Submit Field -->
@@ -57,3 +52,20 @@
     {!! Form::submit('Save', ['class' => 'btn btn-primary']) !!}
     <a href="{{ route('taxSetups.index') }}" class="btn btn-danger">Cancel</a>
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const taxYearlyInput = document.getElementById('tax_yearly');
+        const taxMonthlyInput = document.getElementById('tax_monthly');
+
+        function calculateTaxMonthly() {
+            const taxYearly = parseFloat(taxYearlyInput.value) || 0;
+            const taxMonthly = taxYearly / 12;
+            taxMonthlyInput.value = taxMonthly.toFixed(2);
+        }
+
+        taxYearlyInput.addEventListener('input', calculateTaxMonthly);
+    });
+</script>
+@endpush
