@@ -2,7 +2,7 @@
     <table class="table" id="bankSetups-table">
         <thead>
             <tr>
-                <th>Id</th>
+                <th>SL</th>
         <th>Bank Name</th>
         <th>Branch Name</th>
         <th>Address</th>
@@ -16,7 +16,7 @@
         <tbody>
         @foreach($bankSetups as $key => $bankSetup)
             <tr>
-                <td>{{ $bankSetup->id }}</td>
+                <td>{{ $key+1 }}</td>
             <td>{{ $bankSetup->bank_name }}</td>
             <td>{{ $bankSetup->branch_name }}</td>
             <td>{{ $bankSetup->address }}</td>

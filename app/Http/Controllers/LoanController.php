@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Models\LoanType;
 use Flash;
 
+use Illuminate\Support\Facades\Auth;
+
 class LoanController extends Controller
 {
     /**
@@ -18,7 +20,11 @@ class LoanController extends Controller
      */
     public function index()
     {
-        $loans = Loan::with(['employee', 'loanType'])->paginate(10);
+        if (Auth::user()->role->name == 'Admin') {
+            $loans = Loan::with(['employee', 'loanType'])->paginate(10);
+        } else {
+            $loans = Loan::with(['employee', 'loanType'])->where('employee_id', Auth::id())->paginate(10);
+        }
         return view('loans.index', compact('loans'));
     }
 
@@ -29,7 +35,11 @@ class LoanController extends Controller
      */
     public function create()
     {
-        $users = User::all();
+        if (Auth::user()->role->name == 'Admin') {
+            $users = User::all();
+        } else {
+            $users = User::where('id', Auth::id())->get();
+        }
         $loanTypes = LoanType::all();
         return view('loans.create', compact('users', 'loanTypes'));
     }

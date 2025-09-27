@@ -2,8 +2,13 @@
 <div class="col-md-3">
     <div class="form-group">
         {!! Form::label('employee_id', 'Employee:') !!}
-        {!! Form::select('employee_id', $users->pluck('name','id'), null, ['class' => 'form-control'])
-        !!}
+        @if(Auth::user()->role->name == 'Admin')
+            {!! Form::select('employee_id', $users->pluck('name','id'), null, ['class' => 'form-control'])
+            !!}
+        @else
+            {!! Form::select('employee_id', $users->pluck('name','id'), Auth::id(), ['class' => 'form-control', 'readonly'])
+            !!}
+        @endif
     </div>
 </div>
 

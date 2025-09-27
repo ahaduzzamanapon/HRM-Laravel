@@ -2,14 +2,13 @@
     <table class="table" id="taxSetups-table">
         <thead>
             <tr>
-                <th>Id</th>
+                <th>SL</th>
         <th>Title</th>
         <th>Min Salary</th>
         <th>Max Salary</th>
         <th>Tax Yearly</th>
         <th>Tax Monthly</th>
         <th>Update By</th>
-        <th>Created At</th>
         <th>Updated At</th>
                 <th>Action</th>
             </tr>
@@ -17,14 +16,13 @@
         <tbody>
         @foreach($taxSetups as $key => $taxSetup)
             <tr>
-                <td>{{ $taxSetup->id }}</td>
+                <td>{{ $key+1 }}</td>
             <td>{{ $taxSetup->title }}</td>
             <td>{{ $taxSetup->min_salary }}</td>
             <td>{{ $taxSetup->max_salary }}</td>
             <td>{{ $taxSetup->tax_yearly }}</td>
             <td>{{ $taxSetup->tax_monthly }}</td>
             <td>{{ $taxSetup->updater->name ?? 'N/A' }}</td>
-            <td>{{ $taxSetup->created_at }}</td>
             <td>{{ $taxSetup->updated_at }}</td>
                 <td>
                     {!! Form::open(['route' => ['taxSetups.destroy', $taxSetup->id], 'method' => 'delete']) !!}

@@ -29,6 +29,7 @@
                     <table class="table" id="allowanceSettings-table">
                         <thead>
                         <tr>
+                            <th>SL</th>
                             <th>Name</th>
                             <th>Type</th>
                             <th>Value</th>
@@ -40,8 +41,9 @@
                         </tr>
                         </thead>
                         <tbody>
-                        @foreach($allowanceSettings as $allowanceSetting)
+                        @foreach($allowanceSettings as $key => $allowanceSetting)
                             <tr>
+                                <td>{{ $key+1 }}</td>
                                 <td>{{ $allowanceSetting->name }}</td>
                                 <td>{{ $allowanceSetting->type }}</td>
                                 <td>{{ $allowanceSetting->value }}</td>
