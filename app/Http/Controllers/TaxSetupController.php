@@ -22,7 +22,7 @@ class TaxSetupController extends AppBaseController
     public function index(Request $request)
     {
         /** @var TaxSetup $taxSetups */
-        $taxSetups = TaxSetup::paginate(10);
+        $taxSetups = TaxSetup::with('updater')->paginate(10);
 
         return view('tax_setups.index')
             ->with('taxSetups', $taxSetups);

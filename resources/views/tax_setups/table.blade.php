@@ -23,7 +23,7 @@
             <td>{{ $taxSetup->max_salary }}</td>
             <td>{{ $taxSetup->tax_yearly }}</td>
             <td>{{ $taxSetup->tax_monthly }}</td>
-            <td>{{ $taxSetup->update_by }}</td>
+            <td>{{ $taxSetup->updater->name ?? 'N/A' }}</td>
             <td>{{ $taxSetup->created_at }}</td>
             <td>{{ $taxSetup->updated_at }}</td>
                 <td>

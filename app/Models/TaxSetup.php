@@ -61,5 +61,10 @@ class TaxSetup extends Model
         'tax_monthly' => 'required|numeric'
     ];
 
+    public function updater()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'update_by');
+    }
+
     
 }
