@@ -33,6 +33,9 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'salary_grade_id' => $salaryGrades[array_rand($salaryGrades)],
         ]);
+        $adminUser->punch_id = 'PUNCH-' . $adminUser->id;
+        $adminUser->emp_id = 'EMP-' . $adminUser->id;
+        $adminUser->save();
 
         // Assign Admin role to the admin user
         $adminRole = RoleAndPermission::where('name', 'Admin')->first();
@@ -48,7 +51,11 @@ class UserSeeder extends Seeder
             User::factory()->count(10)->create([
                 'group_id' => $employeeRole->id,
                 'salary_grade_id' => $salaryGrades[array_rand($salaryGrades)],
-            ]);
+            ])->each(function ($user) {
+                $user->punch_id = 'PUNCH-' . $user->id;
+                $user->emp_id = 'EMP-' . $user->id;
+                $user->save();
+            });
         }
 
         // Re-enable foreign key checks

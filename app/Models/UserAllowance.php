@@ -16,13 +16,13 @@ class UserAllowance extends Model
         'custom_value',
     ];
 
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
     public function allowanceSetting()
     {
         return $this->belongsTo(AllowanceSetting::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }
