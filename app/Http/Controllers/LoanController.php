@@ -61,6 +61,7 @@ class LoanController extends Controller
             Flash::error('Loan not found');
             return redirect(route('loans.index'));
         }
+        $loan->outstanding_balance = $loan->amount - $loan->loanRepayments->sum('amount');
         return view('loans.show')->with('loan', $loan);
     }
 
@@ -72,11 +73,12 @@ class LoanController extends Controller
      */
     public function edit($id)
     {
-        $loan = Loan::find($id);
+        $loan = Loan::with('loanRepayments')->find($id);
         if (empty($loan)) {
             Flash::error('Loan not found');
             return redirect(route('loans.index'));
         }
+        $loan->outstanding_balance = $loan->amount - $loan->loanRepayments->sum('amount');
         $users = User::all();
         $loanTypes = LoanType::all();
         return view('loans.edit', compact('loan', 'users', 'loanTypes'));
