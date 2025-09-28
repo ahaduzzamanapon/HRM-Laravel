@@ -61,7 +61,7 @@ class PayrollController extends Controller
 
     public function salaryReport(Request $request)
     {
-           $salary_reports = Payroll::select('payrolls.*', 'users.name')
+        $salary_reports = Payroll::select('payrolls.*', 'users.name')
             ->join('users', 'payrolls.user_id', '=', 'users.id','LEFT')
             ->whereIn('payrolls.user_id', $request->user_ids)
             ->where('payrolls.salary_month', date('Y-m-01', strtotime($request->salary_month)))
