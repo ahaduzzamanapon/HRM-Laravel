@@ -13,8 +13,6 @@
     border-collapse: collapse;
     border: 1px solid #000;
     background-color: #fff;
-    scale: 1;
-    zoom: 90%;
 }
 
 /* Table Head */
@@ -25,7 +23,7 @@
     text-align: center;
     padding: 4px;
     border: 1px solid #000;
-    font-size:9px;
+    font-size:10px;
 }
 
 /* Table Body */
@@ -33,7 +31,7 @@
     text-align: center;
     padding: 6px 8px;
     border: 1px solid #000;
-    font-size:9px;
+    font-size:10px;
 
 }
 
@@ -41,7 +39,7 @@
 /* Responsive table */
 @media (max-width: 768px) {
     .table thead th, .table tbody td {
-        font-size: 9px;
+        font-size: 10px;
         padding: 4px;
     }
     .table-responsive h3 {
@@ -53,7 +51,7 @@
     text-align: center;
 }
 </style>
-{{-- @dd($salary_month) --}}
+<button onclick="exportExcel()">Export to Excel</button>
 <div class="table-responsive">
     <div class="payslip-header">
         <div style="display: flex; align-items: center;justify-content: center;">
@@ -68,7 +66,7 @@
             <h5 style="margin-left: 954px;position: absolute;line-height: 0px;">পতাকা-ক</h5>
         </div>
     </div>
-    <table class="table" id="DataTable">
+    <table class="table">
         <thead>
             <tr>
                 <th>SL NO</th>
@@ -101,7 +99,7 @@
                 <th>Grade</th>
                 <th>Salary Scale</th>
             </tr>
-            <tr style="font-size:9px;text-align:center;">
+            <tr style="font-size:10px;text-align:center;">
                 <td style="border:1px solid #000;"></td>
                 <td style="border:1px solid #000;">1</td>
                 <td style="border:1px solid #000;">2</td>
@@ -137,38 +135,75 @@
         @foreach ($salary_reports as $report)
             {{-- @dd($report) --}}
             <tr>
-
                 <td>{{ @$i = $i + 1 }}</td>
                 <td style="white-space: nowrap">{{ "Emp-".$report->user_id }}</td>
-                <td>{{ $report->name }}</td>
-                <td>{{ $report->present }}</td>
-                <td>{{ $report->absent }}</td>
-                <td>{{ $report->leave }}</td>
-                <td>{{ $report->weekend }}</td>
-                <td>{{ $report->holiday }}</td>
+                <td>{{ $report->name.' '.$report->last_name }}</td>
+                <td>{{ $report->desi_name }}</td>
+                <td>{{ $report->emp_type != "Stuff" ? $report->basic_salary : '' }}</td>
+                <td>{{ $report->emp_type == "Stuff" ? $report->basic_salary : '' }}</td>
+                <td>{{ $report->h_rent }}</td>
+                <td>{{ $report->m_allow }}</td>
                 <td>{{ $report->pay_day }}</td>
                 <td>{{ $report->pay_day }}</td>
-                <td>{{ $report->pay_day }}</td>
-                <td>{{ $report->pay_day }}</td>
-                <td>{{ $report->pay_day }}</td>
-                <td>{{ $report->pay_day }}</td>
-                <td>{{ $report->pay_day }}</td>
-                <td>{{ $report->pay_day }}</td>
-                <td>{{ $report->pay_day }}</td>
-                <td>{{ $report->pay_day }}</td>
-                <td>{{ $report->pay_day }}</td>
-                <td>{{ $report->b_salary == null ? 12345 : number_format($report->b_salary, 2) }}</td>
-                <td>{{ $report->g_salary == null ? 12345 : number_format($report->g_salary, 2) }}</td>
-                <td>{{ $report->pay_salary == null ? 12345 : number_format($report->pay_salary, 2) }}</td>
-                <td>{{ $report->total_allow == null ? 12345 : number_format($report->total_allow, 2) }}</td>
-                <td>{{ $report->absent_deduct == null ? 12345 : number_format($report->absent_deduct, 2) }}</td>
-                <td>{{ $report->loan_deduct == null ? 12345 : number_format($report->loan_deduct, 2) }}</td>
-                <td>{{ $report->pf_deduct == null ? 12345 : number_format($report->pf_deduct, 2) }}</td>
-                <td>{{ $report->others_deduct == null ? 12345 : number_format($report->others_deduct, 2) }}</td>
-                <td>{{ $report->total_deduct == null ? 12345 : number_format($report->total_deduct, 2) }}</td>
-                <td>{{ $report->net_salary== null ? 12345 : number_format($report->net_salary, 2) }}</td>
+                <td>{{ $report->child_allow }}</td>
+                <td>{{ $report->trans_allow }}</td>
+                <td>{{ $report->g_salary }}</td>
+                <td>{{ " " }}</td>
+                <td>{{ " " }}</td>
+                <td>{{ " " }}</td>
+                <td>{{ " " }}</td>
+                <td>{{ " " }}</td>
+                <td>{{ " " }}</td>
+                <td>{{ " "}}</td>
+                <td>{{ " "}}</td>
+                <td>{{ " "}}</td>
+                <td>{{ " "}}</td>
+                <td>{{ $report->net_salary }}</td>
+                <td>{{ $report->account_no }}</td>
+                <td>{{ $report->bank_name }}</td>
+                <td>{{ $report->bank_code }}</td>
+                <td>{{ $report->grade }}</td>
+                <td>{{ $report->starting_salary.'-'.$report->end_salary }}</td>
             </tr>
         @endforeach
         </tbody>
     </table>
 </div>
+
+
+<!-- Add SheetJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+
+
+<script>
+function exportExcel() {
+    let table = document.querySelector(".table");
+    let wb = XLSX.utils.table_to_book(table, { sheet: "Salary Report" });
+
+    let ws = wb.Sheets["Salary Report"];
+
+    // Add thin border to all cells
+    const range = XLSX.utils.decode_range(ws['!ref']); // get range of sheet
+    for (let R = range.s.r; R <= range.e.r; ++R) {
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+            let cell_address = { c: C, r: R };
+            let cell_ref = XLSX.utils.encode_cell(cell_address);
+            if (!ws[cell_ref]) ws[cell_ref] = { t: "s", v: "" }; // create empty cell if missing
+            ws[cell_ref].s = {
+                border: {
+                    top: { style: "thin", color: { auto: 1 } },
+                    bottom: { style: "thin", color: { auto: 1 } },
+                    left: { style: "thin", color: { auto: 1 } },
+                    right: { style: "thin", color: { auto: 1 } }
+                }
+            };
+        }
+    }
+
+    // Export Excel
+    XLSX.writeFile(wb, "salary_report.xlsx");
+}
+</script>
+
+
