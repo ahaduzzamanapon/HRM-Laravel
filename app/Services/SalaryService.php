@@ -66,7 +66,7 @@ class SalaryService
                 $h_rent = ($allows['House Rent'] > 0) ? $allows['House Rent'] : 0;
                 $m_allow = ($allows['Medical Allowance'] > 0) ? $allows['Medical Allowance'] : 0;
                 $trans_allow = ($allows['Transport Allowance'] > 0) ? $allows['Transport Allowance'] : 0;
-                $f_allow = ($allows['Food Allowance'] > 0) ? $allows['Food Allowance'] : 0;
+                $f_allow = ($allows['Food Allowance'] > 0) ? $allows['Food Allowance'] * $present : 0;
 
 
                 // before after absent deduction
