@@ -19,7 +19,7 @@ class UserController extends Controller
             ->leftjoin('roles', 'users.group_id', '=', 'roles.id')
             ->leftjoin('designations', 'users.designation_id', '=', 'designations.id')
             ->leftjoin('shifts', 'users.shift_id', '=', 'shifts.id')
-            ->paginate(10);
+            ->get();
 
         $branches = \App\Models\Branch::pluck('branch_name', 'id'); // Get branches for dropdown
 
