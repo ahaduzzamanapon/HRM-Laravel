@@ -65,12 +65,12 @@ Attendance Process @parent
                         <div class="row">
                             <div class="form-group col-sm-6">
                                 {!! Form::label('from_date', 'From Date:') !!}
-                                <input type="text" name="from_date" class="form-control" id="from_date"
+                                <input type="date" name="from_date" class="form-control" id="from_date"
                                     value="{{ request('from_date', date('Y-m-d')) }}" autocomplete="off">
                             </div>
                             <div class="form-group col-sm-6">
                                 {!! Form::label('to_date', 'To Date:') !!}
-                                <input type="text" name="to_date" class="form-control" id="to_date"
+                                <input type="date" name="to_date" class="form-control" id="to_date"
                                     value="{{ request('to_date') }}" autocomplete="off">
                             </div>
                             <div class="form-group col-sm-4">
@@ -205,9 +205,9 @@ Attendance Process @parent
         <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
         <script>
             $(function () {
-                $('#from_date, #to_date').datepicker({
-                    dateFormat: 'yy-mm-dd',
-                });
+                // $('#from_date, #to_date').datepicker({
+                //     dateFormat: 'yy-mm-dd',
+                // });
 
                 $('#manual-attendance-btn').on('click', function() {
                     $('#manual-attendance-card').toggle();
