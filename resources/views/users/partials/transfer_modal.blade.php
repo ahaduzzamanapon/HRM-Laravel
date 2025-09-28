@@ -8,7 +8,7 @@
             {!! Form::open(['route' => 'transferDetails.store', 'files' => true, 'id' => 'transferForm']) !!}
             <div class="modal-body">
                 <input type="hidden" name="user_id" id="transferUserId">
-                <input type="hidden" name="old_branch" id="oldBranchId" value="{{ $users->branch->id ?? '' }}">
+                <input type="hidden" name="old_branch" id="oldBranchId" value="{{ $user->branch->id ?? '' }}">
 
                 <div class="mb-3">
                     <label for="transfer_date" class="form-label">Transfer Date:</label>

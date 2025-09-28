@@ -4,10 +4,6 @@
 Attendance Process @parent
 @stop
 
-@push('css')
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css">
-@endpush
 
 @section('content')
     <style>
@@ -144,7 +140,7 @@ Attendance Process @parent
                                         Absent</button>
                                     <button class="btn btn-sm btn-warning filter-btn" data-filter="leave">All Leave</button>
                                 </div>
-                                <table class="table table-bordered" id="daily-report-table"></table>
+                                <table class="table table-bordered no-datatable-style" id="daily-report-table"></table>
                             </div>
                             <div class="tab-pane fade" id="monthly" role="tabpanel" aria-labelledby="monthly-tab">
                                 <div class="my-3">

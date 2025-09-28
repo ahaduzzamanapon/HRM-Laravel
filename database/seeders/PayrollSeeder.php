@@ -16,7 +16,7 @@ class PayrollSeeder extends Seeder
      */
     public function run()
     {
-        $users = User::take(5)->get();
+        $users = User::all();
 
         foreach ($users as $user) {
             Payroll::create([

@@ -1,5 +1,5 @@
 <div class="table-responsive">
-    <table class="table" id="users-table">
+    <table class="table table-hover table-striped table_data" id="users-table">
         <thead>
             <tr>
                 <th>SL</th>
@@ -8,7 +8,7 @@
                 <th>Group</th>
                 <th>Designation</th>
                 <th>Shift</th>
-                <th>Email</th>
+               
                 <th>Action</th>
             </tr>
         </thead>
@@ -21,7 +21,7 @@
             <td>{{ $users->role }}</td>
             <td>{{ $users->designation }}</td>
             <td>{{ $users->shift }}</td>
-            <td>{{ $users->email }}</td>
+         
                 <td>
                     <div class='btn-group'>
                         <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-bs-toggle="dropdown" data-bs-boundary="window" aria-expanded="false">
@@ -38,6 +38,7 @@
                             </li>
                         </ul>
                     </div>
+                    @include('users.partials.transfer_modal', ['user' => $users])
                 </td>
             </tr>
         @endforeach

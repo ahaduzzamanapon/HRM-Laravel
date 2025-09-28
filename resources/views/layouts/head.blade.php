@@ -32,6 +32,4 @@
     <link rel="stylesheet" href="{{ asset('assets/css/rtl.min.css?v=5.0.0') }}" />
     <link rel="stylesheet" href="{{ asset('fonts/iconmind.css') }}">
     <link rel="stylesheet" href="{{ asset('css/default.css') }}">
-
-
 </head>
