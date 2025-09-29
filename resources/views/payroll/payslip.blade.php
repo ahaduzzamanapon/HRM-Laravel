@@ -6,8 +6,8 @@
     padding: 20px;
     font-family: 'Arial', sans-serif;
     background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+    border: 1px solid #000000;
+    border-radius: 0px;
 }
 
 /* Header */
@@ -37,11 +37,11 @@
 }
 .employee-info td, .salary-info td {
     padding: 6px 10px;
-    border: 1px solid #ccc;
+    border: 1px solid #000000;
 }
 .employee-info td:first-child, .salary-info td:first-child {
     font-weight: bold;
-    width: 30%;
+    /* width: 30%; */
 }
 
 /* Section Titles */
@@ -58,111 +58,185 @@
     border-collapse: collapse;
 }
 .salary-table th, .salary-table td {
-    padding: 8px 10px;
-    border: 1px solid #ccc;
-    text-align: right;
+    padding: 5px 5px;
+    border: 1px solid #000000;
+    /* text-align: right; */
 }
 .salary-table th {
-    background-color: #2c3e50;
-    color: #fff;
-}
-.salary-table tbody tr:nth-child(even) {
-    background-color: #f8f9fa;
-}
-.salary-table tfoot td {
-    font-weight: bold;
-    background-color: #f1c40f;
-    color: #2c3e50;
+    background-color: #ffffff;
+    color: #111111;
 }
 
-/* Footer */
-.payslip-footer {
-    text-align: center;
-    margin-top: 15px;
-    font-size: 12px;
-    color: #777;
-}
+
 </style>
 {{-- @dd($salary_reports) --}}
 @foreach ($salary_reports as $report)
 <div class="payslip-container">
     <div class="payslip-header">
-        {{-- <img src="logo.png" alt="Company Logo"> --}}
-        <h2>Company Name</h2>
-        <p>Dhaka-1207</p>
-        <h3>Payslip for the month of {{ \Carbon\Carbon::parse($report->salary_month)->format('F, Y') }}</h3>
+        <div style="display: flex; align-items: center;justify-content: center;">
+            <img src="{{ asset('salary_logo.jpg') }}" alt="Company Logo" style="max-width: 50px; height: auto;">
+            <div style="margin-left: 10px;">
+                <h3>Palli Sanchay Bank</h3>
+                <p style="line-height: 0px;">Head Office,Dhaka</p>
+            </div>
+        </div>
+        <div>
+            <p style="margin-left: 25px;">Red Crescent Borak Tower (Level- 7,8,9 & 10)</p>
+            <p style="margin-left: 25px;">37/3/A Escaton Garden Road, Dhaka-1000</p>
+        </div>
+        <div>
+            <p style="text-decoration: underline;font-weight: bold;">Budget And Accounts Department</p>
+            <h4 style="margin: 0px;margin-top:10px;margin-bottom:5px">Salary Slip/Pay Slip</h4>
+            <hr style="margin: 0px;border: 1px solid black;">
+        </div>
     </div>
 
-    <table class="employee-info">
+    <table class="employee-info" style="font-size: 12px;">
         <tr>
-            <td>Name</td>
-            <td>{{ $report->name }}</td>
-            <td>Employee ID</td>
-            <td>{{ $report->emp_status }}</td>
+            <td style="font-weight:bold">EMP ID</td>
+            <td>{{ 'EMP-'.$report->user_id }}</td>
+            <td style="font-weight:bold">EMP Name</td>
+            <td>{{ $report->name.' '.$report->last_name }}</td>
         </tr>
         <tr>
-            <td>Designation</td>
-            <td>{{ $report->desig_id }}</td>
-            <td>Department</td>
-            <td>{{ $report->dept_id }}</td>
+            <td style="font-weight:bold">Designation</td>
+            <td>{{ $report->desi_name }}</td>
+            <td style="font-weight:bold">Month/Year</td>
+            <td>{{ date('F, Y', strtotime($report->salary_month)) }}</td>
         </tr>
         <tr>
-            <td>Salary Month</td>
-            <td>{{ \Carbon\Carbon::parse($report->salary_month)->format('F, Y') }}</td>
-            <td>Number of Days</td>
-            <td>{{ $report->n_days }}</td>
+            <td style="width: 170px;font-weight:bold">Bank Accounts No.</td>
+            <td style="width: 160px;">{{ $report->account_no }}</td>
+            <td style="font-weight:bold">Bank & Br. Name</td>
+            <td>{{ $report->bank_name .', '.$report->branch_name }}</td>
         </tr>
         <tr>
-            <td>Present</td>
-            <td>{{ $report->present }}</td>
-            <td>Absent</td>
-            <td>{{ $report->absent }}</td>
-        </tr>
-        <tr>
-            <td>Leave</td>
-            <td>{{ $report->leave }}</td>
-            <td>LOP</td>
-            <td>{{ $report->absent_deduct }}</td>
+            <td style="font-weight:bold">Grade</td>
+            <td>{{ $report->grade }}</td>
+            <td style="font-weight:bold">Salary Scale</td>
+            <td>{{ $report->starting_salary.'-'.$report->end_salary }}</td>
         </tr>
     </table>
 
-    <div class="section-title">Earnings & Deductions</div>
-    <table class="salary-table">
+    <table class="salary-table" style="font-size: 12px;">
         <thead>
             <tr>
-                <th>Earnings</th>
-                <th>Amount</th>
-                <th>Deductions</th>
-                <th>Amount</th>
+                <th colspan="2" style="text-align: center">Earnings</th>
+                <th colspan="2" style="text-align: center">Deductions</th>
+            </tr>
+            <tr>
+                <th></th>
+                <th style="text-align: left">Monthly</th>
+                <th></th>
+                <th style="text-align: left">Monthly</th>
             </tr>
         </thead>
-        <tbody>
-            <tr>
-                <td>Basic</td>
-                <td>{{ number_format($report->b_salary, 2) }}</td>
-                <td>PF Deduction</td>
-                <td>{{ number_format($report->pf_deduct, 2) }}</td>
+        <tbody >
+            <tr style="text-align: left">
+                <td>Basic Officer</td>
+                <td>{{ $report->emp_type !== "Stuff" ? number_format($report->b_salary, 2) : '' }}</td>
+                <td>P F Bank Contribution Deduction 8.33%</td>
+                <td>{{ "-" }}</td>
             </tr>
-            <tr>
-                <td>Gross Salary</td>
-                <td>{{ number_format($report->g_salary, 2) }}</td>
-                <td>Loan Deduction</td>
-                <td>{{ number_format($report->loan_deduct, 2) }}</td>
+            <tr style="text-align: left">
+                <td>Basic Staff</td>
+                <td>{{ $report->emp_type == "Stuff" ? number_format($report->b_salary, 2) : '' }}</td>
+                <td>Staff Income Tax</td>
+                <td>{{ "-" }}</td>
+
             </tr>
-            <tr>
-                <td>Total Allowances</td>
-                <td>{{ number_format((int)$report->all_allows, 2) }}</td>
-                <td>Other Deductions</td>
-                <td>{{ number_format($report->others_deduct, 2) }}</td>
+            <tr style="text-align: left">
+                <td>House Rent</td>
+                <td>{{ number_format((int)$report->h_rent, 2) }}</td>
+                <td>Benevolent Fund</td>
+                <td>{{ "-" }}</td>
+
             </tr>
-            <tr>
-                <td>Payable Salary</td>
-                <td>{{ number_format($report->pay_salary, 2) }}</td>
+            <tr style="text-align: left">
+                <td>Medical Allowance</td>
+                <td>{{ number_format($report->m_allow, 2) }}</td>
+                <td>Employees Contribution To P F Deduction</td>
+                <td>{{ "-" }}</td>
+            </tr>
+            <tr style="text-align: left">
+                <td style="width: 180px;">Special Benefit, 10%  <br>or 15% on Basic or Mini 1500/-</td>
+                <td style="width: 170px;"></td>
+                <td>Motorcycle/Car Loan</td>
+                <td></td>
+            </tr>
+            <tr style="text-align: left">
+                <td>PF Bank Contribution</td>
+                <td>{{ "-" }}   </td>
+                <td>House Building Loan Instalment</td>
+                <td></td>
+            </tr>
+            <tr style="text-align: left">
+                <td>Child Allowance</td>
+                <td>{{ number_format($report->child_allow, 2) }}</td>
+                <td>Staff Personal Loan</td>
+                <td>{{ "-" }}</td>
+            </tr>
+            <tr style="text-align: left">
+                <td>Transport Allowance</td>
+                <td>{{ number_format($report->trans_allow, 2) }}</td>
+                <td>Vehicle Fare</td>
+                <td>{{ "-" }}</td>
+            </tr>
+            <tr style="text-align: left">
                 <td></td>
                 <td></td>
+                <td>Stamp</td>
+                <td>10</td>
+            </tr>
+            <tr>
+                <td>Total Earning</td>
+                <td>{{ number_format($report->net_salary, 2) }}</td>
+                <td>Total Deduction</td>
+                <td>{{ number_format($report->total_deduct, 2) }}</td>
             </tr>
         </tbody>
     </table>
+    @php
+        $numberToWords = new \NumberToWords\NumberToWords();
+        $numberTransformer = $numberToWords->getNumberTransformer('en');
+        $pay = isset($report->net_salary) ? $report->net_salary : 0;
+
+    @endphp
+
+    <table class="salary-table" style="font-size: 12px;margin-top: 10px;">
+        <tr>
+            <td style="text-align: left;width: 180px; font-weight: bold; padding-top: 10px;">Net Salary: </td>
+            <td style="text-align: right; font-weight: bold; padding-top: 10px;">{{ number_format($report->net_salary, 2) }}</td>
+        </tr>
+        <tr>
+            <td style="text-align: left;width: 180px; font-weight: bold; padding-top: 10px;">In Words: </td>
+            <td style="text-align: right; font-weight: bold; padding-top: 10px;">{{ ucwords($numberTransformer->toWords($pay)) }} Taka Only</td>
+        </tr>
+    </table>
+
+
+    <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 10px;">
+        <p style="font-weight: bold">Salary Paid By</p>
+        <p style="line-height: 0px;"><input type="checkbox">Cash</p>
+        <p style="line-height: 0px;"><input type="checkbox">Bank</p>
+        <p style="line-height: 0px;"><input type="checkbox">Cash and Bank Both</p>
+
+    </div>
+
+
+    <div style=" display: flex; justify-content: space-between; font-size: 12px;margin-top: 40px;">
+        <div style="text-align: center;">
+            <p style="line-height: 0px;border:1px solid black"></p>
+            <p style="line-height: 0px;">Prepared By</p>
+            <p style="line-height: 0px;">Budget And Accounts Department</p>
+        </div>
+        <div style="text-align: center;">
+            <p style="line-height: 0px;border:1px solid black"></p>
+            <p style="line-height: 0px;">Authorized Signature</p>
+            <p style="line-height: 0px;">Budget And Accounts Department</p>
+        </div>
+
+    </div>
 </div>
 @endforeach
 

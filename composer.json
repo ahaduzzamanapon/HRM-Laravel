@@ -12,6 +12,7 @@
         "infyomlabs/adminlte-templates": "v4.0.2",
         "infyomlabs/generator-builder": "v1.0.0",
         "infyomlabs/laravel-generator": "v4.2.2",
+        "kwn/number-to-words": "^2.12",
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^2.14.1",
         "laravel/tinker": "^2.7",
