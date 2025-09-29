@@ -68,6 +68,7 @@
 }
 
 
+
 </style>
 {{-- @dd($salary_reports) --}}
 @foreach ($salary_reports as $report)
@@ -142,39 +143,39 @@
                 <td>Basic Staff</td>
                 <td>{{ $report->emp_type == "Stuff" ? number_format($report->b_salary, 2) : '' }}</td>
                 <td>Staff Income Tax</td>
-                <td>{{ "-" }}</td>
+                <td>{{ $report->tax_deduct }}</td>
 
             </tr>
             <tr style="text-align: left">
                 <td>House Rent</td>
                 <td>{{ number_format((int)$report->h_rent, 2) }}</td>
                 <td>Benevolent Fund</td>
-                <td>{{ "-" }}</td>
+                <td>{{ $report->bene_deduct }}</td>
 
             </tr>
             <tr style="text-align: left">
                 <td>Medical Allowance</td>
                 <td>{{ number_format($report->m_allow, 2) }}</td>
                 <td>Employees Contribution To P F Deduction</td>
-                <td>{{ "-" }}</td>
+                <td>{{ $report->pf_deduct }}</td>
             </tr>
             <tr style="text-align: left">
                 <td style="width: 180px;">Special Benefit, 10%  <br>or 15% on Basic or Mini 1500/-</td>
-                <td style="width: 170px;"></td>
+                <td style="width: 170px;">{{ "-" }}</td>
                 <td>Motorcycle/Car Loan</td>
-                <td></td>
+                <td>{{ $report->auto_mobile_d }}</td>
             </tr>
             <tr style="text-align: left">
                 <td>PF Bank Contribution</td>
-                <td>{{ "-" }}   </td>
+                <td>{{ $report->pf_allow_bank }}   </td>
                 <td>House Building Loan Instalment</td>
-                <td></td>
+                <td>{{ $report->h_loan_deduct }}</td>
             </tr>
             <tr style="text-align: left">
                 <td>Child Allowance</td>
                 <td>{{ number_format($report->child_allow, 2) }}</td>
                 <td>Staff Personal Loan</td>
-                <td>{{ "-" }}</td>
+                <td>{{ $report->p_loan_deduct }}</td>
             </tr>
             <tr style="text-align: left">
                 <td>Transport Allowance</td>
@@ -186,7 +187,7 @@
                 <td></td>
                 <td></td>
                 <td>Stamp</td>
-                <td>10</td>
+                <td>{{ $report->stump_deduct}}</td>
             </tr>
             <tr>
                 <td>Total Earning</td>
@@ -214,13 +215,11 @@
         </tr>
     </table>
 
-
     <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 10px;">
         <p style="font-weight: bold">Salary Paid By</p>
-        <p style="line-height: 0px;"><input type="checkbox">Cash</p>
-        <p style="line-height: 0px;"><input type="checkbox">Bank</p>
-        <p style="line-height: 0px;"><input type="checkbox">Cash and Bank Both</p>
-
+        <p style="line-height: 0px;"><input id="myCheckbox"  type="checkbox" {{ $report->pay_type != 'cash' ? 'disabled' : '' }} {{ $report->pay_type == 'cash' ? 'checked' : '' }}>Cash</p>
+        <p style="line-height: 0px;"><input type="checkbox" {{ $report->pay_type != 'bank' ? 'disabled' : '' }} {{ $report->pay_type == 'bank' ? 'checked' : '' }}>Bank</p>
+        <p style="line-height: 0px;"><input type="checkbox" {{ $report->pay_type != 'both' ? 'disabled' : '' }} {{ $report->pay_type == 'both' ? 'checked' : '' }}>Cash and Bank Both</p>
     </div>
 
 

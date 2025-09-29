@@ -148,16 +148,16 @@
                 <td>{{ $report->child_allow }}</td>
                 <td>{{ $report->trans_allow }}</td>
                 <td>{{ $report->g_salary }}</td>
-                <td>{{ " " }}</td>
-                <td>{{ " " }}</td>
-                <td>{{ " " }}</td>
-                <td>{{ " " }}</td>
-                <td>{{ " " }}</td>
-                <td>{{ " " }}</td>
-                <td>{{ " "}}</td>
-                <td>{{ " "}}</td>
-                <td>{{ " "}}</td>
-                <td>{{ " "}}</td>
+                <td>{{ "0.00" }}</td>
+                <td>{{ $report->tax_deduct }}</td>
+                <td>{{ $report->bene_deduct }}</td>
+                <td>{{ $report->pf_deduct }}</td>
+                <td>{{ $report->auto_mobile_d }}</td>
+                <td>{{ $report->h_loan_deduct }}</td>
+                <td>{{ $report->p_loan_deduct }}</td>
+                <td>{{ "0.00" }}</td>
+                <td>{{ $report->stump_deduct}}</td>
+                <td>{{ "0.00" }}</td>
                 <td>{{ $report->net_salary }}</td>
                 <td>{{ $report->account_no }}</td>
                 <td>{{ $report->bank_name }}</td>
