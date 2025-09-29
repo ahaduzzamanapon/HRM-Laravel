@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('dept_id')->nullable();
             $table->string('desig_id')->nullable();
             $table->integer('emp_status');
+            $table->integer('pay_type');
             $table->date('salary_month')->nullable();
             $table->integer('n_days')->nullable();
             $table->integer('present')->nullable();

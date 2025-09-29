@@ -4,8 +4,11 @@ namespace App\Services;
 
 use App\Models\AttendanceTime;
 use App\Models\Payroll;
+use App\Models\ChildAllowance;
+use App\Models\Loan;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class SalaryService
 {
@@ -62,24 +65,49 @@ class SalaryService
 
                 // ------- Allowance Calculation here  ------- //
                 $allows = $this->get_allowances($emp_id);
-                // ------- Allowance Calculation end  ------- //
                 $h_rent = ($allows['House Rent'] > 0) ? $allows['House Rent'] : 0;
                 $m_allow = ($allows['Medical Allowance'] > 0) ? $allows['Medical Allowance'] : 0;
                 $trans_allow = ($allows['Transport Allowance'] > 0) ? $allows['Transport Allowance'] : 0;
                 $f_allow = ($allows['Food Allowance'] > 0) ? $allows['Food Allowance'] * $present : 0;
 
+                // child allowance
+                $child_allow = $this->get_child_allowances($emp_id, $first_date);
+                // pf allowance
+                $pf_emp = 0; $pf_bank = 0; $interest_rate = 0;
+                if ($row->is_pf_member == 1) {
+                    $pf_allow_bank = $this->get_pf_allowance($salary);
+                    $pf_emp  = $pf_allow_bank['employee_contribution'];
+                    $pf_bank = $pf_allow_bank['employer_contribution'];
+                    $interest_rate = $pf_allow_bank['interest_rate'];
+                }
+                // total allowance
+                $total_allow = $h_rent + $m_allow + $f_allow + $child_allow + $trans_allow;
+                $total_gross = ($pay_salary + $total_allow);
+                // ------- Allowance Calculation end  ------- //
 
+                // ------- Deduction Calculation here ------- //
                 // before after absent deduction
                 $aba_deduct = round(($ba_absent * $perday_salary), 2);
                 // absent deduction
                 $absent_deduct = round(($perday_salary * $absent), 2);
-                $total_deduct = $aba_deduct + $absent_deduct;
+                // total absent deduction
+                $total_ab_deduct = $aba_deduct + $absent_deduct;
 
+                //  tax deduction
+                $tax_deduct = 0;
+                $tax_deduct = $this->get_tax_deduction($total_gross);
+                // auto mobile deduction
+                $loans = $this->get_loans_deduction($emp_id);
+                $h_loan_deduct = $loans['Housing Loan'] > 0 ? $loans['Housing Loan'] : 0;
+                $p_loan_deduct = $loans['Personal Loan'] > 0 ? $loans['Personal Loan'] : 0;
+                $auto_mobile_d = $loans['Motorcycle/Scooter Loan'] > 0 ? $loans['Motorcycle/Scooter Loan'] : 0;
+                $total_deduct = $total_ab_deduct + $tax_deduct + $h_loan_deduct + $p_loan_deduct + $auto_mobile_d + $pf_emp;
+
+
+                // ------- Deduction Calculation end ------- //
                 // ======= salary calculation end ========== //
 
-
-                $net_salary = round(($salary - ($total_deduct)), 2);
-
+                $net_salary = round(($total_gross - $total_deduct - 100 - 10), 2);
                 $data = array(
                     'user_id'           => $emp_id,
                     'branch_id'         => $row->branch_id,
@@ -87,6 +115,7 @@ class SalaryService
                     'dept_id'           => $row->department_id,
                     'desig_id'          => $row->designation_id,
                     'emp_status'        => $row->status,
+                    'pay_type'          => $row->pay_type,
                     'salary_month'      => $first_date,
                     'n_days'            => $num_of_days,
                     'present'           => $present > 0 ? $present : 0,
@@ -100,27 +129,26 @@ class SalaryService
                     'g_salary'          => $gross_salary > 0 ? $gross_salary : 0,
                     'pay_salary'        => $pay_salary > 0 ? $pay_salary : 0,
 
-                    'h_rent'            => 0,
-                    'm_allow'           => 0,
-                    'f_allow'           => 0,
+                    'h_rent'            => $h_rent,
+                    'm_allow'           => $m_allow,
+                    'f_allow'           => $f_allow,
                     'special_allow'     => 0,
-                    'child_allow'       => 0,
-                    'trans_allow'       => 0,
-                    'pf_allow_bank'     => 0,
-                    'total_allow'       => 0,
+                    'child_allow'       => $child_allow,
+                    'trans_allow'       => $trans_allow,
+                    'pf_allow_bank'     => $pf_bank,
+                    'total_allow'       => $total_allow > 0 ? $total_allow : 0,
                     'all_allows'        => 0,
 
-                    'gross_salary'      => 0,
-                    'absent_deduct'     => 0,
-                    'pf_deduct'         => 0,
-                    'tax_deduct'        => 0,
-                    'bene_deduct'       => 0,
-                    'auto_mobile_d'     => 0,
-                    'h_loan_deduct'     => 0,
-                    'p_loan_deduct'     => 0,
+                    'gross_salary'      => $total_gross > 0 ? $total_gross : 0,
+                    'absent_deduct'     => $total_ab_deduct > 0 ? $total_ab_deduct : 0,
+                    'pf_deduct'         => $pf_emp,
+                    'tax_deduct'        => $tax_deduct > 0 ? $tax_deduct : 0,
+                    'bene_deduct'       => 100,
+                    'h_loan_deduct'     => $h_loan_deduct > 0 ? $h_loan_deduct : 0,
+                    'p_loan_deduct'     => $p_loan_deduct > 0 ? $p_loan_deduct : 0,
+                    'auto_mobile_d'     => $auto_mobile_d > 0 ? $auto_mobile_d : 0,
 
-                    'loan_deduct'       => 0,
-                    'stump_deduct'      => 0,
+                    'stump_deduct'      => 10,
                     'others_deduct'     => 0,
                     'total_deduct'      => $total_deduct > 0 ? $total_deduct : 0,
                     'net_salary'        => $net_salary > 0 ? $net_salary : 0,
@@ -148,6 +176,73 @@ class SalaryService
         ];
     }
 
+    // loan deduction cal
+    function get_loans_deduction($emp_id)
+    {
+        $loans = DB::table('loans')
+            ->join('loan_types', 'loan_types.id', '=', 'loans.loan_type_id')
+            ->select('loans.*', 'loan_types.name')
+            ->where('loans.employee_id', $emp_id)
+            ->where('loans.status', 'Disbursed')
+            ->get();
+            // to day work
+
+        $array = array();
+        if (!empty($loans[0])) {
+            foreach ($loans as $key => $value) {
+                $array[$value->name] = $value->monthly_installment;
+            }
+        }
+        return $array;
+    }
+
+    // tax deduction cal
+    function get_tax_deduction($salary)
+    {
+        $tax = App\Models\TaxSetup::where('min_salary', '<=', $salary)->where('max_salary', '>=', $salary)->first();
+        $tax_deduct = 0;
+        if (!empty($tax)) {
+            $tax_deduct = $tax->tax_monthly;
+        }
+        return $tax_deduct;
+    }
+
+    // pf allowances cal
+    function get_pf_allowance($salary)
+    {
+        $pfs = App\Models\ProvidentFundSetting::first();
+
+        $employee_contribution = 0;
+        $employer_contribution = 0;
+        $interest_rate = 0;
+        if (!empty($pfs)) {
+            $employee_contribution = ($salary * ($pfs->employee_contribution / 100));
+            $employer_contribution = ($salary * ($pfs->employer_contribution / 100));
+            $interest_rate = $pfs->interest_rate;
+        }
+
+        $array = array(
+            'employee_contribution' => $employee_contribution,
+            'employer_contribution' => $employer_contribution,
+            'interest_rate' => $interest_rate
+        );
+        return $array;
+    }
+    // child allowances cal
+    function get_child_allowances($emp_id, $first_date)
+    {
+        $childAllowances = ChildAllowance::where('user_id', $emp_id)
+        ->where('start_month', '<=', $first_date)->where('end_month', '>=', $first_date)
+        ->get();
+
+        $array = 0;
+        if (!empty($childAllowances[0])) {
+            foreach ($childAllowances as $childAllowance) {
+                $array += $childAllowance->pay_amt;
+            }
+        }
+        return $array;
+    }
     // allowances cal
     function get_allowances($emp_id)
     {
@@ -204,9 +299,7 @@ class SalaryService
                 \DB::raw('SUM(CASE WHEN late_status = \'1\' THEN 1 ELSE 0 END ) AS late_status'),
             ])
             ->first();
-
         return $query;
-
     }
 
 

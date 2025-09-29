@@ -56,6 +56,8 @@ class User extends Authenticatable
         'basic_salary',
         'gross_salary',
         'bank_id',
+        'is_pf_member',
+        'pay_type',
         'account_no',
         'salary_grade_id',
         'emp_type',

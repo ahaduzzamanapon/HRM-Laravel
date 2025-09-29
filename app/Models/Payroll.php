@@ -15,6 +15,7 @@ class Payroll extends Model
         'dept_id',
         'desig_id',
         'emp_status',
+        'pay_type',
         'salary_month',
         'n_days',
         'present',
