@@ -15,12 +15,12 @@ class CreateTaxsetupsTable extends Migration
     {
         Schema::create('taxsetups', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('titel');
-            $table->integer('min_salary');
-            $table->integer('max_salary');
-            $table->integer('tax_yearly');
-            $table->integer('tax_monthly');
-            $table->string('update_by');
+            $table->string('title');
+            $table->integer('min_salary')->nullable();
+            $table->integer('max_salary')->nullable();
+            $table->decimal('tax_yearly', 10, 2)->nullable();
+            $table->decimal('tax_monthly', 10, 2)->nullable();
+            $table->string('updated_by')->nullable();
             $table->timestamps();
         });
     }

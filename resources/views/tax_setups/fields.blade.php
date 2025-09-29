@@ -38,7 +38,7 @@
 <div class="col-md-3">
     <div class="form-group">
         {!! Form::label('tax_monthly', 'Tax Monthly:',['class'=>'control-label']) !!}
-        {!! Form::number('tax_monthly', null, ['class' => 'form-control', 'id' => 'tax_monthly']) !!}
+        {!! Form::text('tax_monthly', null, ['class' => 'form-control', 'id' => 'tax_monthly']) !!}
     </div>
 </div>
 
