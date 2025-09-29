@@ -26,7 +26,6 @@ class PayrollSeeder extends Seeder
                 'dept_id' => $user->department_id,
                 'desig_id' => $user->designation_id,
                 'emp_status' => 1, // Assuming 1 for active
-                'pay_type' => rand(0, 1),
                 'salary_month' => now()->format('Y-m-01'),
                 'n_days' => 30,
                 'present' => 28,

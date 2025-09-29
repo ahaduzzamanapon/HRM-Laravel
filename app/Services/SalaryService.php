@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\AttendanceTime;
 use App\Models\Payroll;
 use App\Models\ChildAllowance;
+use App\Models\ProvidentFundSetting;
+use App\Models\TaxSetup;
 use App\Models\Loan;
 use App\Models\User;
 use Carbon\Carbon;
@@ -65,20 +67,20 @@ class SalaryService
 
                 // ------- Allowance Calculation here  ------- //
                 $allows = $this->get_allowances($emp_id);
-                $h_rent = ($allows['House Rent'] > 0) ? $allows['House Rent'] : 0;
-                $m_allow = ($allows['Medical Allowance'] > 0) ? $allows['Medical Allowance'] : 0;
-                $trans_allow = ($allows['Transport Allowance'] > 0) ? $allows['Transport Allowance'] : 0;
-                $f_allow = ($allows['Food Allowance'] > 0) ? $allows['Food Allowance'] * $present : 0;
+                $h_rent = isset($allows['House Rent']) ? $allows['House Rent'] : 0;
+                $m_allow = isset($allows['Medical Allowance']) ? $allows['Medical Allowance'] : 0;
+                $trans_allow = isset($allows['Transport Allowance']) ? $allows['Transport Allowance'] : 0;
+                $f_allow = isset($allows['Food Allowance']) ? $allows['Food Allowance'] * $present : 0;
 
                 // child allowance
                 $child_allow = $this->get_child_allowances($emp_id, $first_date);
                 // pf allowance
                 $pf_emp = 0; $pf_bank = 0; $interest_rate = 0;
                 if ($row->is_pf_member == 1) {
-                    $pf_allow_bank = $this->get_pf_allowance($salary);
-                    $pf_emp  = $pf_allow_bank['employee_contribution'];
-                    $pf_bank = $pf_allow_bank['employer_contribution'];
-                    $interest_rate = $pf_allow_bank['interest_rate'];
+                    $pf_a_bank = $this->get_pf_allowance($salary);
+                    $pf_emp = isset($pf_a_bank['employee_contribution']) ? (float)$pf_a_bank['employee_contribution'] : 0.0;
+                    $pf_bank = isset($pf_a_bank['employer_contribution']) ? (float)$pf_a_bank['employer_contribution'] : 0.0;
+                    $interest_rate = isset($pf_a_bank['interest_rate']) ? (float)$pf_a_bank['interest_rate'] : 0.0;
                 }
                 // total allowance
                 $total_allow = $h_rent + $m_allow + $f_allow + $child_allow + $trans_allow;
@@ -98,9 +100,9 @@ class SalaryService
                 $tax_deduct = $this->get_tax_deduction($total_gross);
                 // auto mobile deduction
                 $loans = $this->get_loans_deduction($emp_id);
-                $h_loan_deduct = $loans['Housing Loan'] > 0 ? $loans['Housing Loan'] : 0;
-                $p_loan_deduct = $loans['Personal Loan'] > 0 ? $loans['Personal Loan'] : 0;
-                $auto_mobile_d = $loans['Motorcycle/Scooter Loan'] > 0 ? $loans['Motorcycle/Scooter Loan'] : 0;
+                $h_loan_deduct = isset($loans['Housing Loan']) ? (float)$loans['Housing Loan'] : 0.00;
+                $p_loan_deduct = isset($loans['Personal Loan']) ? (float)$loans['Personal Loan'] : 0.00;
+                $auto_mobile_d = isset($loans['Motorcycle/Scooter Loan']) ? (float)$loans['Motorcycle/Scooter Loan'] : 0.00;
                 $total_deduct = $total_ab_deduct + $tax_deduct + $h_loan_deduct + $p_loan_deduct + $auto_mobile_d + $pf_emp;
 
 
@@ -199,7 +201,7 @@ class SalaryService
     // tax deduction cal
     function get_tax_deduction($salary)
     {
-        $tax = App\Models\TaxSetup::where('min_salary', '<=', $salary)->where('max_salary', '>=', $salary)->first();
+        $tax = TaxSetup::where('min_salary', '<=', $salary)->where('max_salary', '>=', $salary)->first();
         $tax_deduct = 0;
         if (!empty($tax)) {
             $tax_deduct = $tax->tax_monthly;
@@ -210,7 +212,7 @@ class SalaryService
     // pf allowances cal
     function get_pf_allowance($salary)
     {
-        $pfs = App\Models\ProvidentFundSetting::first();
+        $pfs = ProvidentFundSetting::first();
 
         $employee_contribution = 0;
         $employer_contribution = 0;

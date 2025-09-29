@@ -17,11 +17,11 @@ return new class extends Migration
             $table->increments('id');
             $table->integer('user_id')->unsigned()->index();
             $table->integer('branch_id');
-            $table->integer('emp_type');
+            $table->string('emp_type')->nullable();
             $table->string('dept_id')->nullable();
             $table->string('desig_id')->nullable();
-            $table->integer('emp_status');
-            $table->integer('pay_type');
+            $table->enum('emp_status', ['regular', 'left', 'resign', 'retired', 'terminate'])->default('regular');
+            $table->enum('pay_type', ['cash', 'bank', 'both'])->default('bank');
             $table->date('salary_month')->nullable();
             $table->integer('n_days')->nullable();
             $table->integer('present')->nullable();
