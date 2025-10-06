@@ -132,4 +132,20 @@ class AttendanceProcessController extends Controller
     {
         return view('attendance.my_attendance');
     }
+
+    public function getDailyReportData(Request $request)
+    {
+        $date = $request->input('date');
+        $type = $request->input('type');
+        $data = $this->attendanceService->getDailyReportData($date);
+        if($type == 1){
+            return view('attendance.daily_report', [
+                'attendanceDatas'=> $data['all'],
+                'date'           => $date
+            ]);
+          
+        }else{
+            return response()->json($data);
+        }
+    }
 }

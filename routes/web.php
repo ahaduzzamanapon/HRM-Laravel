@@ -53,6 +53,12 @@ Route::get('attendance/report', [App\Http\Controllers\AttendanceProcessControlle
 Route::post('attendance/manual', [App\Http\Controllers\AttendanceProcessController::class, 'storeManualAttendance'])->name('attendance.manual.store');
 Route::get('my-attendance', [App\Http\Controllers\AttendanceProcessController::class, 'myAttendance'])->name('attendance.my');
 
+// dashboard report data
+Route::post('attendance/daily-report', [App\Http\Controllers\AttendanceProcessController::class, 'getDailyReportData'])->name('attendance.daily-report');
+
+
+
+
 Route::post('leave-applications/{id}/first-approve', [App\Http\Controllers\LeaveApplicationController::class, 'firstLevelApprove'])->name('leaveApplications.first.approve');
 Route::post('leave-applications/{id}/final-approve', [App\Http\Controllers\LeaveApplicationController::class, 'finalApprove'])->name('leaveApplications.final.approve');
 Route::post('leave-applications/{id}/reject', [App\Http\Controllers\LeaveApplicationController::class, 'reject'])->name('leaveApplications.reject');

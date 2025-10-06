@@ -6,6 +6,7 @@ use App\Models\AttendanceTime;
 use App\Models\LeaveApplication;
 use App\Models\Holyday;
 use App\Models\User;
+use App\Models\ShiftDetail;
 use Carbon\Carbon;
 
 class AttendanceService
@@ -232,5 +233,23 @@ class AttendanceService
         }
 
         return $query->get();
+    }
+
+    public function getDailyReportData($date){
+        $all     = AttendanceTime::with('user')->whereDate('attendance_date', $date)->get();
+        $present = $all->where('status', 'Present');
+        $absent  =  $all->where('status', 'Absent');
+        $late    =  $all->where('late_status', 1);
+        $result = [
+            'all'          => $all,
+            'present'      => $present,
+            'absent'       => $absent,
+            'late'         => $late,
+            'present_count'=> (clone $all)->where('status', 'Present')->count(),
+            'absent_count' => (clone $all)->where('status', 'Absent')->count(),
+            'late_count'   => (clone $all)->where('late_status', 1)->count(),
+            'all_employees'=> $all->count()
+        ];
+        return $result;
     }
 }
