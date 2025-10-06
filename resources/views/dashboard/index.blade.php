@@ -6,7 +6,7 @@ Dashboard @parent
 
 @section('content')
 <section class="content-header">
-    <h1>Dashboard</h1>
+    <h1>Dashboards</h1>
 </section>
 
 <div class="content">

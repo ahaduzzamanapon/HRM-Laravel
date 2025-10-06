@@ -5,7 +5,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-  
+
 
     <title>{{ !empty($setting) ? $setting->site_name : 'Title' }} -
         {{ !empty($setting) ? $setting->site_description : 'Slogan' }}
@@ -32,4 +32,5 @@
     <link rel="stylesheet" href="{{ asset('assets/css/rtl.min.css?v=5.0.0') }}" />
     <link rel="stylesheet" href="{{ asset('fonts/iconmind.css') }}">
     <link rel="stylesheet" href="{{ asset('css/default.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>

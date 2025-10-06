@@ -20,179 +20,361 @@ Dashboard @parent
 </section>
 <section class="content">
     <div class="row">
-        <div class="col-lg-3 col-xs-6">
-            <!-- small box -->
-            <div class="small-box bg-aqua">
-                <div class="inner">
-                    <h3>{{ $totalEmployees }}</h3>
-                    <p>Total Employees</p>
+        {{-- Daily Attendance --}}
+        <div class="col-md-6">
+            <div class="d_card" style="background: aliceblue;">
+                <div class="row" style="display: flex;flex-direction: row;align-items: center;">
+                    <h4 class="col-md-6"> Daily Attendance</h4>
+                    <input class="col-md-3" type="date" onchange="get_data_count()" value="2025-10-06" name="date" id="date_first_card" style="border: 1px solid #009cf5;background: transparent;padding: 3px;border-radius: 7px;">
+                    <div class="col-md-3">
+                        <a onclick="daily_report('all')" class="btn btn-primary btn-sm text-white" style="text-align: -webkit-center; cursor: pointer;">Get Report <i class="fa fa-file-excel-o" aria-hidden="true"></i></a>
+                    </div>
                 </div>
-                <div class="icon">
-                    <i class="fa fa-users"></i>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="c_card" id="all-employees">
+                            <h6 style="font-size:15px !important;">All Employees</h6>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count-all-employees">{{ $totalEmployees }}</h3>
+                                <i class="fa fa-user col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="{{ route('users.index') }}"style="cursor: pointer;text-decoration: none!important;text-align: -webkit-center;" >More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="c_card" id="present">
+                            <h6 style="font-size:15px !important;">Present</h6>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-present col-md-6" id="count-present">0</h3>
+                                <i class="fa fa-laptop col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="#"style="cursor: pointer;text-decoration: none!important;text-align: -webkit-center;" >More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
                 </div>
-                <a href="{{ route('users.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="c_card" id="absent">
+                            <h6 style="font-size:15px !important;">Absent</h6>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-absent col-md-6" id="count-absent">0</h3>
+                                <i class="fa fa-home col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="#"style="cursor: pointer;text-decoration: none!important;text-align: -webkit-center;" >More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="c_card" id="late">
+                            <h6 style="font-size:15px !important;">Late</h6>
+                            <div class="col-md-12 card_flex" >
+                                <h3 class="count-late col-md-6" id="count-late">0</h3>
+                                <i class="fa fa-clock-o col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="#"style="cursor: pointer;text-decoration: none!important;text-align: -webkit-center;" >More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-xs-6">
-            <!-- small box -->
-            <div class="small-box bg-green">
-                <div class="inner">
-                    <h3>{{ $totalDepartments }}</h3>
-                    <p>Total Departments</p>
+
+        {{-- Monthly Attendance --}}
+        <div class="col-md-6">
+            <div class="d_card" style="background: aliceblue;">
+                <div class="row" style="display: flex;flex-direction: row;align-items: center;">
+                    <h4 class="col-md-6">Monthly</h4>
+                    <input class="col-md-4" type="month" onchange="get_monthly_data()" value="2025-10" id="date_monthly" style="border: 1px solid #009cf5;background: transparent;padding: 3px;border-radius: 7px;">
                 </div>
-                <div class="icon">
-                    <i class="fa fa-building"></i>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="c_card">
+                            <div class="col-md-12 p-0 card_flex">
+                                <h6 class="col-md-6 p-0" style="font-size: 15px !important;">Leave</h6>
+                                <a href="javascript:void(0)" onclick="get_leave_monthly(event)" class="col-md-6 p-0" style="text-align: -webkit-center;cursor: pointer;;">Get Report
+                                    <i class="fa fa-file-excel-o" aria-hidden="true"></i></a>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_leave_monthly">0</h3>
+                                <i class="fa fa-sign-out col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="#"style="cursor: pointer;text-decoration: none!important;text-align: -webkit-center;" >More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="c_card">
+                            <div class="col-md-12 p-0 card_flex">
+                                <h6 class="col-md-6 p-0" style="font-size: 15px !important;">Extra Present</h6>
+                                <a href="javascript:void(0)" onclick="get_extra_present_monthly(event)" class="col-md-6 p-0" style="text-align: -webkit-center;cursor: pointer;;">Get Report
+                                    <i class="fa fa-file-excel-o" aria-hidden="true"></i></a>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_extra_present_monthly">0</h3>
+                                <i class="fa fa-user-plus col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="#"style="cursor: pointer;text-decoration: none!important;text-align: -webkit-center;" >More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
                 </div>
-                <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-xs-6">
-            <!-- small box -->
-            <div class="small-box bg-yellow">
-                <div class="inner">
-                    <h3>{{ $totalBranches }}</h3>
-                    <p>Total Branches</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="c_card">
+                            <div class="col-md-12 p-0 card_flex">
+                                <h6 class="col-md-6 p-0" style="font-size: 15px !important;">Late</h6>
+                                <a href="javascript:void(0)" onclick="get_late_monthly(event)" class="col-md-6 p-0" style="text-align: -webkit-center;cursor: pointer;;">Get Report
+                                    <i class="fa fa-file-excel-o" aria-hidden="true"></i></a>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_late_monthly">0</h3>
+                                <i class="fa fa-clock-o col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="#"style="cursor: pointer;text-decoration: none!important;text-align: -webkit-center;" >More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="c_card">
+                            <div class="col-md-12 p-0 card_flex">
+                                <h6 class="col-md-6 p-0" style="font-size: 15px !important;">Meeting</h6>
+                                <a href="javascript:void(0)" onclick="get_meeting_monthly(event)" class="col-md-6 p-0" style="text-align: -webkit-center;cursor: pointer;;">Get Report
+                                    <i class="fa fa-file-excel-o" aria-hidden="true"></i></a>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_meeting_monthly">0</h3>
+                                <i class="fa fa-handshake-o col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="#"style="cursor: pointer;text-decoration: none!important;text-align: -webkit-center;" >More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
                 </div>
-                <div class="icon">
-                    <i class="fa fa-briefcase"></i>
-                </div>
-                <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-xs-6">
-            <!-- small box -->
-            <div class="small-box bg-red">
-                <div class="inner">
-                    <h3>{{ $newEmployees }}</h3>
-                    <p>New Employees (Last 30 Days)</p>
-                </div>
-                <div class="icon">
-                    <i class="fa fa-user-plus"></i>
-                </div>
-                <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
             </div>
         </div>
         <!-- ./col -->
     </div>
+    
     <div class="row">
-        <div class="col-lg-3 col-xs-6">
-            <!-- small box -->
-            <div class="small-box" style="background-color: #605ca8; color: white;">
-                <div class="inner">
-                    <h3>{{ $totalSalaryGrades }}</h3>
-                    <p>Total Salary Grades</p>
+        {{-- office info  --}}
+        <div class="col-md-6">
+            <div class="d_card" style="background: aliceblue;">
+                <div class="row" style="display: flex;flex-direction: row;align-items: center;">
+                    <h4 class="col-md-6">Organization Info</h4>
+                    {{-- <input class="col-md-4" type="month" onchange="get_monthly_data()" value="2025-10" id="date_monthly" style="border: 1px solid #009cf5;background: transparent;padding: 3px;border-radius: 7px;"> --}}
                 </div>
-                <div class="icon">
-                    <i class="fa fa-stairs"></i>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="c_card">
+                            <div class="col-md-12 p-0 ">
+                                <h6 class="col-md-12 p-0" style="font-size: 15px !important;">Total Employees</h6>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_leave_monthly">{{ $totalEmployees }}</h3>
+                                <i class="fa fa-sign-out col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="#"style="cursor: pointer;text-decoration: none!important;text-align: -webkit-center;" >More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+
+                        <div class="c_card">
+                            <div class="col-md-12 p-0">
+                                <h6 class="col-md-12 p-0" style="font-size: 15px !important;">Total Branch</h6>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_extra_present_monthly">{{ $totalBranches }}</h3>
+                                <i class="fa fa-user-plus col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="#"style="cursor: pointer;text-decoration: none!important;text-align: -webkit-center;" >More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
                 </div>
-                <a href="{{ route('salaryGrades.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="c_card">
+                            <div class="col-md-12 p-0 ">
+                                <h6 class="col-md-12 p-0" style="font-size: 15px !important;">Total Department</h6>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_late_monthly">{{ $totalDepartments }}</h3>
+                                <i class="fa fa-clock-o col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="#"style="cursor: pointer;text-decoration: none!important;text-align: -webkit-center;" >More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="c_card">
+                            <div class="col-md-12 p-0 ">
+                                <h6 class="col-md-12 p-0" style="font-size: 15px !important;">New Emps.(Last 30 Days)</h6>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_meeting_monthly">{{ $newEmployees }}</h3>
+                                <i class="fa fa-handshake-o col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="#"style="cursor: pointer;text-decoration: none!important;text-align: -webkit-center;" >More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-xs-6">
-            <!-- small box -->
-            <div class="small-box" style="background-color: #0073b7; color: white;">
-                <div class="inner">
-                    <h3>{{ $totalTaxSetups }}</h3>
-                    <p>Total Tax Setups</p>
+        {{-- Leave info  --}}
+        <div class="col-md-6">
+            <div class="d_card" style="background: aliceblue;">
+                <div class="row" style="display: flex;flex-direction: row;align-items: center;">
+                    <h4 class="col-md-6">Leave Info</h4>
+                    {{-- <input class="col-md-4" type="month" onchange="get_monthly_data()" value="2025-10" id="date_monthly" style="border: 1px solid #009cf5;background: transparent;padding: 3px;border-radius: 7px;"> --}}
                 </div>
-                <div class="icon">
-                    <i class="fa fa-money-bill-wave"></i>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="c_card">
+                            <div class="col-md-12 p-0 ">
+                                <h6 class="col-md-12 p-0" style="font-size: 15px !important;">Leave Apply</h6>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_leave_monthly">{{ $totalLeaveApplications }}</h3>
+                                <i class="fa fa-sign-out col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="{{ route('leaveApplications.index') }}"style="cursor: pointer;text-decoration: none!important;text-align: -webkit-center;" >More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+
+                        <div class="c_card">
+                            <div class="col-md-12 p-0">
+                                <h6 class="col-md-12 p-0" style="font-size: 15px !important;">Pending</h6>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_extra_present_monthly">{{ $totalLeaveApplications }}</h3>
+                                <i class="fa fa-user-plus col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="{{ route('leaveApplications.index') }}"style="cursor: pointer;text-decoration: none!important;text-align: -webkit-center;" >More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
                 </div>
-                <a href="{{ route('taxSetups.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="c_card">
+                            <div class="col-md-12 p-0 ">
+                                <h6 class="col-md-12 p-0" style="font-size: 15px !important;">Approved</h6>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_late_monthly">{{ $totalLeaveApplications }}</h3>
+                                <i class="fa fa-clock-o col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="{{ route('leaveApplications.index') }}"style="cursor: pointer;text-decoration: none!important;text-align: -webkit-center;" >More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="c_card">
+                            <div class="col-md-12 p-0 ">
+                                <h6 class="col-md-12 p-0" style="font-size: 15px !important;">Rejected</h6>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_meeting_monthly">{{ $totalLeaveApplications }}</h3>
+                                <i class="fa fa-handshake-o col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="{{ route('leaveApplications.index') }}"style="cursor: pointer;text-decoration: none!important;text-align: -webkit-center;" >More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-xs-6">
-            <!-- small box -->
-            <div class="small-box" style="background-color: #ff851b; color: white;">
-                <div class="inner">
-                    <h3>{{ $totalLeaveApplications }}</h3>
-                    <p>Total Leave Applications</p>
-                </div>
-                <div class="icon">
-                    <i class="fa fa-calendar-alt"></i>
-                </div>
-                <a href="{{ route('leaveApplications.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-xs-6">
-            <!-- small box -->
-            <div class="small-box" style="background-color: #d81b60; color: white;">
-                <div class="inner">
-                    <h3>{{ $pendingLeaveApplications }}</h3>
-                    <p>Pending Leave Applications</p>
-                </div>
-                <div class="icon">
-                    <i class="fa fa-calendar-day"></i>
-                </div>
-                <a href="{{ route('leaveApplications.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <!-- ./col -->
     </div>
+
     <div class="row">
-        <div class="col-lg-3 col-xs-6">
-            <!-- small box -->
-            <div class="small-box" style="background-color: #17a2b8; color: white;">
-                <div class="inner">
-                    <h3>{{ $totalLoans }}</h3>
-                    <p>Total Loans</p>
+        <div class="col-md-6">
+            <div class="d_card" style="background: aliceblue;">
+                <div class="row" style="display: flex;flex-direction: row;align-items: center;">
+                    <h4 class="col-md-6">Payroll Info</h4>
+                    {{-- <input class="col-md-4" type="month" onchange="get_monthly_data()" value="2025-10" id="date_monthly" style="border: 1px solid #009cf5;background: transparent;padding: 3px;border-radius: 7px;"> --}}
                 </div>
-                <div class="icon">
-                    <i class="fa fa-money-bill-alt"></i>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="c_card">
+                            <div class="col-md-12 p-0 ">
+                                <h6 class="col-md-12 p-0" style="font-size: 15px !important;">Total Salary Grade</h6>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_leave_monthly">{{ $totalSalaryGrades }}</h3>
+                                <i class="fa fa-sign-out col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="{{ route('salaryGrades.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="c_card">
+                            <div class="col-md-12 p-0">
+                                <h6 class="col-md-12 p-0" style="font-size: 15px !important;">Total Tax Setups</h6>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_extra_present_monthly">{{ $totalTaxSetups }}</h3>
+                                <i class="fa fa-user-plus col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="{{ route('taxSetups.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
                 </div>
-                <a href="{{ route('loans.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="c_card">
+                            <div class="col-md-12 p-0 ">
+                                <h6 class="col-md-12 p-0" style="font-size: 15px !important;">Total Loans</h6>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_late_monthly">{{ $totalLoans }}</h3>
+                                <i class="fa fa-clock-o col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                                <a href="{{ route('loans.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="c_card">
+                            <div class="col-md-12 p-0 ">
+                                <h6 class="col-md-12 p-0" style="font-size: 15px !important;">Pending Loans</h6>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_meeting_monthly">{{ $pendingLoans }}</h3>
+                                <i class="fa fa-handshake-o col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="{{ route('loans.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-xs-6">
-            <!-- small box -->
-            <div class="small-box" style="background-color: #ffc107; color: white;">
-                <div class="inner">
-                    <h3>{{ $pendingLoans }}</h3>
-                    <p>Pending Loans</p>
+
+        <div class="col-md-6">
+            <div class="d_card" style="background: aliceblue;">
+                <div class="row" style="display: flex;flex-direction: row;align-items: center;">
+                    <h4 class="col-md-12">Allowance & Provident Fund</h4>
+                    {{-- <input class="col-md-4" type="month" onchange="get_monthly_data()" value="2025-10" id="date_monthly" style="border: 1px solid #009cf5;background: transparent;padding: 3px;border-radius: 7px;"> --}}
                 </div>
-                <div class="icon">
-                    <i class="fa fa-money-bill-wave"></i>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="c_card">
+                            <div class="col-md-12 p-0 ">
+                                <h6 class="col-md-12 p-0" style="font-size: 15px !important;">Child Alloence</h6>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_leave_monthly">{{ $totalChildren}}</h3>
+                                <i class="fa fa-sign-out col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="c_card">
+                            <div class="col-md-12 p-0">
+                                <h6 class="col-md-12 p-0" style="font-size: 15px !important;">Provident Fund</h6>
+                            </div>
+                            <div class="col-md-12 card_flex">
+                                <h3 class="count-all-employees col-md-6" id="count_extra_present_monthly">{{ $totalProvidentFund }}</h3>
+                                <i class="fa fa-user-plus col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
+                            </div>
+                            <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
                 </div>
-                <a href="{{ route('loans.index') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
             </div>
         </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-xs-6">
-            <!-- small box -->
-            <div class="small-box" style="background-color: #28a745; color: white;">
-                <div class="inner">
-                    <h3>{{ $totalChildren }}</h3>
-                    <p>Total Children for Allowance</p>
-                </div>
-                <div class="icon">
-                    <i class="fa fa-child"></i>
-                </div>
-                <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-xs-6">
-            <!-- small box -->
-            <div class="small-box" style="background-color: #dc3545; color: white;">
-                <div class="inner">
-                    <h3>{{ $totalProvidentFund }}</h3>
-                    <p>Total Provident Fund</p>
-                </div>
-                <div class="icon">
-                    <i class="fa fa-piggy-bank"></i>
-                </div>
-                <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <!-- ./col -->
     </div>
+
+
     <div class="row">
         <div class="col-md-12">
             <div class="box">
