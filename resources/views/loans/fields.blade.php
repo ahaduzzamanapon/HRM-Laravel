@@ -139,7 +139,7 @@
 
         function calculateMonthlyInstallment() {
             const P = parseFloat(amountInput.value) || 0;
-            const i = (parseFloat(interestRateInput.value) || 0) / 100 / 12;
+            const i = (parseFloat(interestRateInput.value) || 0) / 100;
             const n = parseInt(installmentsInput.value) || 0;
 
             if (P > 0 && i > 0 && n > 0) {
