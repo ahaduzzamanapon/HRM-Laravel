@@ -25,7 +25,7 @@ class AttendanceProcessController extends Controller
         $departments = Department::pluck('name', 'id');
         $designations = Designation::pluck('desi_name', 'id');
 
-        $users = User::with(['branch', 'department', 'designation'])
+        $users = User::where('status', '!=', 'admin')->with(['branch', 'department', 'designation'])
             ->when($request->filled('branch_id'), function ($query) use ($request) {
                 return $query->where('branch_id', $request->branch_id);
             })
@@ -143,7 +143,7 @@ class AttendanceProcessController extends Controller
                 'attendanceDatas'=> $data['all'],
                 'date'           => $date
             ]);
-          
+
         }else{
             return response()->json($data);
         }
