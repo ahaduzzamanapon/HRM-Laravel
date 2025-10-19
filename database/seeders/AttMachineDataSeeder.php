@@ -24,7 +24,7 @@ class AttMachineDataSeeder extends Seeder
     {
         $attendanceService = app(AttendanceService::class);
         $users = User::all();
-        $date = Carbon::now();
+        $date = Carbon::now()->addDay();
 
         foreach ($users as $user) {
 

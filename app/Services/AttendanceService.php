@@ -30,7 +30,7 @@ class AttendanceService
                 $branch_id = $row->branch_id;
 
                 $shift_schedule  = $this->get_shift_schedule($emp_id, $process_date, $shift_id);
-
+                // dd($shift_schedule);
                 if (!$shift_schedule) {
                     AttendanceTime::updateOrCreate(
                         [
@@ -91,6 +91,10 @@ class AttendanceService
                 } elseif ($shift_schedule->is_weekend == 1) {
                     $attendance_status = 'Off Day';
                     $status = 'Off Day';
+                    $late_status = 0;
+                    $late_time = 0;
+                    $in_time  = null;
+                    $out_time = null;
                 } elseif ($in_time && $out_time && $in_time != $out_time) {
                     $attendance_status = 'Present';
                     $status = 'Present';
@@ -123,7 +127,7 @@ class AttendanceService
                     'lunch_late_status' => 0,
                     'early_out_status'  => 0,
                 );
-
+                // dd($data);
                 AttendanceTime::updateOrCreate(
                     [
                         'employee_id' => $emp_id,
