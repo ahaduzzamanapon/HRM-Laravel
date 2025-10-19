@@ -83,6 +83,7 @@
                             <div class="tab-pane fade show active" id="daily" role="tabpanel" aria-labelledby="daily-tab">
                                 <button class="btn btn-sm btn-primary filter-btn" data-filter="all" id = "salary_sheet">Salary Sheet</button>
                                 <button class="btn btn-sm btn-primary filter-btn" data-filter="all" id = "payslip">Salary Slip</button>
+                                <button class="btn btn-sm btn-primary filter-btn" data-filter="all" id = "tax">Tax</button>
                             </div>
                         </div>
                     </div>
@@ -212,6 +213,40 @@
                     // Send data via AJAX POST
                     $.ajax({
                         url: '{{ route("payroll.payslip") }}', // Your Laravel route
+                        type: 'POST',
+                        data: {
+                            user_ids: userIds,
+                            salary_month: $('#salary_month').val(),
+                            _token: '{{ csrf_token() }}' // CSRF token for Laravel
+                        },
+                        success: function(response) {
+                            // Open the response in a new popup window
+                            var popupWindow = window.open('', '_blank', 'width=1000,height=700,left=' + (screen.width/2 - 500) + ',top=' + (screen.height/2 - 350));
+                            popupWindow.document.write(response); // Write the server response (HTML)
+                            popupWindow.focus();
+                        },
+                        error: function(xhr, status, error) {
+                            alert('Something went wrong: ' + error);
+                        }
+                    });
+                });
+            });
+            $(document).ready(function () {
+                $('#tax').on('click', function () {
+                    var userIds = $('.user-checkbox:checked').map(function () {
+                        return $(this).val();
+                    }).get();
+                    if (userIds.length === 0) {
+                        alert('No users selected!');
+                        return;
+                    }
+                    if (userIds.length > 1) {
+                        alert('Please select only one user');
+                        return;
+                    }
+                    // Send data via AJAX POST
+                    $.ajax({
+                        url: '{{ route("payroll.tax") }}', // Your Laravel route
                         type: 'POST',
                         data: {
                             user_ids: userIds,

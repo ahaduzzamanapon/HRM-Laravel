@@ -85,5 +85,31 @@ class PayrollController extends Controller
         $salary_month = $request->salary_month;
         return view('payroll.payslip', compact('salary_reports', 'salary_month'));
     }
+    public function tax(Request $request)
+    {
+        $selectedMonth = date('Y-m-01', strtotime($request->salary_month));
+        $startDate = date('Y-m-01', strtotime('-11 months', strtotime($selectedMonth)));
+        $salary_reports = Payroll::select(
+            'payrolls.*',
+            'users.name',
+            'users.last_name',
+            'users.basic_salary',
+            'users.account_no',
+            'users.emp_type',
+            'designations.desi_name',
+            'salary_grades.*',
+            'banksetups.*'
+        )
+        ->join('users', 'payrolls.user_id', '=', 'users.id', 'LEFT')
+        ->join('designations', 'users.designation_id', '=', 'designations.id', 'LEFT')
+        ->join('salary_grades', 'users.salary_grade_id', '=', 'salary_grades.id', 'LEFT')
+        ->join('banksetups', 'users.bank_id', '=', 'banksetups.id', 'LEFT')
+        ->whereIn('payrolls.user_id', $request->user_ids)
+        ->whereBetween('payrolls.salary_month', [$startDate, $selectedMonth])
+        ->orderBy('payrolls.salary_month', 'asc')
+        ->get();
+        $salary_month = $request->salary_month;
+        return view('payroll.tax', compact('salary_reports', 'salary_month'));
+    }
 
 }

@@ -31,6 +31,7 @@ Route::post('payroll/process', [App\Http\Controllers\PayrollController::class, '
 Route::post('payroll/salary-report', [App\Http\Controllers\PayrollController::class, 'salaryReport'])->name('payroll.salarySheet');
 
 Route::post('payroll/payslip', [App\Http\Controllers\PayrollController::class, 'payslip'])->name('payroll.payslip');
+Route::post('payroll/tax', [App\Http\Controllers\PayrollController::class, 'tax'])->name('payroll.tax');
 
 Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
