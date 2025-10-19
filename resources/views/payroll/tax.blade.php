@@ -1,246 +1,192 @@
 <style>
-/* Container */
-.payslip-container {
-    width: 700px;
-    margin: 20px auto;
-    padding: 20px;
-    font-family: 'Arial', sans-serif;
-    background-color: #fff;
-    border: 1px solid #000000;
-    border-radius: 0px;
+/* Table Container */
+.table-responsive {
+    /* margin: 20px auto; */
+    max-width: 100%;
+    overflow-x: auto;
+    font-family: Arial, sans-serif;
 }
 
-/* Header */
+/* Table Styling */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #000;
+    background-color: #fff;
+}
+
+/* Table Head */
+.table thead th {
+    background-color: #ffffff; /* Bootstrap primary color */
+    color: #000000;
+    font-weight: bold;
+    text-align: center;
+    padding: 4px;
+    border: 1px solid #000;
+    font-size:10px;
+}
+
+/* Table Body */
+.table tbody td {
+    text-align: center;
+    padding: 6px 8px;
+    border: 1px solid #000;
+    font-size:10px;
+
+}
+
+
+/* Responsive table */
+@media (max-width: 768px) {
+    .table thead th, .table tbody td {
+        font-size: 10px;
+        padding: 4px;
+    }
+    .table-responsive h3 {
+        font-size: 16px;
+        text-align: center;
+    }
+}
 .payslip-header {
     text-align: center;
-    margin-bottom: 20px;
 }
-.payslip-header img {
-    width: 80px;
-    height: 80px;
-    object-fit: contain;
-}
-.payslip-header h2 {
-    margin: 5px 0 2px;
-    font-size: 22px;
-}
-.payslip-header p {
-    margin: 2px 0;
-    font-size: 12px;
-}
-
-/* Employee Info */
-.employee-info, .salary-info {
-    width: 100%;
-    margin-bottom: 20px;
-    border-collapse: collapse;
-}
-.employee-info td, .salary-info td {
-    padding: 6px 10px;
-    border: 1px solid #000000;
-}
-.employee-info td:first-child, .salary-info td:first-child {
-    font-weight: bold;
-    /* width: 30%; */
-}
-
-/* Section Titles */
-.section-title {
-    font-weight: bold;
-    margin: 10px 0;
-    font-size: 16px;
-    text-decoration: underline;
-}
-
-/* Salary Table */
-.salary-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-.salary-table th, .salary-table td {
-    padding: 5px 5px;
-    border: 1px solid #000000;
-    /* text-align: right; */
-}
-.salary-table th {
-    background-color: #ffffff;
-    color: #111111;
-}
-
-
-
 </style>
-{{-- @dd($salary_reports) --}}
-@php
-if(empty($salary_reports) || count($salary_reports) == 0 || $salary_reports == null) {
-    echo "No data found.";
-}
-@endphp
-@foreach ($salary_reports as $report)
-<div class="payslip-container">
+<button onclick="exportExcel()">Export to Excel</button>
+<div class="table-responsive">
     <div class="payslip-header">
         <div style="display: flex; align-items: center;justify-content: center;">
             <img src="{{ asset('salary_logo.jpg') }}" alt="Company Logo" style="max-width: 50px; height: auto;">
             <div style="margin-left: 10px;">
                 <h3>Palli Sanchay Bank</h3>
-                <p style="line-height: 0px;">Head Office,Dhaka</p>
+            <p style="line-height: 0px;">Head Office,Dhaka</p>
             </div>
         </div>
-        <div>
-            <p style="margin-left: 25px;">Red Crescent Borak Tower (Level- 7,8,9 & 10)</p>
-            <p style="margin-left: 25px;">37/3/A Escaton Garden Road, Dhaka-1000</p>
-        </div>
-        <div>
-            <p style="text-decoration: underline;font-weight: bold;">Budget And Accounts Department</p>
-            <h4 style="margin: 0px;margin-top:10px;margin-bottom:5px">Salary Slip/Pay Slip</h4>
-            <hr style="margin: 0px;border: 1px solid black;">
+        <div style="display: flex; flex-direction: row; align-items: center;justify-content: center; line-height: 0px;">
+            <h5>প্রধান কার্যালয়ে কর্মরত {{count($salary_reports)}}  জন কর্মকর্তা-কর্মচারীদের {{ \Carbon\Carbon::parse($salary_month)->format('F, Y') }} মাসের বেতন-ভাতাদির বিবরণীঃ</h5>
+            <h5 style="margin-left: 954px;position: absolute;line-height: 0px;">পতাকা-ক</h5>
         </div>
     </div>
-
-    <table class="employee-info" style="font-size: 12px;">
-        <tr>
-            <td style="font-weight:bold">EMP ID</td>
-            <td>{{ 'EMP-'.$report->user_id }}</td>
-            <td style="font-weight:bold">EMP Name</td>
-            <td>{{ $report->name.' '.$report->last_name }}</td>
-        </tr>
-        <tr>
-            <td style="font-weight:bold">Designation</td>
-            <td>{{ $report->desi_name }}</td>
-            <td style="font-weight:bold">Month/Year</td>
-            <td>{{ date('F, Y', strtotime($report->salary_month)) }}</td>
-        </tr>
-        <tr>
-            <td style="width: 170px;font-weight:bold">Bank Accounts No.</td>
-            <td style="width: 160px;">{{ $report->account_no }}</td>
-            <td style="font-weight:bold">Bank & Br. Name</td>
-            <td>{{ $report->bank_name .', '.$report->branch_name }}</td>
-        </tr>
-        <tr>
-            <td style="font-weight:bold">Grade</td>
-            <td>{{ $report->grade }}</td>
-            <td style="font-weight:bold">Salary Scale</td>
-            <td>{{ $report->starting_salary.'-'.$report->end_salary }}</td>
-        </tr>
-    </table>
-
-    <table class="salary-table" style="font-size: 12px;">
+    <table class="table">
         <thead>
             <tr>
-                <th colspan="2" style="text-align: center">Earnings</th>
-                <th colspan="2" style="text-align: center">Deductions</th>
+                <th>SL NO</th>
+                <th>ID NO</th>
+                <th>EMP Name</th>
+                <th>Dsg.</th>
+                <th>Basic Officer</th>
+                <th>Basic Staff</th>
+                <th>House Rent</th>
+                <th>Medical Allowance</th>
+                {{-- <th>Special Benefit, 10% or 15% on Basic or Mini 1500/-</th> --}}
+                {{-- <th>PF Bank Contribution 8.33%</th> --}}
+                {{-- <th>Child Allowance</th> --}}
+                {{-- <th>Transport Allowance</th> --}}
+                {{-- <th>Gross Earnings</th> --}}
+                {{-- <th>PF Bank Contribution 8.33%</th> --}}
+                <th>Staff Income Tax</th>
+                {{-- <th>Benevolent Fund</th> --}}
+                {{-- <th>Employees Contribution To P F Deduction</th> --}}
+                {{-- <th>Motorcycle/Car Loan</th> --}}
+                {{-- <th>House Building Loan Instalment</th> --}}
+                {{-- <th>Staff Personal Loan</th> --}}
+                {{-- <th>Vehicle Fare</th> --}}
+                {{-- <th>Stamp</th> --}}
+                {{-- <th>Gross Deduction</th> --}}
+                <th>Net Salary</th>
+                {{-- <th>Ac No.</th>
+                <th>Bank Name</th>
+                <th>Routing No</th> --}}
+                <th>Grade</th>
+                <th>Salary Scale</th>
             </tr>
-            <tr>
-                <th></th>
-                <th style="text-align: left">Monthly</th>
-                <th></th>
-                <th style="text-align: left">Monthly</th>
+            <tr style="font-size:10px;text-align:center;">
+                <td style="border:1px solid #000;"></td>
+                <td style="border:1px solid #000;">1</td>
+                <td style="border:1px solid #000;">2</td>
+                <td style="border:1px solid #000;">3</td>
+                <td style="border:1px solid #000;">4</td>
+                <td style="border:1px solid #000;">5</td>
+                <td style="border:1px solid #000;">6</td>
+                <td style="border:1px solid #000;">7</td>
+                <td style="border:1px solid #000;">8</td>
+                <td style="border:1px solid #000;">9</td>
+                <td style="border:1px solid #000;">10</td>
+                <td style="border:1px solid #000;">11</td>
             </tr>
         </thead>
-        <tbody >
-            <tr style="text-align: left">
-                <td>Basic Officer</td>
-                <td>{{ $report->emp_type !== "Stuff" ? number_format($report->b_salary, 2) : '' }}</td>
-                <td>P F Bank Contribution Deduction 8.33%</td>
-                <td>{{ "-" }}</td>
-            </tr>
-            <tr style="text-align: left">
-                <td>Basic Staff</td>
-                <td>{{ $report->emp_type == "Stuff" ? number_format($report->b_salary, 2) : '' }}</td>
-                <td>Staff Income Tax</td>
-                <td>{{ $report->tax_deduct }}</td>
-
-            </tr>
-            <tr style="text-align: left">
-                <td>House Rent</td>
-                <td>{{ number_format((int)$report->h_rent, 2) }}</td>
-                <td>Benevolent Fund</td>
-                <td>{{ $report->bene_deduct }}</td>
-
-            </tr>
-            <tr style="text-align: left">
-                <td>Medical Allowance</td>
-                <td>{{ number_format($report->m_allow, 2) }}</td>
-                <td>Employees Contribution To P F Deduction</td>
-                <td>{{ $report->pf_deduct }}</td>
-            </tr>
-            <tr style="text-align: left">
-                <td style="width: 180px;">Special Benefit, 10%  <br>or 15% on Basic or Mini 1500/-</td>
-                <td style="width: 170px;">{{ "-" }}</td>
-                <td>Motorcycle/Car Loan</td>
-                <td>{{ $report->auto_mobile_d }}</td>
-            </tr>
-            <tr style="text-align: left">
-                <td>PF Bank Contribution</td>
-                <td>{{ $report->pf_allow_bank }}   </td>
-                <td>House Building Loan Instalment</td>
-                <td>{{ $report->h_loan_deduct }}</td>
-            </tr>
-            <tr style="text-align: left">
-                <td>Child Allowance</td>
-                <td>{{ number_format($report->child_allow, 2) }}</td>
-                <td>Staff Personal Loan</td>
-                <td>{{ $report->p_loan_deduct }}</td>
-            </tr>
-            <tr style="text-align: left">
-                <td>Transport Allowance</td>
-                <td>{{ number_format($report->trans_allow, 2) }}</td>
-                <td>Vehicle Fare</td>
-                <td>{{ "-" }}</td>
-            </tr>
-            <tr style="text-align: left">
-                <td></td>
-                <td></td>
-                <td>Stamp</td>
-                <td>{{ $report->stump_deduct}}</td>
-            </tr>
+        <tbody>
+        @foreach ($salary_reports as $report)
+            {{-- @dd($report) --}}
             <tr>
-                <td>Total Earning</td>
-                <td>{{ number_format($report->net_salary, 2) }}</td>
-                <td>Total Deduction</td>
-                <td>{{ number_format($report->total_deduct, 2) }}</td>
+                <td>{{ @$i = $i + 1 }}</td>
+                <td style="white-space: nowrap">{{ "Emp-".$report->user_id }}</td>
+                <td>{{ $report->name.' '.$report->last_name }}</td>
+                <td>{{ $report->desi_name }}</td>
+                <td>{{ $report->emp_type != "Stuff" ? $report->basic_salary : '' }}</td>
+                <td>{{ $report->emp_type == "Stuff" ? $report->basic_salary : '' }}</td>
+                <td>{{ $report->h_rent }}</td>
+                <td>{{ $report->m_allow }}</td>
+                {{-- <td>{{ $report->pay_day }}</td> --}}
+                {{-- <td>{{ $report->pay_day }}</td> --}}
+                {{-- <td>{{ $report->child_allow }}</td> --}}
+                {{-- <td>{{ $report->trans_allow }}</td> --}}
+                {{-- <td>{{ $report->g_salary }}</td> --}}
+                {{-- <td>{{ "0.00" }}</td> --}}
+                <td>{{ $report->tax_deduct }}</td>
+                {{-- <td>{{ $report->bene_deduct }}</td> --}}
+                {{-- <td>{{ $report->pf_deduct }}</td> --}}
+                {{-- <td>{{ $report->auto_mobile_d }}</td> --}}
+                {{-- <td>{{ $report->h_loan_deduct }}</td> --}}
+                {{-- <td>{{ $report->p_loan_deduct }}</td> --}}
+                {{-- <td>{{ "0.00" }}</td> --}}
+                {{-- <td>{{ $report->stump_deduct}}</td> --}}
+                {{-- <td>{{ "0.00" }}</td> --}}
+                <td>{{ $report->net_salary }}</td>
+                {{-- <td>{{ $report->account_no }}</td> --}}
+                {{-- <td>{{ $report->bank_name }}</td> --}}
+                {{-- <td>{{ $report->bank_code }}</td> --}}
+                <td>{{ $report->grade }}</td>
+                <td>{{ $report->starting_salary.'-'.$report->end_salary }}</td>
             </tr>
+        @endforeach
         </tbody>
     </table>
-    @php
-        $numberToWords = new \NumberToWords\NumberToWords();
-        $numberTransformer = $numberToWords->getNumberTransformer('en');
-        $pay = isset($report->net_salary) ? $report->net_salary : 0;
-
-    @endphp
-
-    <table class="salary-table" style="font-size: 12px;margin-top: 10px;">
-        <tr>
-            <td style="text-align: left;width: 180px; font-weight: bold; padding-top: 10px;">Net Salary: </td>
-            <td style="text-align: right; font-weight: bold; padding-top: 10px;">{{ number_format($report->net_salary, 2) }}</td>
-        </tr>
-        <tr>
-            <td style="text-align: left;width: 180px; font-weight: bold; padding-top: 10px;">In Words: </td>
-            <td style="text-align: right; font-weight: bold; padding-top: 10px;">{{ ucwords($numberTransformer->toWords($pay)) }} Taka Only</td>
-        </tr>
-    </table>
-
-    <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 10px;">
-        <p style="font-weight: bold">Salary Paid By</p>
-        <p style="line-height: 0px;"><input id="myCheckbox"  type="checkbox" {{ $report->pay_type != 'cash' ? 'disabled' : '' }} {{ $report->pay_type == 'cash' ? 'checked' : '' }}>Cash</p>
-        <p style="line-height: 0px;"><input type="checkbox" {{ $report->pay_type != 'bank' ? 'disabled' : '' }} {{ $report->pay_type == 'bank' ? 'checked' : '' }}>Bank</p>
-        <p style="line-height: 0px;"><input type="checkbox" {{ $report->pay_type != 'both' ? 'disabled' : '' }} {{ $report->pay_type == 'both' ? 'checked' : '' }}>Cash and Bank Both</p>
-    </div>
-
-
-    <div style=" display: flex; justify-content: space-between; font-size: 12px;margin-top: 40px;">
-        <div style="text-align: center;">
-            <p style="line-height: 0px;border:1px solid black"></p>
-            <p style="line-height: 0px;">Prepared By</p>
-            <p style="line-height: 0px;">Budget And Accounts Department</p>
-        </div>
-        <div style="text-align: center;">
-            <p style="line-height: 0px;border:1px solid black"></p>
-            <p style="line-height: 0px;">Authorized Signature</p>
-            <p style="line-height: 0px;">Budget And Accounts Department</p>
-        </div>
-
-    </div>
 </div>
-@endforeach
+
+
+<!-- Add SheetJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+
+
+<script>
+function exportExcel() {
+    let table = document.querySelector(".table");
+    let wb = XLSX.utils.table_to_book(table, { sheet: "Salary Report" });
+
+    let ws = wb.Sheets["Salary Report"];
+
+    // Add thin border to all cells
+    const range = XLSX.utils.decode_range(ws['!ref']); // get range of sheet
+    for (let R = range.s.r; R <= range.e.r; ++R) {
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+            let cell_address = { c: C, r: R };
+            let cell_ref = XLSX.utils.encode_cell(cell_address);
+            if (!ws[cell_ref]) ws[cell_ref] = { t: "s", v: "" }; // create empty cell if missing
+            ws[cell_ref].s = {
+                border: {
+                    top: { style: "thin", color: { auto: 1 } },
+                    bottom: { style: "thin", color: { auto: 1 } },
+                    left: { style: "thin", color: { auto: 1 } },
+                    right: { style: "thin", color: { auto: 1 } }
+                }
+            };
+        }
+    }
+
+    // Export Excel
+    XLSX.writeFile(wb, "salary_report.xlsx");
+}
+</script>
+
 

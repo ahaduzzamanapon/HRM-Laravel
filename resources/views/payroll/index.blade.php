@@ -240,10 +240,10 @@
                         alert('No users selected!');
                         return;
                     }
-                    if (userIds.length > 1) {
-                        alert('Please select only one user');
-                        return;
-                    }
+                    // if (userIds.length > 1) {
+                    //     alert('Please select only one user');
+                    //     return;
+                    // }
                     // Send data via AJAX POST
                     $.ajax({
                         url: '{{ route("payroll.tax") }}', // Your Laravel route

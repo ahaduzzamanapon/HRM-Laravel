@@ -87,6 +87,7 @@ class PayrollController extends Controller
     }
     public function tax(Request $request)
     {
+        // dd($request->user_ids);
         $selectedMonth = date('Y-m-01', strtotime($request->salary_month));
         $startDate = date('Y-m-01', strtotime('-11 months', strtotime($selectedMonth)));
         $salary_reports = Payroll::select(
@@ -105,10 +106,13 @@ class PayrollController extends Controller
         ->join('salary_grades', 'users.salary_grade_id', '=', 'salary_grades.id', 'LEFT')
         ->join('banksetups', 'users.bank_id', '=', 'banksetups.id', 'LEFT')
         ->whereIn('payrolls.user_id', $request->user_ids)
-        ->whereBetween('payrolls.salary_month', [$startDate, $selectedMonth])
+        ->where('payrolls.tax_deduct', '>', 0)
+        // ->whereBetween('payrolls.salary_month', [$startDate, $selectedMonth])
+        ->where('payrolls.salary_month',$selectedMonth )
         ->orderBy('payrolls.salary_month', 'asc')
         ->get();
         $salary_month = $request->salary_month;
+        // dd($salary_reports);
         return view('payroll.tax', compact('salary_reports', 'salary_month'));
     }
 
