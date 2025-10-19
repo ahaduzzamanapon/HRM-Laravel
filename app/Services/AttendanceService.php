@@ -144,7 +144,13 @@ class AttendanceService
 
     protected function get_employees($emp_ids)
     {
-        return User::whereIn('id', $emp_ids)->where('id', '!=', 1)->get();
+
+
+        if (is_array($emp_ids)) {
+            return User::whereIn('id', $emp_ids)->where('id', '!=', 1)->get();
+        } else {
+            return User::where('id', $emp_ids)->where('id', '!=', 1)->get();
+        }
     }
 
     protected function get_shift_schedule($emp_id, $process_date, $shift_id)

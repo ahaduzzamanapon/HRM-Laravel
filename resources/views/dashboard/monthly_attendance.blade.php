@@ -65,6 +65,11 @@
     </div>
 </div>
 @push('scripts')
+<script>
+    $(document).ready(function() {
+       // get_monthly_data();
+    });
+</script>
     <script>
         function get_monthly_data() {
             var loader = '<img src="{{ asset('assets/loader.gif') }}"  alt="loader" style="height: 24px;width: 24px;">';
