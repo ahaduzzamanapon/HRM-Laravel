@@ -96,6 +96,8 @@ Route::get('personalDocuments/list/{user_id}', [App\Http\Controllers\PersonalDoc
 Route::resource('allowanceSettings', App\Http\Controllers\AllowanceSettingController::class);
 Route::get('allowanceSettings/list/{user_id}', [App\Http\Controllers\AllowanceSettingController::class, 'list'])->name('allowanceSettings.list');
 
+Route::get('/cron/refresh-database', [App\Http\Controllers\CronController::class, 'refreshDatabase']);
+
 
 
 

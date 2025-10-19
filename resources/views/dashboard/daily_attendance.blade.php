@@ -52,6 +52,11 @@
 
 
 @push('scripts')
+<script>
+    $(document).ready(function() {
+        get_data_count();
+    });
+</script>
     <script>
         function get_data_count() {
             var loader = '<img src="{{ asset('assets/loader.gif') }}"  alt="loader" style="height: 24px;width: 24px;">';

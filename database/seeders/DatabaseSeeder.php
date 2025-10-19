@@ -14,48 +14,39 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $this->call(DepartmentSeeder::class);
-        $this->call(BranchSeeder::class);
-        $this->call(RoleSeeder::class);
-        $this->call(PermissionSeeder::class);
-        $this->call(RoleHasPermissionsSeeder::class);
-        $this->call(SalaryGradeSeeder::class);
-        $this->call(UserSeeder::class);
-                // \App\Models\User::factory(10)->create();
-        $this->call(SiteSettingSeeder::class);
-        $this->call(DesignationSeeder::class);
-        $this->call(TrainingDetailSeeder::class);
-        $this->call(JobExperienceSeeder::class);
-        $this->call(EducationalQualificationSeeder::class);
-        $this->call(NomineeInformationSeeder::class);
-       // $this->call(PromotionDetailSeeder::class);
-       // $this->call(SalaryIncrementSeeder::class);
-        $this->call(TransferDetailSeeder::class);
-        $this->call(PersonalDocumentSeeder::class);
-
-        $this->call(HolydaySeeder::class);
-        $this->call(ShiftSeeder::class);
-        $this->call(ShiftDetailSeeder::class);
-        $this->call(LeaveTypeSeeder::class); // Added
-        $this->call(AllowanceSettingSeeder::class);
-
-
-
-        $this->call(LoanTypeSeeder::class);
-        $this->call(LoanSeeder::class);
-        $this->call(LoanRepaymentSeeder::class);
-        $this->call(ProvidentFundPermissionsSeeder::class);
-        $this->call(PayrollSeeder::class);
-        //$this->call(SalaryGradeSeeder::class);
-        $this->call(BankSetupSeeder::class);
+        // $this->call(ShiftSeeder::class);
+        // $this->call(DepartmentSeeder::class);
+        // $this->call(BranchSeeder::class);
+        // $this->call(RoleSeeder::class);
+        // $this->call(SiteSettingSeeder::class);
+        // $this->call(PermissionSeeder::class);
+        // $this->call(RoleHasPermissionsSeeder::class);
+        // $this->call(SalaryGradeSeeder::class);
+        // $this->call(DesignationSeeder::class);
+        // $this->call(UserSeeder::class);
+        // $this->call(TrainingDetailSeeder::class);
+        // $this->call(JobExperienceSeeder::class);
+        // $this->call(EducationalQualificationSeeder::class);
+        // $this->call(NomineeInformationSeeder::class);
+        // $this->call(TransferDetailSeeder::class);
+        // $this->call(PersonalDocumentSeeder::class);
+// 
+        // $this->call(HolydaySeeder::class);
+        // $this->call(ShiftDetailSeeder::class);
+        // $this->call(LeaveTypeSeeder::class); // Added
+        // $this->call(AllowanceSettingSeeder::class);
+// 
+// 
+// 
+        // $this->call(LoanTypeSeeder::class);
+        // $this->call(LoanSeeder::class);
+        // $this->call(LoanRepaymentSeeder::class);
+        // $this->call(ProvidentFundPermissionsSeeder::class);
+        // $this->call(PayrollSeeder::class);
+        // $this->call(BankSetupSeeder::class);
         $this->call(AttMachineDataSeeder::class);
-        $this->call(AttendanceTimeSeeder::class);
-        $this->call(UserAllowanceSeeder::class);
-        // \App\Models\User::factory(10)->create();
-
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+       //$this->call(AttendanceTimeSeeder::class);
+        // $this->call(UserAllowanceSeeder::class);
+        
     }
 }
