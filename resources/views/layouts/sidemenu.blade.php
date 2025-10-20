@@ -34,12 +34,12 @@
 </li>
 
 {{-- My Attendance --}}
-<li class="nav-item">
+{{-- <li class="nav-item">
     <a class="nav-link {!! Request::is('my-attendance') ? 'active' : '' !!}" href="{{ route('attendance.my') }}">
         <i class="icon im im-icon-Clock-Forward"></i>
         <span class="item-name">My Attendance</span>
     </a>
-</li>
+</li> --}}
 
 {{-- Users Management --}}
 @if(can('staff_management'))
