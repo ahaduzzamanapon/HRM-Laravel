@@ -97,12 +97,14 @@ class PayrollController extends Controller
             'users.basic_salary',
             'users.account_no',
             'users.emp_type',
-            'designations.desi_name',
             'salary_grades.*',
-            'banksetups.*'
+            'banksetups.*',
+            'designations.desi_name',
+            'departments.name as dept_name'
         )
         ->join('users', 'payrolls.user_id', '=', 'users.id', 'LEFT')
         ->join('designations', 'users.designation_id', '=', 'designations.id', 'LEFT')
+        ->join('departments', 'users.department_id', '=', 'departments.id', 'LEFT')
         ->join('salary_grades', 'users.salary_grade_id', '=', 'salary_grades.id', 'LEFT')
         ->join('banksetups', 'users.bank_id', '=', 'banksetups.id', 'LEFT')
         ->whereIn('payrolls.user_id', $request->user_ids)

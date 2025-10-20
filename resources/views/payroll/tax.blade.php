@@ -35,7 +35,6 @@
 
 }
 
-
 /* Responsive table */
 @media (max-width: 768px) {
     .table thead th, .table tbody td {
@@ -62,8 +61,8 @@
             </div>
         </div>
         <div style="display: flex; flex-direction: row; align-items: center;justify-content: center; line-height: 0px;">
-            <h5>প্রধান কার্যালয়ে কর্মরত {{count($salary_reports)}}  জন কর্মকর্তা-কর্মচারীদের {{ \Carbon\Carbon::parse($salary_month)->format('F, Y') }} মাসের বেতন-ভাতাদির বিবরণীঃ</h5>
-            <h5 style="margin-left: 954px;position: absolute;line-height: 0px;">পতাকা-ক</h5>
+            <h5>প্রধান কার্যালয়ে কর্মরত {{count($salary_reports)}}  জন কর্মকর্তা-কর্মচারীদের {{ \Carbon\Carbon::parse($salary_month)->format('F, Y') }} মাসের ট্যাক্স বিবরণীঃ</h5>
+            {{-- <h5 style="margin-left: 954px;position: absolute;line-height: 0px;">পতাকা-ক</h5> --}}
         </div>
     </div>
     <table class="table">
@@ -72,79 +71,28 @@
                 <th>SL NO</th>
                 <th>ID NO</th>
                 <th>EMP Name</th>
-                <th>Dsg.</th>
-                <th>Basic Officer</th>
-                <th>Basic Staff</th>
-                <th>House Rent</th>
-                <th>Medical Allowance</th>
-                {{-- <th>Special Benefit, 10% or 15% on Basic or Mini 1500/-</th> --}}
-                {{-- <th>PF Bank Contribution 8.33%</th> --}}
-                {{-- <th>Child Allowance</th> --}}
-                {{-- <th>Transport Allowance</th> --}}
-                {{-- <th>Gross Earnings</th> --}}
-                {{-- <th>PF Bank Contribution 8.33%</th> --}}
+                <th>Department</th>
+                <th>Designation</th>
+                <th>Gross Salary</th>
                 <th>Staff Income Tax</th>
-                {{-- <th>Benevolent Fund</th> --}}
-                {{-- <th>Employees Contribution To P F Deduction</th> --}}
-                {{-- <th>Motorcycle/Car Loan</th> --}}
-                {{-- <th>House Building Loan Instalment</th> --}}
-                {{-- <th>Staff Personal Loan</th> --}}
-                {{-- <th>Vehicle Fare</th> --}}
-                {{-- <th>Stamp</th> --}}
-                {{-- <th>Gross Deduction</th> --}}
-                <th>Net Salary</th>
-                {{-- <th>Ac No.</th>
-                <th>Bank Name</th>
-                <th>Routing No</th> --}}
                 <th>Grade</th>
                 <th>Salary Scale</th>
-            </tr>
-            <tr style="font-size:10px;text-align:center;">
-                <td style="border:1px solid #000;"></td>
-                <td style="border:1px solid #000;">1</td>
-                <td style="border:1px solid #000;">2</td>
-                <td style="border:1px solid #000;">3</td>
-                <td style="border:1px solid #000;">4</td>
-                <td style="border:1px solid #000;">5</td>
-                <td style="border:1px solid #000;">6</td>
-                <td style="border:1px solid #000;">7</td>
-                <td style="border:1px solid #000;">8</td>
-                <td style="border:1px solid #000;">9</td>
-                <td style="border:1px solid #000;">10</td>
-                <td style="border:1px solid #000;">11</td>
             </tr>
         </thead>
         <tbody>
         @foreach ($salary_reports as $report)
-            {{-- @dd($report) --}}
+        {{-- @dd($report) --}}
             <tr>
                 <td>{{ @$i = $i + 1 }}</td>
                 <td style="white-space: nowrap">{{ "Emp-".$report->user_id }}</td>
                 <td>{{ $report->name.' '.$report->last_name }}</td>
+                <td>{{ $report->dept_name }}</td>
                 <td>{{ $report->desi_name }}</td>
-                <td>{{ $report->emp_type != "Stuff" ? $report->basic_salary : '' }}</td>
-                <td>{{ $report->emp_type == "Stuff" ? $report->basic_salary : '' }}</td>
-                <td>{{ $report->h_rent }}</td>
+                {{-- <td>{{ $report->h_rent }}</td>
                 <td>{{ $report->m_allow }}</td>
-                {{-- <td>{{ $report->pay_day }}</td> --}}
-                {{-- <td>{{ $report->pay_day }}</td> --}}
-                {{-- <td>{{ $report->child_allow }}</td> --}}
-                {{-- <td>{{ $report->trans_allow }}</td> --}}
-                {{-- <td>{{ $report->g_salary }}</td> --}}
-                {{-- <td>{{ "0.00" }}</td> --}}
+                <td>{{ $report->basic_salary }}</td> --}}
+                <td>{{ $report->g_salary }}</td>
                 <td>{{ $report->tax_deduct }}</td>
-                {{-- <td>{{ $report->bene_deduct }}</td> --}}
-                {{-- <td>{{ $report->pf_deduct }}</td> --}}
-                {{-- <td>{{ $report->auto_mobile_d }}</td> --}}
-                {{-- <td>{{ $report->h_loan_deduct }}</td> --}}
-                {{-- <td>{{ $report->p_loan_deduct }}</td> --}}
-                {{-- <td>{{ "0.00" }}</td> --}}
-                {{-- <td>{{ $report->stump_deduct}}</td> --}}
-                {{-- <td>{{ "0.00" }}</td> --}}
-                <td>{{ $report->net_salary }}</td>
-                {{-- <td>{{ $report->account_no }}</td> --}}
-                {{-- <td>{{ $report->bank_name }}</td> --}}
-                {{-- <td>{{ $report->bank_code }}</td> --}}
                 <td>{{ $report->grade }}</td>
                 <td>{{ $report->starting_salary.'-'.$report->end_salary }}</td>
             </tr>
@@ -153,19 +101,13 @@
     </table>
 </div>
 
-
 <!-- Add SheetJS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-
-
 <script>
 function exportExcel() {
     let table = document.querySelector(".table");
-    let wb = XLSX.utils.table_to_book(table, { sheet: "Salary Report" });
-
-    let ws = wb.Sheets["Salary Report"];
-
+    let wb = XLSX.utils.table_to_book(table, { sheet: "Tax Report" });
+    let ws = wb.Sheets["Tax Report"];
     // Add thin border to all cells
     const range = XLSX.utils.decode_range(ws['!ref']); // get range of sheet
     for (let R = range.s.r; R <= range.e.r; ++R) {
@@ -185,7 +127,7 @@ function exportExcel() {
     }
 
     // Export Excel
-    XLSX.writeFile(wb, "salary_report.xlsx");
+    XLSX.writeFile(wb, "tax_report.xlsx");
 }
 </script>
 
