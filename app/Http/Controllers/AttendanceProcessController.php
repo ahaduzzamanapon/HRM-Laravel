@@ -60,6 +60,7 @@ class AttendanceProcessController extends Controller
 
     public function getReportData(Request $request)
     {
+        // dd($_POST);
         $reportType = $request->input('report_type');
         $filterType = $request->input('filter_type');
         $fromDate = $request->input('from_date');
@@ -72,8 +73,15 @@ class AttendanceProcessController extends Controller
         }
 
         $data = $this->attendanceService->getReportData($reportType, $filterType, $fromDate, $toDate, $userIds);
-
-        return \DataTables::of($data)->make(true);
+        // dd($data);
+        if($reportType == 'daily'){
+            return view('attendance.daily_atten_report',['attendanceDatas' => $data, 'date' => $fromDate, 'reportType' => $reportType, 'filterType' => $filterType, 'fromDate' => $fromDate]);
+        }
+        if ($reportType == 'other') {
+            if($reportType == 'job_card'){
+                return view('attendance.job_card_report', ['job_card' => $data, 'date' => $fromDate, 'reportType' => $reportType, 'filterType' => $filterType, 'fromDate' => $fromDate, 'toDate' => $toDate]);
+            }
+        }
     }
 
     public function storeManualAttendance(Request $request)

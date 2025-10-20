@@ -74,7 +74,7 @@
                 </div>
                 <div class="card">
                     <div class="card-body">
-                        <ul class="nav nav-tabs nav_t" id="myTab" role="tablist" style="background: white">
+                        <ul class="nav nav-tabs nav_t" id="myTab" role="tablist" style="background: #c7e6f8">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="daily-tab" data-bs-toggle="tab" data-bs-target="#daily" type="button" role="tab" aria-controls="daily" aria-selected="true">Report</button>
                             </li>
@@ -171,6 +171,7 @@
                 });
             });
             $(document).ready(function () {
+                
                 $('#salary_sheet').on('click', function () {
                     var userIds = $('.user-checkbox:checked').map(function () {
                         return $(this).val();
@@ -200,8 +201,7 @@
                         }
                     });
                 });
-            });
-            $(document).ready(function () {
+
                 $('#payslip').on('click', function () {
                     var userIds = $('.user-checkbox:checked').map(function () {
                         return $(this).val();
@@ -230,8 +230,7 @@
                         }
                     });
                 });
-            });
-            $(document).ready(function () {
+
                 $('#tax').on('click', function () {
                     var userIds = $('.user-checkbox:checked').map(function () {
                         return $(this).val();

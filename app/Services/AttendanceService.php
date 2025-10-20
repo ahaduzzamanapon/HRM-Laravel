@@ -58,9 +58,9 @@ class AttendanceService
                                                             ->first();
 
                 $out_time_record = \App\Models\AttMachineData::where('punch_id', $punch_id)
-                                                             ->whereDate('date_time', $process_date)
-                                                             ->orderBy('date_time', 'desc')
-                                                             ->first();
+                                                            ->whereDate('date_time', $process_date)
+                                                            ->orderBy('date_time', 'desc')
+                                                            ->first();
 
                 if ($in_time_record) {
                     $in_time = $in_time_record->date_time;
@@ -223,7 +223,20 @@ class AttendanceService
         $query = AttendanceTime::with('user');
 
         if ($reportType == 'daily') {
-            $query->whereDate('attendance_date', $fromDate);
+            if($filterType == 'all'){
+                $query->where('attendance_date', $fromDate);
+            }elseif($filterType == 'present'){
+                $query->where('attendance_date', $fromDate);
+                $query->where('attendance_status', 'Present');
+                $query->where('status', 'Present');
+            }elseif($filterType == 'absent'){
+                $query->where('attendance_date', $fromDate);
+                $query->where('attendance_status', 'Absent');
+                $query->where('status', 'Absent');
+            }elseif($filterType == 'late'){
+                $query->where('attendance_date', $fromDate);
+                $query->where('late_status', 1);
+            }
         } elseif ($reportType == 'monthly') {
             $query->whereMonth('attendance_date', Carbon::parse($fromDate)->month);
         } elseif ($reportType == 'continue') {
@@ -233,15 +246,13 @@ class AttendanceService
         if ($filterType != 'all') {
             if ($filterType == 'leave') {
                 $query->where('status', 'Leave')->orWhere('status', 'HLeave');
-            } else {
-                $query->where('status', $filterType);
             }
         }
 
         if (!empty($userIds)) {
             $query->whereIn('employee_id', $userIds);
         }
-
+        // dd($query->get());
         return $query->get();
     }
 

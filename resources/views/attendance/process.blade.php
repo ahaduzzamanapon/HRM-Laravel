@@ -45,7 +45,7 @@ Attendance Process @parent
         }
 
         .nav_t {
-            background: #cdcece;
+            background: #c7e6f8;
             padding: 11px;
         }
 
@@ -117,54 +117,40 @@ Attendance Process @parent
                         <ul class="nav nav-tabs nav_t" id="myTab" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="daily-tab" data-bs-toggle="tab" data-bs-target="#daily"
-                                    type="button" role="tab" aria-controls="daily" aria-selected="true">Daily</button>
+                                    type="button" role="tab" aria-controls="daily" aria-selected="true">Daily Report</button>
                             </li>
+
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="monthly-tab" data-bs-toggle="tab" data-bs-target="#monthly"
-                                    type="button" role="tab" aria-controls="monthly" aria-selected="false">Monthly</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="continue-tab" data-bs-toggle="tab" data-bs-target="#continue"
-                                    type="button" role="tab" aria-controls="continue"
-                                    aria-selected="false">Continue</button>
+                                <button class="nav-link" id="other-tab" data-bs-toggle="tab" data-bs-target="#other"
+                                    type="button" role="tab" aria-controls="other"
+                                    aria-selected="false">Others Report</button>
                             </li>
                         </ul>
                         <div class="tab-content" id="myTabContent">
                             <div class="tab-pane fade show active" id="daily" role="tabpanel" aria-labelledby="daily-tab">
                                 <div class="my-3">
-                                    <button class="btn btn-sm btn-primary filter-btn" data-filter="all">All
-                                        Attendance</button>
-                                    <button class="btn btn-sm btn-success filter-btn" data-filter="present">All
-                                        Present</button>
-                                    <button class="btn btn-sm btn-danger filter-btn" data-filter="absent">All
-                                        Absent</button>
-                                    <button class="btn btn-sm btn-warning filter-btn" data-filter="leave">All Leave</button>
+                                    <button class="btn btn-sm btn-primary filter-btn" data-filter="all">
+                                        <i class="fa fa-list"></i> All
+                                    </button>
+                                    <button class="btn btn-sm btn-success filter-btn" data-filter="present">
+                                        <i class="fa fa-check"></i> Present
+                                    </button>
+                                    <button class="btn btn-sm btn-danger filter-btn" data-filter="absent">
+                                        <i class="fa fa-times"></i> Absent
+                                    </button>
+                                    <button class="btn btn-sm btn-warning filter-btn" data-filter="late">
+                                        <i class="fa fa-clock-o"></i> Late
+                                    </button>
+                                    <button class="btn btn-sm btn-primary filter-btn" data-filter="leave">
+                                        <i class="fa fa-sign-out"></i> Leave
+                                    </button>
                                 </div>
-                                <table class="table table-bordered no-datatable-style" id="daily-report-table"></table>
                             </div>
-                            <div class="tab-pane fade" id="monthly" role="tabpanel" aria-labelledby="monthly-tab">
+                            <div class="tab-pane fade" id="other" role="tabpanel" aria-labelledby="other-tab">
                                 <div class="my-3">
-                                    <button class="btn btn-sm btn-primary filter-btn" data-filter="all">All
-                                        Attendance</button>
-                                    <button class="btn btn-sm btn-success filter-btn" data-filter="present">All
-                                        Present</button>
-                                    <button class="btn btn-sm btn-danger filter-btn" data-filter="absent">All
-                                        Absent</button>
-                                    <button class="btn btn-sm btn-warning filter-btn" data-filter="leave">All Leave</button>
+                                    <button class="btn btn-sm btn-primary filter-btn" data-filter="job_card">Emp. Job Card</button>
+                                    <button class="btn btn-sm btn-primary filter-btn" data-filter="gen_report">General Report</button>
                                 </div>
-                                <table class="table table-bordered" id="monthly-report-table"></table>
-                            </div>
-                            <div class="tab-pane fade" id="continue" role="tabpanel" aria-labelledby="continue-tab">
-                                <div class="my-3">
-                                    <button class="btn btn-sm btn-primary filter-btn" data-filter="all">All
-                                        Attendance</button>
-                                    <button class="btn btn-sm btn-success filter-btn" data-filter="present">All
-                                        Present</button>
-                                    <button class="btn btn-sm btn-danger filter-btn" data-filter="absent">All
-                                        Absent</button>
-                                    <button class="btn btn-sm btn-warning filter-btn" data-filter="leave">All Leave</button>
-                                </div>
-                                <table class="table table-bordered" id="continue-report-table"></table>
                             </div>
                         </div>
                     </div>
@@ -390,35 +376,37 @@ Attendance Process @parent
                 $('.filter-btn').on('click', function () {
                     var reportType = $(this).closest('.tab-pane').attr('id');
                     var tableId = '#' + reportType + '-report-table';
-                    if ($.fn.DataTable.isDataTable(tableId)) {
-                        $(tableId).DataTable().destroy();
+                    var filterType = $(this).data('filter');
+                    var fromDate = $('#from_date').val();
+                    var toDate = $('#to_date').val();
+                    var userIds = $('.user-checkbox:checked').map(function () {
+                        return $(this).val();
+                    }).get();
+                    if(userIds.length === 0){
+                        alert('Please select at least one user.');
+                        return;
                     }
-                    var table = $(tableId).DataTable({
-                        processing: true,
-                        serverSide: true,
-                        ajax: {
-                            url: '{{ route("attendance.report") }}',
-                            data: function (d) {
-                                d.report_type = reportType;
-                                d.filter_type = $(this).data('filter');
-                                d.from_date = $('#from_date').val();
-                                d.to_date = $('#to_date').val();
-                                d.user_ids = $('.user-checkbox:checked').map(function () {
-                                    return $(this).val();
-                                }).get();
-                            }.bind(this)
+
+                    $.ajax({
+                        url: '{{ route("attendance.report") }}', // Your Laravel route
+                        type: 'POST',
+                        data: {
+                            report_type: reportType,
+                            filter_type: filterType,
+                            from_date  : fromDate,
+                            to_date    : toDate,
+                            user_ids   : userIds,
+                            _token: '{{ csrf_token() }}' // CSRF token for Laravel
                         },
-                        columns: [
-                            { data: 'user.name', name: 'user.name' },
-                            { data: 'attendance_date', name: 'attendance_date' },
-                            { data: 'status', name: 'status' },
-                            { data: 'clock_in', name: 'clock_in' },
-                            { data: 'clock_out', name: 'clock_out' },
-                        ],
-                        dom: 'Bfrtip',
-                        buttons: [
-                            'copy', 'csv', 'excel', 'pdf', 'print'
-                        ]
+                        success: function(response) {
+
+                            var popupWindow = window.open('', '_blank', 'width=1000,height=700,left=' + (screen.width/2 - 500) + ',top=' + (screen.height/2 - 350));
+                            popupWindow.document.write(response); // Write the server response (HTML)
+                            popupWindow.focus();
+                        },
+                        error: function(xhr, status, error) {
+                            alert('Something went wrong: ' + error);
+                        }
                     });
                 });
             });
