@@ -90,10 +90,10 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card">
+                <div class="card" style="height: 90vh;overflow-y: scroll;">
                     <div class="card-body">
                         <table class="table table-bordered" id="user-table">
-                            <thead>
+                            <thead class="sticky-top">
                                 <tr>
                                     <th><input type="checkbox" id="select-all"></th>
                                     <th>Name</th>
@@ -240,10 +240,10 @@
                         alert('No users selected!');
                         return;
                     }
-                    if (userIds.length > 1) {
-                        alert('Please select only one user');
-                        return;
-                    }
+                    // if (userIds.length > 1) {
+                    //     alert('Please select only one user');
+                    //     return;
+                    // }
                     // Send data via AJAX POST
                     $.ajax({
                         url: '{{ route("payroll.tax") }}', // Your Laravel route

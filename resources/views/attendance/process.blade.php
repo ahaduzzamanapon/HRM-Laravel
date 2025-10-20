@@ -172,9 +172,9 @@ Attendance Process @parent
             </div>
             <div class="col-md-4">
                 <div class="card">
-                    <div class="card-body">
+                    <div class="card-body" style="height: 89vh; overflow-y: scroll;">
                         <table class="table table-bordered" id="user-table">
-                            <thead>
+                            <thead >
                                 <tr>
                                     <th><input type="checkbox" id="select-all"></th>
                                     <th>Name</th>
