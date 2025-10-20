@@ -62,37 +62,21 @@
 <div class="col-md-3">
     <div class="form-group">
         {!! Form::label('disbursement_date', 'Disbursement Date:') !!}
-        {!! Form::text('disbursement_date', null, ['class' => 'form-control','id'=>'disbursement_date'])
+        {!! Form::date('disbursement_date', null, ['class' => 'form-control','id'=>'disbursement_date'])
         !!}
     </div>
 </div>
 
-@push('scripts')
-    <script type="text/javascript">
-        $('#disbursement_date').datetimepicker({
-            format: 'YYYY-MM-DD HH:mm:ss',
-            useCurrent: false
-        })
-    </script>
-@endpush
 
 <!-- Next Payment Date Field -->
 <div class="col-md-3">
     <div class="form-group">
         {!! Form::label('next_payment_date', 'Next Payment Date:') !!}
-        {!! Form::text('next_payment_date', null, ['class' => 'form-control','id'=>'next_payment_date'])
+        {!! Form::date('next_payment_date', null, ['class' => 'form-control','id'=>'next_payment_date'])
         !!}
     </div>
 </div>
 
-@push('scripts')
-    <script type="text/javascript">
-        $('#next_payment_date').datetimepicker({
-            format: 'YYYY-MM-DD HH:mm:ss',
-            useCurrent: false
-        })
-    </script>
-@endpush
 
 <!-- Outstanding Balance Field -->
 <div class="col-md-3">
@@ -136,15 +120,27 @@
         const interestRateInput = document.getElementById('interest_rate');
         const installmentsInput = document.getElementById('installments');
         const monthlyInstallmentInput = document.getElementById('monthly_installment');
+        const outstandingBalanceInput = document.getElementById('outstanding_balance');
 
+        console.log(outstandingBalanceInput.value);
         function calculateMonthlyInstallment() {
-            const P = parseFloat(amountInput.value) || 0;
-            const i = (parseFloat(interestRateInput.value) || 0) / 100;
-            const n = parseInt(installmentsInput.value) || 0;
 
-            if (P > 0 && i > 0 && n > 0) {
+            const P = parseFloat(amountInput.value) || 0;              // principal
+            const annualRate = parseFloat(interestRateInput.value) || 0;
+            const i = (annualRate / 100) / 12;                         // monthly interest rate
+            const n = parseInt(installmentsInput.value) || 0;           // total months
+
+            if (P > 0 && annualRate > 0 && n > 0) {
+                // Compound interest formula for EMI
                 const M = P * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
                 monthlyInstallmentInput.value = M.toFixed(2);
+
+                // Calculate total and outstanding balance (for info)
+                const totalPayable = M * n;
+                outstandingBalanceInput.value = totalPayable.toFixed(2);
+            } else {
+                monthlyInstallmentInput.value = '';
+                outstandingBalanceInput.value = '';
             }
         }
 

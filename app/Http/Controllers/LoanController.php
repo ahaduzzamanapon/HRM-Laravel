@@ -88,7 +88,19 @@ class LoanController extends Controller
             Flash::error('Loan not found');
             return redirect(route('loans.index'));
         }
-        $loan->outstanding_balance = $loan->amount - $loan->loanRepayments->sum('amount');
+
+        $amount = $loan->amount;        // Principal
+        $annualRate = $loan->interest_rate;       // Annual interest rate (%)
+        $months = $loan->installments;       // Number of monthly installments
+
+        // Monthly interest rate
+        $r = ($annualRate / 100) / 12;
+        // EMI (monthly installment)
+        $emi = $amount * ($r * pow(1 + $r, $months)) / (pow(1 + $r, $months) - 1);
+        // Total payable and interest
+        $total = round($emi * $months, 2);
+
+        $loan->outstanding_balance = $total - $loan->loanRepayments->sum('amount');
         $users = User::all();
         $loanTypes = LoanType::all();
         return view('loans.edit', compact('loan', 'users', 'loanTypes'));

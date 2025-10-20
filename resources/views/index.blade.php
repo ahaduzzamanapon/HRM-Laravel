@@ -27,7 +27,7 @@ Dashboard @parent
         @include('dashboard.monthly_attendance')
         <!-- ./col -->
     </div>
-    
+
     <div class="row">
         {{-- office info  --}}
         @include('dashboard.office_info')
@@ -55,46 +55,57 @@ Dashboard @parent
         $(function () {
             'use strict';
 
-            var employeeChartCanvas = document.getElementById('employeeChart').getContext('2d');
+            const ctx = document.getElementById('employeeChart').getContext('2d');
 
-            var employeeChartData = {
+            const employeeChartData = {
                 labels: {!! json_encode($labels) !!},
                 datasets: [
                     {
                         label: 'Employees',
                         backgroundColor: 'rgba(60,141,188,0.9)',
                         borderColor: 'rgba(60,141,188,0.8)',
-                        pointRadius: false,
-                        pointColor: '#3b8bba',
-                        pointStrokeColor: 'rgba(60,141,188,1)',
-                        pointHighlightFill: '#fff',
-                        pointHighlightStroke: 'rgba(60,141,188,1)',
-                        data: {!! json_encode($data) !!}
+                        pointRadius: 3,
+                        pointBackgroundColor: '#3b8bba',
+                        pointBorderColor: 'rgba(60,141,188,1)',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(60,141,188,1)',
+                        data: {!! json_encode($data) !!},
+                        fill: false,
+                        tension: 0.3
                     }
                 ]
             };
 
-            var employeeChartOptions = {
+            const employeeChartOptions = {
                 maintainAspectRatio: false,
                 responsive: true,
-                legend: {
-                    display: false
+                plugins: {
+                    legend: {
+                        display: false
+                    }
                 },
                 scales: {
-                    xAxes: [{
-                        gridLines: {
-                            display: false,
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#333'
                         }
-                    }],
-                    yAxes: [{
-                        gridLines: {
-                            display: false,
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#333',
+                            beginAtZero: true
                         }
-                    }]
+                    }
                 }
             };
 
-            var employeeChart = new Chart(employeeChartCanvas, {
+            new Chart(ctx, {
                 type: 'line',
                 data: employeeChartData,
                 options: employeeChartOptions
