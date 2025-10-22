@@ -16,7 +16,7 @@
         font-family: Arial, Helvetica, sans-serif;
     }
 
-    #my-attendance-table th, 
+    #my-attendance-table th,
     #my-attendance-table td {
         border: 1px solid #ddd;
         padding: 7px;

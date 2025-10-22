@@ -145,4 +145,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(ChildAllowance::class);
     }
+    public function bankSetups()
+    {
+        return $this->belongsTo(BankSetup::class, 'id');
+    }
 }

@@ -71,17 +71,33 @@ class AttendanceProcessController extends Controller
         if ($user->role->name == 'Employee') {
             $userIds = [$user->id];
         }
-
         $data = $this->attendanceService->getReportData($reportType, $filterType, $fromDate, $toDate, $userIds);
-        // dd($data);
-        if($reportType == 'daily'){
-            return view('attendance.daily_atten_report',['attendanceDatas' => $data, 'date' => $fromDate, 'reportType' => $reportType, 'filterType' => $filterType, 'fromDate' => $fromDate]);
+        $base = [
+            'date' => $fromDate,
+            'reportType' => $reportType,
+            'filterType' => $filterType,
+            'fromDate' => $fromDate,
+            'toDate' => $toDate,
+        ];
+
+        if ($reportType === 'daily') {
+            return view('attendance.daily_atten_report', array_merge($base, ['attendanceDatas' => $data]));
         }
-        if ($reportType == 'other') {
-            if($reportType == 'job_card'){
-                return view('attendance.job_card_report', ['job_card' => $data, 'date' => $fromDate, 'reportType' => $reportType, 'filterType' => $filterType, 'fromDate' => $fromDate, 'toDate' => $toDate]);
-            }
+
+        if ($reportType === 'other' && $filterType === 'job_card') {
+            $data = $this->attendanceService->job_card($fromDate, $toDate, $userIds);
+            return view('attendance.job_card', array_merge($base, ['job_card' => $data]));
         }
+        if ($reportType === 'other' && $filterType === 'general_report') {
+            $data = $this->attendanceService->general_report($userIds);
+            return view('attendance.general_report', array_merge($base, ['general_reports' => $data]));
+        }
+        if ($reportType === 'other' && $filterType === 'emp_id_card') {
+            $data = $this->attendanceService->general_report($userIds);
+            return view('attendance.emp_id_card');
+        }
+
+        return response()->json(['success' => false, 'message' => 'Invalid report parameters.']);
     }
 
     public function storeManualAttendance(Request $request)

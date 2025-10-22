@@ -19,7 +19,7 @@ class BankSetup extends Model
 {
 
     public $table = 'banksetups';
-    
+
 
 
 
@@ -58,5 +58,9 @@ class BankSetup extends Model
         'description' => 'nullable'
     ];
 
-    
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
 }

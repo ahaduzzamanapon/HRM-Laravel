@@ -149,7 +149,8 @@ Attendance Process @parent
                             <div class="tab-pane fade" id="other" role="tabpanel" aria-labelledby="other-tab">
                                 <div class="my-3">
                                     <button class="btn btn-sm btn-primary filter-btn" data-filter="job_card">Emp. Job Card</button>
-                                    <button class="btn btn-sm btn-primary filter-btn" data-filter="gen_report">General Report</button>
+                                    <button class="btn btn-sm btn-primary filter-btn" data-filter="general_report">General Report</button>
+                                    {{-- <button class="btn btn-sm btn-primary filter-btn" data-filter="emp_id_card">Employee Id Card</button> --}}
                                 </div>
                             </div>
                         </div>
@@ -400,7 +401,7 @@ Attendance Process @parent
                         },
                         success: function(response) {
 
-                            var popupWindow = window.open('', '_blank', 'width=1000,height=700,left=' + (screen.width/2 - 500) + ',top=' + (screen.height/2 - 350));
+                            var popupWindow = window.open('', '_blank', 'width=1200,height=700,left=' + (screen.width/2 - 500) + ',top=' + (screen.height/2 - 350));
                             popupWindow.document.write(response); // Write the server response (HTML)
                             popupWindow.focus();
                         },

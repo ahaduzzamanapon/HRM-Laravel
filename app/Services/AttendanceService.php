@@ -237,18 +237,12 @@ class AttendanceService
                 $query->where('attendance_date', $fromDate);
                 $query->where('late_status', 1);
             }
-        } elseif ($reportType == 'monthly') {
-            $query->whereMonth('attendance_date', Carbon::parse($fromDate)->month);
-        } elseif ($reportType == 'continue') {
-            $query->whereBetween('attendance_date', [$fromDate, $toDate]);
         }
-
         if ($filterType != 'all') {
             if ($filterType == 'leave') {
                 $query->where('status', 'Leave')->orWhere('status', 'HLeave');
             }
         }
-
         if (!empty($userIds)) {
             $query->whereIn('employee_id', $userIds);
         }
@@ -273,4 +267,36 @@ class AttendanceService
         ];
         return $result;
     }
+
+    public function job_card($fromDate, $toDate, $userIds){ // array of employee IDs
+
+        $attendances = AttendanceTime::select(
+            'employee_id',
+            'attendance_date',
+            'clock_in',
+            'clock_out',
+            'late_status',
+            'attendance_status',
+            'status'
+        )
+        ->whereBetween('attendance_date', [$fromDate, $toDate])
+        ->whereIn('employee_id', $userIds)
+        ->with('user:id,name,last_name,emp_id')
+        ->orderBy('employee_id')
+        ->orderBy('attendance_date')
+        ->get();
+
+        $grouped = $attendances->groupBy('employee_id');
+        return $grouped;
+    }
+    public function general_report($userIds){
+        $general_report = User::with('department', 'designation')
+                        ->whereIn('id', $userIds)
+                        ->get();
+
+        // dd($general_report->user());
+        return $general_report;
+    }
+
+
 }
