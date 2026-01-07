@@ -505,4 +505,85 @@ class UserController extends Controller
         Flash::success('User deleted successfully.');
         return redirect(route('users.index'));
     }
+    public function downloadSample()
+    {
+        $headers = [
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Content-type'        => 'text/csv',
+            'Content-Disposition' => 'attachment; filename=employee_sample.csv',
+            'Expires'             => '0',
+            'Pragma'              => 'public'
+        ];
+
+        $columns = ['emp_id', 'first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'date_of_join', 'gender', 'designation_id', 'department_id', 'branch_id', 'shift_id', 'role_id', 'basic_salary'];
+
+        $callback = function() use ($columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            // Add a sample row
+            fputcsv($file, ['EMP-001', 'John', 'Doe', 'john@example.com', '1234567890', '1990-01-01', '2023-01-01', 'Male', '1', '1', '1', '1', '1', '10000']);
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required',
+        ]);
+
+        $file = $request->file('file');
+        $extension = $file->getClientOriginalExtension();
+
+        if (strtolower($extension) !== 'csv') {
+             Flash::error('Only CSV files are supported at the moment.');
+             return redirect()->back();
+        }
+
+        if (($handle = fopen($file->getRealPath(), "r")) !== FALSE) {
+            $header = fgetcsv($handle, 1000, ",");
+            // Remove BOM if present in first element of header
+             if (isset($header[0]) && strpos($header[0], "\xEF\xBB\xBF") === 0) {
+                $header[0] = substr($header[0], 3);
+            }
+
+            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                if (count($header) !== count($data)) {
+                    continue;
+                }
+                $row = array_combine($header, $data);
+
+                try {
+                     User::create([
+                        'emp_id' => $row['emp_id'] ?? null,
+                        'name' => $row['first_name'] ?? null,
+                        'last_name' => $row['last_name'] ?? null,
+                        'email' => $row['email'] ?? null,
+                        'password' => bcrypt('12345678'),
+                        'phone_number' => $row['phone_number'] ?? null,
+                        'date_of_birth' => $row['date_of_birth'] ?? null,
+                        'date_of_join' => $row['date_of_join'] ?? null,
+                        'gender' => $row['gender'] ?? null,
+                        'designation_id' => $row['designation_id'] ?? null,
+                        'department_id' => $row['department_id'] ?? null,
+                        'branch_id' => $row['branch_id'] ?? null,
+                        'shift_id' => $row['shift_id'] ?? null,
+                        'group_id' => $row['role_id'] ?? null,
+                        'basic_salary' => $row['basic_salary'] ?? 0,
+                        'image' => 'no-image.png'
+                     ]);
+                } catch (\Exception $e) {
+                    // validation error or duplication
+                }
+            }
+            fclose($handle);
+        }
+
+        Flash::success('Employees imported successfully.');
+        return redirect(route('users.index'));
+    }
 }

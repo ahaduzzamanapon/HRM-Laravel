@@ -4,6 +4,8 @@
 
 
 Route::resource('siteSettings', 'SiteSettingController');
+Route::get('users/sample', 'UserController@downloadSample')->name('users.sample');
+Route::post('users/import', 'UserController@import')->name('users.import');
 Route::resource('users', 'UserController');
 Route::resource('permissions', 'PermissionController');
 Route::resource('roleAndPermissions', 'RoleAndPermissionController');
