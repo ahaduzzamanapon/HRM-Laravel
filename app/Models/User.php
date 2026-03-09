@@ -22,6 +22,7 @@ use App\Models\UserAllowance; // Import the UserAllowance model
 use App\Models\RoleAndPermission; // Import the RoleAndPermission model
 use App\Models\Designation; // Import the Designation model
 use App\Models\Shift; // Import the Shift model
+use App\Models\ProvidentFundContribution; // Import the ProvidentFundContribution model
 
 
 class User extends Authenticatable
@@ -62,7 +63,8 @@ class User extends Authenticatable
         'salary_grade_id',
         'emp_type',
         'emp_id',
-        'status'
+        'status',
+        'biometric_id'
     ];
 
 
@@ -148,5 +150,17 @@ class User extends Authenticatable
     public function bankSetups()
     {
         return $this->belongsTo(BankSetup::class, 'id');
+    }
+
+    public function providentFundContributions()
+    {
+        return $this->hasMany(ProvidentFundContribution::class, 'employee_id');
+    }
+
+    public function getProvidentFundBalanceAttribute()
+    {
+        $employeeSum = $this->providentFundContributions()->sum('employee_contribution');
+        $employerSum = $this->providentFundContributions()->sum('employer_contribution');
+        return number_format($employeeSum + $employerSum, 2, '.', '');
     }
 }

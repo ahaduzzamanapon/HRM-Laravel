@@ -60,3 +60,9 @@ Route::resource('childAllowances', 'ChildAllowanceController');
 Route::get('childAllowances/list/{user_id}', [\App\Http\Controllers\ChildAllowanceController::class, 'list']);
 
 Route::resource('taxSetups', 'TaxSetupController');
+
+// Biometric ADMS Admin Routes
+Route::resource('biometricDevices', 'BiometricDeviceController');
+Route::resource('biometricAttendanceLogs', 'BiometricAttendanceLogController');
+Route::resource('biometricEmployeeMappings', 'BiometricEmployeeMappingController')->only(['index', 'update']);
+Route::resource('biometricCommands', 'BiometricCommandController');

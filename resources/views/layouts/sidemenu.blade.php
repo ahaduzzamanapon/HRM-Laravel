@@ -391,26 +391,72 @@
                     </a>
                 </li>
             @endif
-          
-                <li class="nav-item">
-                    <a class="nav-link {!! Request::is('providentFundLoans*') ? 'active' : '' !!}"
-                        href="{{ route('providentFundLoans.index') }}">
-                        <i class="icon im im-icon-Safe-Box"></i>
-                        <i class="sidenav-mini-icon"> L </i>
-                        <span class="item-name">Loan Applications</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {!! Request::is('providentFundLoanRepayments*') ? 'active' : '' !!}"
-                        href="{{ route('providentFundLoanRepayments.index') }}">
-                        <i class="icon im im-icon-Security-Settings"></i>
-                        <i class="sidenav-mini-icon"> LR </i>
-                        <span class="item-name">Loan Repayments</span>
-                    </a>
-                </li>
+
+            <li class="nav-item">
+                <a class="nav-link {!! Request::is('providentFundLoans*') ? 'active' : '' !!}"
+                    href="{{ route('providentFundLoans.index') }}">
+                    <i class="icon im im-icon-Safe-Box"></i>
+                    <i class="sidenav-mini-icon"> L </i>
+                    <span class="item-name">Loan Applications</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {!! Request::is('providentFundLoanRepayments*') ? 'active' : '' !!}"
+                    href="{{ route('providentFundLoanRepayments.index') }}">
+                    <i class="icon im im-icon-Security-Settings"></i>
+                    <i class="sidenav-mini-icon"> LR </i>
+                    <span class="item-name">Loan Repayments</span>
+                </a>
+            </li>
         </ul>
     </li>
 @endif
+
+{{-- Biometric --}}
+<li class="nav-item">
+    <a class="nav-link {!! (Request::is('biometricDevices*') || Request::is('biometricAttendanceLogs*') || Request::is('biometricEmployeeMappings*') || Request::is('biometricCommands*') ? 'active' : '') !!}"
+        data-bs-toggle="collapse" href="#biometric_menu" role="button" aria-expanded="false"
+        aria-controls="biometric_menu">
+        <i class="icon im im-icon-Fingerprint"></i>
+        <span class="item-name">Biometric</span>
+        <i class="right-icon im im-icon-Arrow-Right"></i>
+    </a>
+    <ul class="sub-nav collapse {!! (Request::is('biometricDevices*') || Request::is('biometricAttendanceLogs*') || Request::is('biometricEmployeeMappings*') || Request::is('biometricCommands*') ? 'show' : '') !!}"
+        id="biometric_menu" data-bs-parent="#sidebar-menu">
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('biometricDevices*') ? 'active' : '' !!}"
+                href="{{ route('biometricDevices.index') }}">
+                <i class="icon im im-icon-Monitor"></i>
+                <i class="sidenav-mini-icon"> D </i>
+                <span class="item-name">Devices</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('biometricAttendanceLogs*') ? 'active' : '' !!}"
+                href="{{ route('biometricAttendanceLogs.index') }}">
+                <i class="icon im im-icon-Calendar-4"></i>
+                <i class="sidenav-mini-icon"> L </i>
+                <span class="item-name">Attendance Logs</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('biometricEmployeeMappings*') ? 'active' : '' !!}"
+                href="{{ route('biometricEmployeeMappings.index') }}">
+                <i class="icon im im-icon-Link"></i>
+                <i class="sidenav-mini-icon"> M </i>
+                <span class="item-name">Employees Mapping</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('biometricCommands*') ? 'active' : '' !!}"
+                href="{{ route('biometricCommands.index') }}">
+                <i class="icon im im-icon-Code-Window"></i>
+                <i class="sidenav-mini-icon"> C </i>
+                <span class="item-name">Commands</span>
+            </a>
+        </li>
+    </ul>
+</li>
 
 {{-- Settings --}}
 @if(can('settings'))

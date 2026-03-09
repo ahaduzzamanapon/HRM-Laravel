@@ -9,6 +9,12 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 
 
+// ZKTeco ADMS Endpoints (Hardware device communication)
+Route::get('/iclock/cdata', [\App\Http\Controllers\Api\ZKTecoADMSController::class, 'handshake']);
+Route::post('/iclock/cdata', [\App\Http\Controllers\Api\ZKTecoADMSController::class, 'receiveRecords']);
+Route::get('/iclock/getrequest', [\App\Http\Controllers\Api\ZKTecoADMSController::class, 'getrequest']);
+Route::post('/iclock/devicecmd', [\App\Http\Controllers\Api\ZKTecoADMSController::class, 'devicecmd']);
+
 include 'web_builder.php';
 /*
 |--------------------------------------------------------------------------
