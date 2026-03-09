@@ -19,10 +19,10 @@ class DashboardController extends Controller
     public function index()
     {
         if (Auth::user()->role->name == 'Admin') {
-            $totalEmployees = User::where('status', '!=', 'admin')->count();
+            $totalEmployees = User::where('group_id', '!=', 1)->count();
             $totalDepartments = Department::count();
             $totalBranches = Branch::count();
-            $newEmployees = User::where('status', '!=', 'admin')->where('created_at', '>=', Carbon::now()->subDays(30))->count();
+            $newEmployees = User::where('group_id', '!=', 1)->where('created_at', '>=', Carbon::now()->subDays(30))->count();
             $totalSalaryGrades = SalaryGrade::count();
             $totalTaxSetups = TaxSetup::count();
             $totalLeaveApplications = LeaveApplication::count();
@@ -34,7 +34,7 @@ class DashboardController extends Controller
 
             $employeeJoinData = User::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as count')
                 ->where('created_at', '>=', Carbon::now()->subMonths(7))
-                ->where('status', '!=', 'admin')->groupBy('month')
+                ->where('group_id', '!=', 1)->groupBy('month')
                 ->orderBy('month', 'asc')
                 ->get();
 

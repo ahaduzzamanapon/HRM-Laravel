@@ -51,6 +51,9 @@ Route::resource('loanRepayments', 'LoanRepaymentController');
 Route::resource('providentFundSettings', 'ProvidentFundSettingController');
 Route::resource('providentFunds', 'ProvidentFundController');
 
+Route::resource('providentFundLoans', 'ProvidentFundLoanController');
+Route::resource('providentFundLoanRepayments', 'ProvidentFundLoanRepaymentController');
+
 Route::resource('salaryGrades', 'SalaryGradeController');
 Route::resource('bankSetups', 'BankSetupController');
 Route::resource('childAllowances', 'ChildAllowanceController');
