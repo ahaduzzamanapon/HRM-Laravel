@@ -12,8 +12,8 @@ class ProvidentFundApiController extends BaseApiController
     {
         $items = ProvidentFundContribution::with('user:id,name,last_name,emp_id')
             ->when($request->user_id, fn($q) => $q->where('employee_id', $request->user_id))
-            ->when($request->month, fn($q) => $q->where('month', $request->month))
-            ->when($request->year, fn($q) => $q->where('year', $request->year))
+            ->when($request->month,   fn($q) => $q->whereMonth('contribution_date', $request->month))
+            ->when($request->year,    fn($q) => $q->whereYear('contribution_date', $request->year))
             ->paginate($request->per_page ?? 15);
         return $this->paginatedResponse($items);
     }
@@ -33,15 +33,14 @@ class ProvidentFundApiController extends BaseApiController
             return $this->errorResponse('Employee not found', 404);
 
         $contributions = ProvidentFundContribution::where('employee_id', $userId)->get();
-        $summary = [
-            'user_id' => $userId,
-            'name' => $user->name . ' ' . $user->last_name,
-            'emp_id' => $user->emp_id,
+        return $this->successResponse([
+            'user_id'                    => $userId,
+            'name'                       => $user->name . ' ' . $user->last_name,
+            'emp_id'                     => $user->emp_id,
             'total_employee_contribution' => $contributions->sum('employee_contribution'),
             'total_employer_contribution' => $contributions->sum('employer_contribution'),
-            'total_balance' => $contributions->sum('employee_contribution') + $contributions->sum('employer_contribution'),
-            'contributions' => $contributions,
-        ];
-        return $this->successResponse($summary);
+            'total_balance'              => $contributions->sum('employee_contribution') + $contributions->sum('employer_contribution'),
+            'contributions'              => $contributions,
+        ]);
     }
 }

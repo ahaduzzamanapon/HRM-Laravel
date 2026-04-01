@@ -9,9 +9,7 @@ class DepartmentApiController extends BaseApiController
 {
     public function index(Request $request)
     {
-        $items = Department::with('branch')
-            ->when($request->search, fn($q) => $q->where('name', 'like', '%' . $request->search . '%'))
-            ->when($request->branch_id, fn($q) => $q->where('branch_id', $request->branch_id))
+        $items = Department::when($request->search, fn($q) => $q->where('name', 'like', '%' . $request->search . '%'))
             ->paginate($request->per_page ?? 15);
         return $this->paginatedResponse($items);
     }
@@ -20,15 +18,16 @@ class DepartmentApiController extends BaseApiController
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'branch_id' => 'nullable|exists:branchs,id',
+            'status' => 'nullable|string|max:50',
         ]);
+        $validated['status'] = $validated['status'] ?? 'Active';
         $item = Department::create($validated);
-        return $this->successResponse($item->load('branch'), 'Department created successfully', 201);
+        return $this->successResponse($item, 'Department created successfully', 201);
     }
 
     public function show($id)
     {
-        $item = Department::with('branch')->find($id);
+        $item = Department::find($id);
         if (!$item)
             return $this->errorResponse('Department not found', 404);
         return $this->successResponse($item);
@@ -41,10 +40,9 @@ class DepartmentApiController extends BaseApiController
             return $this->errorResponse('Department not found', 404);
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'branch_id' => 'nullable|exists:branchs,id',
         ]);
         $item->update($validated);
-        return $this->successResponse($item->load('branch'), 'Department updated successfully');
+        return $this->successResponse($item, 'Department updated successfully');
     }
 
     public function destroy($id)

@@ -27,6 +27,11 @@ class ProvidentFundLoan extends Model
         return $this->belongsTo(User::class, 'employee_id');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'employee_id');
+    }
+
     public function repayments()
     {
         return $this->hasMany(ProvidentFundLoanRepayment::class, 'provident_fund_loan_id');

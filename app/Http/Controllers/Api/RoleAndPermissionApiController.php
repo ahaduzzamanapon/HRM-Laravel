@@ -18,7 +18,7 @@ class RoleAndPermissionApiController extends BaseApiController
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:role_and_permissions,name',
+            'name' => 'required|string|max:255|unique:roles,name',
             'status' => 'nullable|boolean',
         ]);
         $item = RoleAndPermission::create($validated);

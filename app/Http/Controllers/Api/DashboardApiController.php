@@ -18,10 +18,10 @@ class DashboardApiController extends BaseApiController
         $year = now()->year;
 
         $totalEmployees = User::where('status', 'active')->count();
-        $presentToday = AttendanceTime::whereDate('date', $today)->where('status', 'present')->count();
-        $absentToday = AttendanceTime::whereDate('date', $today)->where('status', 'absent')->count();
+        $presentToday = AttendanceTime::whereDate('attendance_date', $today)->where('attendance_status', 'present')->count();
+        $absentToday = AttendanceTime::whereDate('attendance_date', $today)->where('attendance_status', 'absent')->count();
         $pendingLeaves = LeaveApplication::where('status', 'pending')->count();
-        $totalPayroll = Payroll::where('month', $month)->where('year', $year)->sum('net_salary');
+        $totalPayroll = Payroll::whereYear('salary_month', $year)->whereMonth('salary_month', $month)->sum('net_salary');
         $latestNotices = Notice::orderByDesc('created_at')->take(5)->get(['id', 'title', 'created_at']);
         $newEmployees = User::whereMonth('created_at', $month)->whereYear('created_at', $year)->count();
 
@@ -31,8 +31,8 @@ class DashboardApiController extends BaseApiController
             $date = now()->subDays($i)->toDateString();
             $attendanceTrend[] = [
                 'date' => $date,
-                'present' => AttendanceTime::whereDate('date', $date)->where('status', 'present')->count(),
-                'absent' => AttendanceTime::whereDate('date', $date)->where('status', 'absent')->count(),
+                'present' => AttendanceTime::whereDate('attendance_date', $date)->where('attendance_status', 'present')->count(),
+                'absent' => AttendanceTime::whereDate('attendance_date', $date)->where('attendance_status', 'absent')->count(),
             ];
         }
 
@@ -54,9 +54,9 @@ class DashboardApiController extends BaseApiController
         $month = now()->month;
         $year = now()->year;
 
-        $myAttendance = AttendanceTime::where('user_id', $user->id)->whereMonth('date', $month)->whereYear('date', $year);
-        $payslip = Payroll::where('user_id', $user->id)->where('month', $month)->where('year', $year)->first();
-        $leaveBalance = LeaveApplication::where('user_id', $user->id)->where('status', 'approved')->whereYear('from_date', $year)->count();
+        $myAttendance = AttendanceTime::where('employee_id', $user->id)->whereMonth('attendance_date', $month)->whereYear('attendance_date', $year);
+        $payslip = Payroll::where('user_id', $user->id)->whereYear('salary_month', $year)->whereMonth('salary_month', $month)->first();
+        $leaveBalance = LeaveApplication::where('user_id', $user->id)->where('status', 'approved')->whereYear('start_date', $year)->count();
 
         return $this->successResponse([
             'employee' => [
@@ -67,9 +67,9 @@ class DashboardApiController extends BaseApiController
                 'department' => optional($user->department)->name,
             ],
             'attendance_this_month' => [
-                'present' => $myAttendance->clone()->where('status', 'present')->count(),
-                'absent' => $myAttendance->clone()->where('status', 'absent')->count(),
-                'late' => $myAttendance->clone()->where('late', 1)->count(),
+                'present' => $myAttendance->clone()->where('attendance_status', 'present')->count(),
+                'absent' => $myAttendance->clone()->where('attendance_status', 'absent')->count(),
+                'late' => $myAttendance->clone()->where('late_status', 1)->count(),
             ],
             'payslip_this_month' => $payslip,
             'approved_leaves_this_year' => $leaveBalance,

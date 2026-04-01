@@ -24,6 +24,11 @@ class DepartmentalCase extends Model
         return $this->belongsTo(\App\Models\User::class, 'employee_id');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'employee_id');
+    }
+
     public function penalty()
     {
         return $this->belongsTo(\App\Models\Penalty::class, 'penalty_id');

@@ -20,4 +20,10 @@ class ProvidentFundContribution extends Model
     {
         return $this->belongsTo(\App\Models\User::class, 'employee_id');
     }
+
+    // Alias so API controllers can eager-load as 'user'
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'employee_id');
+    }
 }

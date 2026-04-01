@@ -53,7 +53,7 @@ class UserApiController extends BaseApiController
             'account_no' => 'nullable|string|max:50',
             'is_pf_member' => 'nullable|boolean',
             'pay_type' => 'nullable|string',
-            'group_id' => 'nullable|exists:role_and_permissions,id',
+            'group_id' => 'nullable|exists:roles,id',
             'status' => 'nullable|string',
             'biometric_id' => 'nullable|string|max:50',
             'punch_id' => 'nullable|string|max:50',

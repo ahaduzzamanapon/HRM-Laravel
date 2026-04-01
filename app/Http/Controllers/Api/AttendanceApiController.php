@@ -4,28 +4,24 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\AttendanceTime;
 use App\Models\User;
-use App\Models\Holyday;
-use App\Models\Shift;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class AttendanceApiController extends BaseApiController
 {
     /**
      * GET /api/v1/attendance/my
-     * Returns authenticated user's attendance records
      */
     public function myAttendance(Request $request)
     {
         $user = $request->user();
         $month = $request->month ?? now()->month;
-        $year = $request->year ?? now()->year;
+        $year  = $request->year  ?? now()->year;
 
-        $records = AttendanceTime::where('user_id', $user->id)
-            ->whereYear('date', $year)
-            ->whereMonth('date', $month)
-            ->orderBy('date')
+        $records = AttendanceTime::where('employee_id', $user->id)
+            ->whereYear('attendance_date', $year)
+            ->whereMonth('attendance_date', $month)
+            ->orderBy('attendance_date')
             ->get();
 
         return $this->successResponse($records);
@@ -38,31 +34,31 @@ class AttendanceApiController extends BaseApiController
     {
         $request->validate([
             'month' => 'required|integer|between:1,12',
-            'year' => 'required|integer|min:2000',
+            'year'  => 'required|integer|min:2000',
         ]);
 
         $users = User::with('shift')
             ->when($request->department_id, fn($q) => $q->where('department_id', $request->department_id))
-            ->when($request->branch_id, fn($q) => $q->where('branch_id', $request->branch_id))
-            ->when($request->user_id, fn($q) => $q->where('id', $request->user_id))
+            ->when($request->branch_id,     fn($q) => $q->where('branch_id', $request->branch_id))
+            ->when($request->user_id,       fn($q) => $q->where('id', $request->user_id))
             ->where('status', 'active')
             ->get();
 
-        $attendance = AttendanceTime::whereYear('date', $request->year)
-            ->whereMonth('date', $request->month)
+        $attendance = AttendanceTime::whereYear('attendance_date', $request->year)
+            ->whereMonth('attendance_date', $request->month)
             ->get()
-            ->groupBy('user_id');
+            ->groupBy('employee_id');
 
         $result = $users->map(function ($user) use ($attendance) {
             $records = $attendance->get($user->id, collect());
             return [
-                'user_id' => $user->id,
-                'name' => $user->name . ' ' . $user->last_name,
-                'emp_id' => $user->emp_id,
-                'total_present' => $records->where('status', 'present')->count(),
-                'total_absent' => $records->where('status', 'absent')->count(),
-                'total_late' => $records->where('late', 1)->count(),
-                'records' => $records,
+                'user_id'       => $user->id,
+                'name'          => $user->name . ' ' . $user->last_name,
+                'emp_id'        => $user->emp_id,
+                'total_present' => $records->where('attendance_status', 'present')->count(),
+                'total_absent'  => $records->where('attendance_status', 'absent')->count(),
+                'total_late'    => $records->where('late_status', 1)->count(),
+                'records'       => $records,
             ];
         });
 
@@ -75,16 +71,16 @@ class AttendanceApiController extends BaseApiController
     public function storeManual(Request $request)
     {
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'date' => 'required|date',
-            'in_time' => 'nullable',
-            'out_time' => 'nullable',
-            'status' => 'required|in:present,absent,holiday,leave',
-            'note' => 'nullable|string',
+            'employee_id'       => 'required|exists:users,id',
+            'attendance_date'   => 'required|date',
+            'clock_in'          => 'nullable|string',
+            'clock_out'         => 'nullable|string',
+            'attendance_status' => 'required|in:present,absent,holiday,leave',
+            'remarks'           => 'nullable|string',
         ]);
 
         $record = AttendanceTime::updateOrCreate(
-            ['user_id' => $validated['user_id'], 'date' => $validated['date']],
+            ['employee_id' => $validated['employee_id'], 'attendance_date' => $validated['attendance_date']],
             $validated
         );
 
@@ -99,17 +95,17 @@ class AttendanceApiController extends BaseApiController
         $date = $request->date ?? now()->toDateString();
 
         $records = AttendanceTime::with(['user:id,name,last_name,emp_id,department_id', 'user.department:id,name'])
-            ->whereDate('date', $date)
+            ->whereDate('attendance_date', $date)
             ->get();
 
         $summary = [
-            'date' => $date,
-            'total' => $records->count(),
-            'present' => $records->where('status', 'present')->count(),
-            'absent' => $records->where('status', 'absent')->count(),
-            'late' => $records->where('late', 1)->count(),
-            'on_leave' => $records->where('status', 'leave')->count(),
-            'records' => $records,
+            'date'     => $date,
+            'total'    => $records->count(),
+            'present'  => $records->where('attendance_status', 'present')->count(),
+            'absent'   => $records->where('attendance_status', 'absent')->count(),
+            'late'     => $records->where('late_status', 1)->count(),
+            'on_leave' => $records->where('attendance_status', 'leave')->count(),
+            'records'  => $records,
         ];
 
         return $this->successResponse($summary);
@@ -122,7 +118,7 @@ class AttendanceApiController extends BaseApiController
     {
         $users = User::with(['department', 'branch', 'designation', 'shift'])
             ->when($request->department_id, fn($q) => $q->where('department_id', $request->department_id))
-            ->when($request->branch_id, fn($q) => $q->where('branch_id', $request->branch_id))
+            ->when($request->branch_id,     fn($q) => $q->where('branch_id', $request->branch_id))
             ->where('status', 'active')
             ->get(['id', 'name', 'last_name', 'emp_id', 'department_id', 'branch_id', 'shift_id', 'designation_id']);
 
@@ -131,14 +127,13 @@ class AttendanceApiController extends BaseApiController
 
     /**
      * POST /api/v1/attendance/process
-     * Bulk process attendance for a month
      */
     public function process(Request $request)
     {
         $request->validate([
-            'month' => 'required|integer|between:1,12',
-            'year' => 'required|integer|min:2000',
-            'user_ids' => 'nullable|array',
+            'month'      => 'required|integer|between:1,12',
+            'year'       => 'required|integer|min:2000',
+            'user_ids'   => 'nullable|array',
             'user_ids.*' => 'exists:users,id',
         ]);
 

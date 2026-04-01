@@ -17,6 +17,7 @@ class LeaveApplication extends Model
         'start_date',
         'end_date',
         'is_half_day',
+        'requested_days',
         'reason',
         'status',
         'approved_by',

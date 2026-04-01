@@ -11,11 +11,11 @@ class LeaveApplicationApiController extends BaseApiController
     {
         $user = $request->user();
 
-        $items = LeaveApplication::with(['user', 'leaveType'])
+        $items = LeaveApplication::with(['leaveType'])
             ->when($request->user_id, fn($q) => $q->where('user_id', $request->user_id))
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->leave_type_id, fn($q) => $q->where('leave_type_id', $request->leave_type_id))
-            ->when($request->year, fn($q) => $q->whereYear('from_date', $request->year))
+            ->when($request->year, fn($q) => $q->whereYear('start_date', $request->year))
             // Employees see only their own unless admin
             ->when(!$user->group_id || $user->group_id > 2, fn($q) => $q->where('user_id', $user->id))
             ->orderByDesc('created_at')
@@ -29,14 +29,17 @@ class LeaveApplicationApiController extends BaseApiController
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'leave_type_id' => 'required|exists:leave_types,id',
-            'from_date' => 'required|date',
-            'to_date' => 'required|date|after_or_equal:from_date',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
             'reason' => 'nullable|string',
-            'requested_days' => 'nullable|integer|min:1',
+            'is_half_day' => 'nullable|boolean',
         ]);
+        $validated['requested_days'] = \Carbon\Carbon::parse($request->start_date)->diffInDays(\Carbon\Carbon::parse($request->end_date)) + 1;
+
+
         $validated['status'] = 'pending';
         $item = LeaveApplication::create($validated);
-        return $this->successResponse($item->load(['user', 'leaveType']), 'Leave application submitted successfully', 201);
+        return $this->successResponse(null,'Leave application submitted successfully', 201);
     }
 
     public function show($id)
@@ -55,7 +58,19 @@ class LeaveApplicationApiController extends BaseApiController
         if ($item->status !== 'pending') {
             return $this->errorResponse('Cannot update a processed leave application', 422);
         }
-        $item->update($request->only(['from_date', 'to_date', 'reason', 'leave_type_id', 'requested_days']));
+        $validated = $request->validate([
+            'leave_type_id' => 'sometimes|exists:leave_types,id',
+            'start_date' => 'sometimes|date',
+            'end_date' => 'sometimes|date|after_or_equal:start_date',
+            'reason' => 'nullable|string',
+            'is_half_day' => 'nullable|boolean',
+        ]);
+
+        if (isset($validated['start_date']) && isset($validated['end_date'])) {
+            $validated['requested_days'] = \Carbon\Carbon::parse($validated['start_date'])->diffInDays(\Carbon\Carbon::parse($validated['end_date'])) + 1;
+        }
+
+        $item->update($validated);
         return $this->successResponse($item->load(['user', 'leaveType']), 'Leave application updated successfully');
     }
 
