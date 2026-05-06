@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\BiometricAttendanceLogApiController;
 use App\Http\Controllers\Api\BiometricCommandApiController;
 use App\Http\Controllers\Api\LeaveApplicationApiController;
 use App\Http\Controllers\Api\MovementApiController;
+use App\Http\Controllers\Api\NewMovementApiController;
 use App\Http\Controllers\Api\PayrollApiController;
 use App\Http\Controllers\Api\ProvidentFundApiController;
 use App\Http\Controllers\Api\ProvidentFundSettingApiController;
@@ -146,6 +147,8 @@ Route::prefix('v1')->group(function () {
 
         Route::apiResource('movements', MovementApiController::class);
 
+
+
         // ── Payroll ───────────────────────────────────────────────────
         Route::prefix('payroll')->group(function () {
             Route::get('/', [PayrollApiController::class, 'index']);
@@ -186,5 +189,21 @@ Route::prefix('v1')->group(function () {
         // ── Site Settings ─────────────────────────────────────────────
         Route::get('site-settings', [SiteSettingApiController::class, 'index']);
         Route::post('site-settings', [SiteSettingApiController::class, 'update']);
+    });
+});
+
+// ── Smart Movement (No v1 Prefix) ─────────────────────────────────
+Route::group(['middleware' => ['auth:sanctum']], function () {
+    Route::prefix('new_movement')->group(function () {
+        Route::get('dashboard', [NewMovementApiController::class, 'dashboard']);
+        Route::post('start', [NewMovementApiController::class, 'start']);
+        Route::post('reached-destination', [NewMovementApiController::class, 'reachedDestination']);
+        Route::post('start-meeting', [NewMovementApiController::class, 'startMeeting']);
+        Route::post('end-meeting', [NewMovementApiController::class, 'endMeeting']);
+        Route::post('decision', [NewMovementApiController::class, 'decision']);
+        Route::get('details', [NewMovementApiController::class, 'details']);
+        Route::post('apply-ta', [NewMovementApiController::class, 'applyTa']);
+        Route::post('submit-feedback', [NewMovementApiController::class, 'submitFeedback']);
+        Route::post('log-visit', [NewMovementApiController::class, 'logVisit']);
     });
 });

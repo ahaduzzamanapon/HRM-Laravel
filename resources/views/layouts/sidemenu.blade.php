@@ -183,6 +183,45 @@
                 </a>
             </li>
         @endif
+        {{-- Smart Movement --}}
+        <li class="nav-item">
+            <a class="nav-link {!! (Request::is('new-movement*') ? 'active' : '') !!}" data-bs-toggle="collapse" href="#smart_movement_menu"
+               role="button" aria-expanded="false" aria-controls="smart_movement_menu">
+                <i class="icon im im-icon-Car"></i>
+                <span class="item-name">Smart Movement</span>
+                <i class="right-icon im im-icon-Arrow-Right"></i>
+            </a>
+            <ul class="sub-nav collapse {!! Request::is('new-movement*') ? 'show' : '' !!}" id="smart_movement_menu" data-bs-parent="#sidebar-menu">
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('new-movement') ? 'active' : '' !!}" href="{{ route('new-movement.index') }}">
+                        <i class="icon im im-icon-Dashboard"></i>
+                        <i class="sidenav-mini-icon"> D </i>
+                        <span class="item-name">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('new-movement/my-dashboard*') ? 'active' : '' !!}" href="{{ route('new-movement.my-dashboard') }}">
+                        <i class="icon im im-icon-User"></i>
+                        <i class="sidenav-mini-icon"> M </i>
+                        <span class="item-name">My Movements</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('new-movement/ta-list*') ? 'active' : '' !!}" href="{{ route('new-movement.ta-list') }}">
+                        <i class="icon im im-icon-File-Chart"></i>
+                        <i class="sidenav-mini-icon"> T </i>
+                        <span class="item-name">TA List</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('new-movement/ta-summary*') ? 'active' : '' !!}" href="{{ route('new-movement.ta-summary') }}">
+                        <i class="icon im im-icon-File-Chart"></i>
+                        <i class="sidenav-mini-icon"> S </i>
+                        <span class="item-name">TA Summary</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
         @if(can('manage_holidays'))
             <li class="nav-item">
                 <a class="nav-link {!! Request::is('holydays*') ? 'active' : '' !!}" href="{{ route('holydays.index') }}">

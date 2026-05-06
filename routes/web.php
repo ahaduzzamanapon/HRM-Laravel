@@ -104,6 +104,36 @@ Route::get('allowanceSettings/list/{user_id}', [App\Http\Controllers\AllowanceSe
 
 Route::get('/cron/refresh-database', [App\Http\Controllers\CronController::class, 'refreshDatabase']);
 
+// ── Smart Movement ─────────────────────────────────────────────────────────
+Route::middleware('auth')->prefix('new-movement')->name('new-movement.')->group(function () {
+    // Admin
+    Route::get('/', [App\Http\Controllers\NewMovementController::class, 'index'])->name('index');
+    Route::get('/ta-list', [App\Http\Controllers\NewMovementController::class, 'taList'])->name('ta-list');
+    Route::get('/ta-summary', [App\Http\Controllers\NewMovementController::class, 'taSummary'])->name('ta-summary');
+    Route::get('/ta-summary-details', [App\Http\Controllers\NewMovementController::class, 'taSummaryDetails'])->name('ta-summary-details');
+    Route::post('/ta-summary-approve', [App\Http\Controllers\NewMovementController::class, 'taSummaryApprove'])->name('ta-summary-approve');
+    Route::get('/details/{id}', [App\Http\Controllers\NewMovementController::class, 'details'])->name('details');
+
+    // Employee flow
+    Route::get('/my-dashboard', [App\Http\Controllers\NewMovementController::class, 'empDashboard'])->name('my-dashboard');
+    Route::get('/start', [App\Http\Controllers\NewMovementController::class, 'showStart'])->name('start');
+    Route::post('/start', [App\Http\Controllers\NewMovementController::class, 'processStart'])->name('start.process');
+    Route::get('/traveling', [App\Http\Controllers\NewMovementController::class, 'traveling'])->name('traveling');
+    Route::post('/reached-destination', [App\Http\Controllers\NewMovementController::class, 'reachedDestination'])->name('reached-destination');
+    Route::get('/start-meeting', [App\Http\Controllers\NewMovementController::class, 'showStartMeeting'])->name('start-meeting');
+    Route::post('/start-meeting', [App\Http\Controllers\NewMovementController::class, 'processStartMeeting'])->name('start-meeting.process');
+    Route::get('/meeting-running', [App\Http\Controllers\NewMovementController::class, 'meetingRunning'])->name('meeting-running');
+    Route::post('/end-meeting', [App\Http\Controllers\NewMovementController::class, 'endMeeting'])->name('end-meeting');
+    Route::get('/feedback-form', [App\Http\Controllers\NewMovementController::class, 'feedbackForm'])->name('feedback-form');
+    Route::post('/submit-feedback', [App\Http\Controllers\NewMovementController::class, 'submitFeedback'])->name('submit-feedback');
+    Route::get('/log-visit', [App\Http\Controllers\NewMovementController::class, 'showLogVisit'])->name('log-visit');
+    Route::post('/log-visit', [App\Http\Controllers\NewMovementController::class, 'processLogVisit'])->name('log-visit.process');
+    Route::get('/decision', [App\Http\Controllers\NewMovementController::class, 'decision'])->name('decision');
+    Route::post('/handle-decision', [App\Http\Controllers\NewMovementController::class, 'handleDecision'])->name('handle-decision');
+    Route::post('/apply-ta/{id}', [App\Http\Controllers\NewMovementController::class, 'applyTa'])->name('apply-ta');
+});
+
+
 
 
 
