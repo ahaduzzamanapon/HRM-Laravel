@@ -48,6 +48,7 @@ use App\Http\Controllers\Api\RewardingApiController;
 use App\Http\Controllers\Api\InnovationApiController;
 use App\Http\Controllers\Api\NoticeApiController;
 use App\Http\Controllers\Api\SiteSettingApiController;
+use App\Http\Controllers\Api\ZktecoAttendanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,6 +65,9 @@ Route::prefix('v1')->group(function () {
     | Public Routes (no auth required)
     -------------------------------------------------------------------*/
     Route::post('login', [AuthApiController::class, 'login']);
+
+    // ── ZKTeco Biometric — public (no auth, called by desktop app) ────
+    Route::post('zkteco/attendance', [ZktecoAttendanceController::class, 'store']);
 
     /*-------------------------------------------------------------------
     | Protected Routes (Sanctum auth required)
