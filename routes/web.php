@@ -7,8 +7,13 @@ use App\Http\Controllers\AttendenceController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Api\ZktecoAttendanceController;
 
+Log::info('Request for ' . request()->fullUrl());
 
+Route::post('zkteco/attendance', [ZktecoAttendanceController::class, 'store']);
+Route::get('zkteco/attendance', [ZktecoAttendanceController::class, 'store']);
 // ZKTeco ADMS Endpoints (Hardware device communication)
 Route::get('/iclock/cdata', [\App\Http\Controllers\Api\ZKTecoADMSController::class, 'handshake']);
 Route::post('/iclock/cdata', [\App\Http\Controllers\Api\ZKTecoADMSController::class, 'receiveRecords']);

@@ -113,19 +113,15 @@ class ZKTecoADMSController extends Controller
                     }
 
                     // Auto-Attendance Integration
-                    // Use biometric_id as the punch identifier (punch_id is optional)
                     $user = User::where('biometric_id', $biometricUserId)->first();
-                    if ($user) {
+                    if ($user && $user->punch_id) {
                         try {
                             $dateTime = Carbon::parse($timestamp);
                             $dateStr = $dateTime->format('Y-m-d');
 
-                            // Use biometric_id as punch_id if punch_id is not set
-                            $punchId = $user->punch_id ?: $user->biometric_id;
-
                             // Insert into AttMachineData for official processing
                             AttMachineData::firstOrCreate([
-                                'punch_id' => $punchId,
+                                'punch_id' => $user->punch_id,
                                 'date_time' => $dateTime->format('Y-m-d H:i:s'),
                             ], [
                                 'device_id' => $device ? $device->id : null,

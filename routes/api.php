@@ -49,7 +49,12 @@ use App\Http\Controllers\Api\InnovationApiController;
 use App\Http\Controllers\Api\NoticeApiController;
 use App\Http\Controllers\Api\SiteSettingApiController;
 use App\Http\Controllers\Api\ZktecoAttendanceController;
+use Illuminate\Support\Facades\Log;
 
+Log::info('Request for ' . request()->fullUrl());
+
+Route::post('zkteco/attendance', [ZktecoAttendanceController::class, 'store']);
+Route::get('zkteco/attendance', [ZktecoAttendanceController::class, 'store']);
 /*
 |--------------------------------------------------------------------------
 | HRM API Routes — v1
@@ -60,14 +65,15 @@ use App\Http\Controllers\Api\ZktecoAttendanceController;
 */
 
 Route::prefix('v1')->group(function () {
-
+Route::post('zkteco/attendance', [ZktecoAttendanceController::class, 'store']);
+Route::get('zkteco/attendance', [ZktecoAttendanceController::class, 'store']);
     /*-------------------------------------------------------------------
     | Public Routes (no auth required)
     -------------------------------------------------------------------*/
     Route::post('login', [AuthApiController::class, 'login']);
 
     // ── ZKTeco Biometric — public (no auth, called by desktop app) ────
-    Route::post('zkteco/attendance', [ZktecoAttendanceController::class, 'store']);
+    
 
     /*-------------------------------------------------------------------
     | Protected Routes (Sanctum auth required)

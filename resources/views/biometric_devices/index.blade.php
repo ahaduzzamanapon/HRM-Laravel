@@ -45,15 +45,23 @@ Biometric Devices
                                                                 <td>{{ $device->name }}</td>
                                                                 <td>{{ $device->serial_number }}</td>
                                                                 <td>{{ $device->ip_address ?? 'N/A' }}</td>
-                                                                <td>
-                                                                    @if($device->last_active_at && $device->last_active_at->diffInMinutes(now()) < 5)
-                                                                        <span class="badge bg-success">Online</span>
-                                                                    @else
-                                                                        <span class="badge bg-danger">Offline</span>
-                                                                    @endif
-                                                                </td>
-                                                                <td>{{ $device->last_active_at ? $device->last_active_at->diffForHumans() : 'Never' }}
-                                                                </td>
+                                                                @php
+    $lastActive = $device->last_active_at 
+        ? \Carbon\Carbon::parse($device->last_active_at) 
+        : null;
+@endphp
+
+<td>
+    @if($lastActive && $lastActive->diffInMinutes(now()) < 5)
+        <span class="badge bg-success">Online</span>
+    @else
+        <span class="badge bg-danger">Offline</span>
+    @endif
+</td>
+
+<td>
+    {{ $lastActive ? $lastActive->diffForHumans() : 'Never' }}
+</td>
                                                                 <td>
                                                                     {!! Form::open(['route' => ['biometricDevices.destroy', $device->id], 'method' => 'delete']) !!}
                                                                     <div class='btn-group'>
