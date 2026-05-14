@@ -521,8 +521,8 @@ class UserController extends Controller
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
 
-            // Add a sample row
-            fputcsv($file, ['EMP-001', 'John', 'Doe', 'john@example.com', '1234567890', '1990-01-01', '2023-01-01', 'Male', '1', '1', '1', '1', '1', '10000']);
+            // Sample row: designation_id/branch_id = names, department_id can be name or empty
+            fputcsv($file, ['EMP-001', 'John', 'Doe', 'john@example.com', '01712345678', '01-01-90', '01-01-23', 'Male', 'Officer', 'Finance', 'Head Office', '', '', '30000']);
 
             fclose($file);
         };
@@ -544,46 +544,121 @@ class UserController extends Controller
              return redirect()->back();
         }
 
+        $imported = 0;
+        $skipped  = 0;
+        $errors   = [];
+
         if (($handle = fopen($file->getRealPath(), "r")) !== FALSE) {
             $header = fgetcsv($handle, 1000, ",");
             // Remove BOM if present in first element of header
-             if (isset($header[0]) && strpos($header[0], "\xEF\xBB\xBF") === 0) {
+            if (isset($header[0]) && strpos($header[0], "\xEF\xBB\xBF") === 0) {
                 $header[0] = substr($header[0], 3);
             }
+            // Trim all header names
+            $header = array_map('trim', $header);
 
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                if (count($header) !== count($data)) {
-                    continue;
+                // Pad or trim $data to match header count
+                $data = array_slice(array_pad($data, count($header), null), 0, count($header));
+                $row  = array_combine($header, $data);
+
+                // Resolve designation by name — create if not exists
+                $designationId = null;
+                $designationName = trim($row['designation_id'] ?? '');
+                if ($designationName !== '') {
+                    $designation = \App\Models\Designation::firstOrCreate(
+                        ['desi_name' => $designationName],
+                        ['desi_status' => 'active']
+                    );
+                    $designationId = $designation->id;
                 }
-                $row = array_combine($header, $data);
+
+                // Resolve department by name — create if not exists
+                $departmentId = null;
+                $departmentName = trim($row['department_id'] ?? '');
+                if ($departmentName !== '') {
+                    $department = \App\Models\Department::firstOrCreate(
+                        ['name' => $departmentName],
+                        ['status' => 'active']
+                    );
+                    $departmentId = $department->id;
+                }
+
+                // Resolve branch by name — create if not exists
+                $branchId = null;
+                $branchName = trim($row['branch_id'] ?? '');
+                if ($branchName !== '') {
+                    $branch = \App\Models\Branch::firstOrCreate(
+                        ['branch_name' => $branchName],
+                        ['status' => 'active', 'Address' => '','description' => '']
+                    );
+                    $branchId = $branch->id;
+                }
+
+                // Handle #N/A or non-numeric salary
+                $rawSalary   = trim($row['basic_salary'] ?? '0');
+                $basicSalary = is_numeric($rawSalary) ? (float) $rawSalary : 0;
+
+                // Parse dates from dd-mm-yy or dd-mm-yyyy format
+                $dateOfBirth = $this->parseCsvDate($row['date_of_birth'] ?? '');
+                $dateOfJoin  = $this->parseCsvDate($row['date_of_join'] ?? '');
 
                 try {
-                     User::create([
-                        'emp_id' => $row['emp_id'] ?? null,
-                        'name' => $row['first_name'] ?? null,
-                        'last_name' => $row['last_name'] ?? null,
-                        'email' => $row['email'] ?? null,
-                        'password' => bcrypt('12345678'),
-                        'phone_number' => $row['phone_number'] ?? null,
-                        'date_of_birth' => $row['date_of_birth'] ?? null,
-                        'date_of_join' => $row['date_of_join'] ?? null,
-                        'gender' => $row['gender'] ?? null,
-                        'designation_id' => $row['designation_id'] ?? null,
-                        'department_id' => $row['department_id'] ?? null,
-                        'branch_id' => $row['branch_id'] ?? null,
-                        'shift_id' => $row['shift_id'] ?? null,
-                        'group_id' => $row['role_id'] ?? null,
-                        'basic_salary' => $row['basic_salary'] ?? 0,
-                        'image' => 'no-image.png'
-                     ]);
+                    User::create([
+                        'emp_id'        => trim($row['emp_id'] ?? ''),
+                        'name'          => trim($row['first_name'] ?? ''),
+                        'last_name'     => trim($row['last_name'] ?? ''),
+                        'email'         => trim($row['email'] ?? '') ?: null,
+                        'password'      => bcrypt('12345678'),
+                        'phone_number'  => trim($row['phone_number'] ?? '') ?: null,
+                        'date_of_birth' => $dateOfBirth,
+                        'date_of_join'  => $dateOfJoin,
+                        'gender'        => trim($row['gender'] ?? '') ?: null,
+                        'designation_id'=> $designationId,
+                        'department_id' => $departmentId,
+                        'branch_id'     => $branchId,
+                        'shift_id'      => null,
+                        'group_id'      => null,
+                        'basic_salary'  => $basicSalary,
+                        'image'         => 'no-image.png',
+                    ]);
+                    $imported++;
                 } catch (\Exception $e) {
-                    // validation error or duplication
+                    $errors[] = 'Row emp_id=' . ($row['emp_id'] ?? '?') . ': ' . $e->getMessage();
+                    $skipped++;
                 }
             }
             fclose($handle);
         }
 
-        Flash::success('Employees imported successfully.');
+        $errorSummary = !empty($errors) ? ' Errors: ' . implode(' | ', array_slice($errors, 0, 3)) : '';
+        Flash::success("Import complete: {$imported} imported, {$skipped} skipped.{$errorSummary}");
         return redirect(route('users.index'));
+    }
+
+    /**
+     * Parse a date string in dd-mm-yy or dd-mm-yyyy format into Y-m-d.
+     * Returns null if empty or unparseable.
+     */
+    private function parseCsvDate(?string $value): ?string
+    {
+        $value = trim($value ?? '');
+        if ($value === '') {
+            return null;
+        }
+
+        // Try dd-mm-yyyy first
+        try {
+            $date = \Carbon\Carbon::createFromFormat('d-m-Y', $value);
+            return $date->format('Y-m-d');
+        } catch (\Exception $e) {}
+
+        // Try dd-mm-yy (Carbon uses century pivot: <=68 => 2000s, >68 => 1900s)
+        try {
+            $date = \Carbon\Carbon::createFromFormat('d-m-y', $value);
+            return $date->format('Y-m-d');
+        } catch (\Exception $e) {}
+
+        return null;
     }
 }

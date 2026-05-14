@@ -50,7 +50,8 @@ class AttendanceService
                 $in_time  = null;
                 $out_time = null;
 
-                $punch_id = $row->punch_id;
+                // Use biometric_id as fallback if punch_id is not set
+                $punch_id = $row->punch_id ?: $row->biometric_id;
 
                 $in_time_record = \App\Models\AttMachineData::where('punch_id', $punch_id)
                                                             ->whereDate('date_time', $process_date)
