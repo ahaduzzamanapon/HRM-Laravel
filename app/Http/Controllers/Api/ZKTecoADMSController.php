@@ -114,19 +114,22 @@ class ZKTecoADMSController extends Controller
 
                     // Auto-Attendance Integration
                     $user = User::where('biometric_id', $biometricUserId)->first();
-                    if ($user && $user->punch_id) {
+                    if ($user) {
                         try {
                             $dateTime = Carbon::parse($timestamp);
                             $dateStr = $dateTime->format('Y-m-d');
 
-                            // Insert into AttMachineData for official processing
-                            AttMachineData::firstOrCreate([
-                                'punch_id' => $user->punch_id,
-                                'date_time' => $dateTime->format('Y-m-d H:i:s'),
-                            ], [
-                                'device_id' => $device ? $device->id : null,
-                            ]);
+                            // Also mirror to att_machine_data if punch_id is set
+                            if ($user->punch_id) {
+                                AttMachineData::firstOrCreate([
+                                    'punch_id' => $user->punch_id,
+                                    'date_time' => $dateTime->format('Y-m-d H:i:s'),
+                                ], [
+                                    'device_id' => $device ? $device->id : null,
+                                ]);
+                            }
 
+                            // Track all matched users for attendance processing
                             $usersToProcess[$user->id] = true;
                             $datesToProcess[$dateStr] = true;
                         } catch (\Exception $e) {

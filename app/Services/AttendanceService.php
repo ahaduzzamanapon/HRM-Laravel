@@ -247,11 +247,9 @@ class AttendanceService
             }elseif($filterType == 'late'){
                 $query->where('attendance_date', $fromDate);
                 $query->where('late_status', 1);
-            }
-        }
-        if ($filterType != 'all') {
-            if ($filterType == 'leave') {
-                $query->where('status', 'Leave')->orWhere('status', 'HLeave');
+            }elseif($filterType == 'leave'){
+                $query->where('attendance_date', $fromDate);
+                $query->whereIn('status', ['Leave', 'HLeave']);
             }
         }
         if (!empty($userIds)) {

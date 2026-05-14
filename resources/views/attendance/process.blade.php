@@ -1,417 +1,454 @@
 @extends('layouts.default')
 
-@section('title')
-Attendance Process @parent
-@stop
-
+@section('title') Attendance Process @parent @stop
 
 @section('content')
-    <style>
-        .loader {
-            border: 16px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 16px solid #3498db;
-            width: 120px;
-            height: 120px;
-            -webkit-animation: spin 2s linear infinite;
-            animation: spin 2s linear infinite;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            margin-top: -60px;
-            margin-left: -60px;
-            z-index: 9999;
-            display: none;
-        }
+<style>
+    .attn-page { padding: 0 4px; }
 
-        @-webkit-keyframes spin {
-            0% {
-                -webkit-transform: rotate(0deg);
-            }
+    /* Header */
+    .attn-header {
+        background: linear-gradient(135deg, #1e3a5f 0%, #0177bc 100%);
+        color: white; border-radius: 10px; padding: 18px 22px; margin-bottom: 16px;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+.attn-header h4 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: white;
+}    .attn-header p  { margin: 3px 0 0; opacity: 0.8; font-size: 0.82rem; }
 
-            100% {
-                -webkit-transform: rotate(360deg);
-            }
-        }
+    /* Cards */
+    .ap-card {
+        background: #fff; border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08); border: none; margin-bottom: 16px;
+    }
+    .ap-card-body { padding: 18px 20px; }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
+    /* Form controls */
+    .ap-label { font-size: 0.78rem; font-weight: 600; color: #546e7a; margin-bottom: 4px; display: block; }
+    .ap-input {
+        border-radius: 7px; border: 1.5px solid #dde3ec; font-size: 0.83rem;
+        padding: 6px 10px; width: 100%; transition: border 0.2s;
+    }
+    .ap-input:focus { border-color: #0177bc; outline: none; box-shadow: 0 0 0 3px rgba(1,119,188,0.1); }
 
-            100% {
-                transform: rotate(360deg);
-            }
-        }
+    /* Buttons */
+    .btn-ap-primary {
+        background: linear-gradient(135deg, #1e3a5f, #0177bc);
+        color: white; border: none; border-radius: 7px;
+        padding: 8px 16px; font-size: 0.82rem; font-weight: 600;
+        transition: all 0.2s; cursor: pointer;
+    }
+    .btn-ap-primary:hover { opacity: 0.9; transform: translateY(-1px); color: white; box-shadow: 0 4px 12px rgba(1,119,188,0.3); }
+    .btn-ap-success {
+        background: #e8f5e9; color: #2e7d32; border: 1.5px solid #a5d6a7;
+        border-radius: 7px; padding: 8px 16px; font-size: 0.82rem; font-weight: 600;
+        transition: all 0.2s; cursor: pointer;
+    }
+    .btn-ap-success:hover { background: #c8e6c9; color: #1b5e20; }
+    .btn-ap-warning {
+        background: #fff8e1; color: #e65100; border: 1.5px solid #ffcc80;
+        border-radius: 7px; padding: 8px 16px; font-size: 0.82rem; font-weight: 600;
+        transition: all 0.2s; cursor: pointer;
+    }
+    .btn-ap-warning:hover { background: #ffe0b2; }
 
-        .nav_t {
-            background: #c7e6f8;
-            padding: 11px;
-        }
+    .btn-gap { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 
-        .nav-tabs .nav-link {
+    /* Divider */
+    .ap-divider { border: none; border-top: 1.5px solid #f0f4f8; margin: 14px 0; }
 
-            font-weight: 700;
-        }
-    </style>
-    <div class="loader"></div>
-    <div class="content">
-        @include('adminlte-templates::common.errors')
-        <div class="row">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-body">
-                        <h1>Attendance Process</h1>
-                        <div class="row">
-                            <div class="form-group col-sm-6">
-                                {!! Form::label('from_date', 'From Date:') !!}
-                                <input type="date" name="from_date" class="form-control" id="from_date"
-                                    value="{{ request('from_date', date('Y-m-d')) }}" autocomplete="off">
-                            </div>
-                            <div class="form-group col-sm-6">
-                                {!! Form::label('to_date', 'To Date:') !!}
-                                <input type="date" name="to_date" class="form-control" id="to_date"
-                                    value="{{ request('to_date') }}" autocomplete="off">
-                            </div>
-                            <div class="form-group col-sm-4">
-                                {!! Form::label('branch_id', 'Branch:') !!}
-                                {!! Form::select('branch_id', ['' => 'All'] + $branches->toArray(), request('branch_id'), ['class' => 'form-control', 'id' => 'branch_id'])
-                                    !!}
-                            </div>
-                            <div class="form-group col-sm-4">
-                                {!! Form::label('department_id', 'Department:') !!}
-                                {!! Form::select('department_id', ['' => 'All'] + $departments->toArray(), request('department_id'), ['class' => 'form-control', 'id' => 'department_id'])
-                                    !!}
-                            </div>
-                            <div class="form-group col-sm-4">
-                                {!! Form::label('designation_id', 'Designation:') !!}
-                                {!! Form::select('designation_id', ['' => 'All'] + $designations->toArray(), request('designation_id'), ['class' => 'form-control', 'id' => 'designation_id'])
-                                    !!}
-                            </div>
+    /* Manual card */
+    .manual-card {
+        background: #f8faff; border: 1.5px dashed #90caf9;
+        border-radius: 10px; padding: 16px; margin-top: 12px; display: none;
+    }
+
+    /* Tabs */
+    .ap-tabs { border-bottom: 2px solid #e8eef5; margin-bottom: 14px; display: flex; }
+    .ap-tab-btn {
+        background: none; border: none; padding: 9px 18px; font-size: 0.84rem;
+        font-weight: 600; color: #8e9aab; cursor: pointer; border-radius: 8px 8px 0 0;
+        transition: all 0.2s;
+    }
+    .ap-tab-btn.active { color: #0177bc; background: #eef6ff; border-bottom: 2px solid #0177bc; margin-bottom: -2px; }
+    .ap-tab-pane { display: none; }
+    .ap-tab-pane.active { display: block; }
+
+    /* Report filter buttons */
+    .rpt-btn {
+        border-radius: 20px; font-size: 0.78rem; font-weight: 700;
+        padding: 5px 14px; border: 2px solid; cursor: pointer;
+        background: none; transition: all 0.2s; margin: 3px;
+    }
+    .rpt-btn.t-all    { border-color: #0177bc; color: #0177bc; }
+    .rpt-btn.t-all:hover, .rpt-btn.t-all.active  { background: #0177bc; color: white; }
+    .rpt-btn.t-ok     { border-color: #2e7d32; color: #2e7d32; }
+    .rpt-btn.t-ok:hover, .rpt-btn.t-ok.active    { background: #2e7d32; color: white; }
+    .rpt-btn.t-no     { border-color: #c62828; color: #c62828; }
+    .rpt-btn.t-no:hover, .rpt-btn.t-no.active    { background: #c62828; color: white; }
+    .rpt-btn.t-late   { border-color: #e65100; color: #e65100; }
+    .rpt-btn.t-late:hover, .rpt-btn.t-late.active { background: #e65100; color: white; }
+    .rpt-btn.t-leave  { border-color: #6a1b9a; color: #6a1b9a; }
+    .rpt-btn.t-leave:hover, .rpt-btn.t-leave.active { background: #6a1b9a; color: white; }
+
+    /* Employee panel */
+    .emp-panel {
+        background: #fff; border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        display: flex; flex-direction: column;
+        height: calc(100vh - 130px);
+    }
+    .emp-panel-head {
+        padding: 12px 16px; border-bottom: 1.5px solid #f0f4f8;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .emp-panel-head h6 { margin: 0; font-weight: 700; color: #1e3a5f; font-size: 0.92rem; }
+    .emp-count-badge {
+        background: #0177bc; color: white; border-radius: 20px;
+        padding: 2px 10px; font-size: 0.73rem; font-weight: 700;
+    }
+    .emp-search-wrap { padding: 10px 12px; border-bottom: 1.5px solid #f0f4f8; }
+    .emp-search-wrap input {
+        width: 100%; border: 1.5px solid #dde3ec; border-radius: 7px;
+        padding: 6px 10px; font-size: 0.8rem; outline: none;
+    }
+    .emp-search-wrap input:focus { border-color: #0177bc; }
+    .emp-sel-bar {
+        padding: 7px 14px; border-bottom: 1.5px solid #f0f4f8;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .emp-sel-bar label { font-size: 0.78rem; font-weight: 600; color: #546e7a; margin: 0; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .sel-count { font-size: 0.76rem; color: #0177bc; font-weight: 700; }
+    .emp-list { flex: 1; overflow-y: auto; padding: 6px 8px; }
+
+    /* Employee item */
+    .emp-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px 10px; border-radius: 8px; cursor: pointer;
+        transition: background 0.12s; margin-bottom: 2px;
+    }
+    .emp-item:hover { background: #eef6ff; }
+    .emp-item.is-checked { background: #e3f0fc; }
+    .emp-avatar {
+        width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+        background: linear-gradient(135deg, #0177bc, #1e3a5f);
+        color: white; display: flex; align-items: center; justify-content: center;
+        font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+    }
+    .emp-info-name { font-size: 0.82rem; font-weight: 600; color: #263238; }
+    .emp-info-id   { font-size: 0.72rem; color: #90a4ae; }
+    .emp-cb { width: 15px; height: 15px; flex-shrink: 0; accent-color: #0177bc; cursor: pointer; }
+    .emp-no-data { text-align: center; padding: 30px 10px; color: #aaa; font-size: 0.83rem; }
+</style>
+
+<div class="attn-page">
+
+    <div class="attn-header">
+        <div>
+            <h4><i class="fa fa-calendar-check-o mr-2"></i>Attendance Process</h4>
+            <p>Process and manage employee attendance records</p>
+        </div>
+        <i class="fa fa-cogs fa-2x" style="opacity:0.4;"></i>
+    </div>
+
+    <div class="row">
+        {{-- LEFT PANEL --}}
+        <div class="col-md-8">
+
+            {{-- Filters --}}
+            <div class="ap-card">
+                <div class="ap-card-body">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label class="ap-label">From Date</label>
+                            <input type="date" id="from_date" class="ap-input" value="{{ date('Y-m-d') }}">
                         </div>
-                        <div class="form-group col-sm-12">
-                            <button class="btn btn-primary" id="process-attendance-btn">Process</button>
-                            <button class="btn btn-success" id="process-date-range-btn">Process Date Range</button>
-                            <button class="btn btn-secondary" id="manual-attendance-btn">Manual Attendance</button>
+                        <div class="col-sm-3">
+                            <label class="ap-label">To Date <small style="color:#90a4ae">(range)</small></label>
+                            <input type="date" id="to_date" class="ap-input">
+                        </div>
+                        <div class="col-sm-2">
+                            <label class="ap-label">Branch</label>
+                            <select id="branch_id" class="ap-input">
+                                <option value="">All</option>
+                                @foreach($branches as $id => $name)
+                                    <option value="{{ $id }}">{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-sm-2">
+                            <label class="ap-label">Department</label>
+                            <select id="department_id" class="ap-input">
+                                <option value="">All</option>
+                                @foreach($departments as $id => $name)
+                                    <option value="{{ $id }}">{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-sm-2">
+                            <label class="ap-label">Designation</label>
+                            <select id="designation_id" class="ap-input">
+                                <option value="">All</option>
+                                @foreach($designations as $id => $name)
+                                    <option value="{{ $id }}">{{ $name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
-                </div>
-                <div class="card" id="manual-attendance-card" style="display: none;">
-                    <div class="card-body">
-                        <h3>Manual Attendance</h3>
-                        <div class="row">
-                            <div class="form-group col-sm-6">
-                                {!! Form::label('manual_clock_in', 'Clock In:') !!}
-                                <input type="time" name="manual_clock_in" class="form-control" id="manual_clock_in">
-                            </div>
-                            <div class="form-group col-sm-6">
-                                {!! Form::label('manual_clock_out', 'Clock Out:') !!}
-                                <input type="time" name="manual_clock_out" class="form-control" id="manual_clock_out">
-                            </div>
-                        </div>
-                        <button class="btn btn-primary" id="save-manual-attendance-btn">Save</button>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <ul class="nav nav-tabs nav_t" id="myTab" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="daily-tab" data-bs-toggle="tab" data-bs-target="#daily"
-                                    type="button" role="tab" aria-controls="daily" aria-selected="true">Daily Report</button>
-                            </li>
 
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="other-tab" data-bs-toggle="tab" data-bs-target="#other"
-                                    type="button" role="tab" aria-controls="other"
-                                    aria-selected="false">Others Report</button>
-                            </li>
-                        </ul>
-                        <div class="tab-content" id="myTabContent">
-                            <div class="tab-pane fade show active" id="daily" role="tabpanel" aria-labelledby="daily-tab">
-                                <div class="my-3">
-                                    <button class="btn btn-sm btn-primary filter-btn" data-filter="all">
-                                        <i class="fa fa-list"></i> All
-                                    </button>
-                                    <button class="btn btn-sm btn-success filter-btn" data-filter="present">
-                                        <i class="fa fa-check"></i> Present
-                                    </button>
-                                    <button class="btn btn-sm btn-danger filter-btn" data-filter="absent">
-                                        <i class="fa fa-times"></i> Absent
-                                    </button>
-                                    <button class="btn btn-sm btn-warning filter-btn" data-filter="late">
-                                        <i class="fa fa-clock-o"></i> Late
-                                    </button>
-                                    <button class="btn btn-sm btn-primary filter-btn" data-filter="leave">
-                                        <i class="fa fa-sign-out"></i> Leave
-                                    </button>
-                                </div>
+                    <hr class="ap-divider">
+
+                    <div class="btn-gap">
+                        <button class="btn-ap-primary" id="btn-process">
+                            <i class="fa fa-play mr-1"></i> Process Single Date
+                        </button>
+                        <button class="btn-ap-success" id="btn-process-range">
+                            <i class="fa fa-calendar mr-1"></i> Process Date Range
+                        </button>
+                        <button class="btn-ap-warning" id="btn-manual">
+                            <i class="fa fa-pencil mr-1"></i> Manual Attendance
+                        </button>
+                    </div>
+
+                    <div class="manual-card" id="manual-card">
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <label class="ap-label">Clock In</label>
+                                <input type="time" id="manual_clock_in" class="ap-input">
                             </div>
-                            <div class="tab-pane fade" id="other" role="tabpanel" aria-labelledby="other-tab">
-                                <div class="my-3">
-                                    <button class="btn btn-sm btn-primary filter-btn" data-filter="job_card">Emp. Job Card</button>
-                                    <button class="btn btn-sm btn-primary filter-btn" data-filter="general_report">General Report</button>
-                                    {{-- <button class="btn btn-sm btn-primary filter-btn" data-filter="emp_id_card">Employee Id Card</button> --}}
-                                </div>
+                            <div class="col-sm-4">
+                                <label class="ap-label">Clock Out</label>
+                                <input type="time" id="manual_clock_out" class="ap-input">
+                            </div>
+                            <div class="col-sm-4" style="display:flex;align-items:flex-end;">
+                                <button class="btn-ap-primary" style="width:100%;justify-content:center;" id="btn-save-manual">
+                                    <i class="fa fa-save mr-1"></i> Save Manual
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body" style="height: 89vh; overflow-y: scroll;">
-                        <table class="table table-bordered" id="user-table">
-                            <thead >
-                                <tr>
-                                    <th><input type="checkbox" id="select-all"></th>
-                                    <th>Name</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($users as $user)
-                                    <tr>
-                                        <td><input type="checkbox" name="users[]" value="{{ $user->id }}" class="user-checkbox">
-                                        </td>
-                                        <td>{{ $user->name }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+
+            {{-- Report Tabs --}}
+            <div class="ap-card">
+                <div class="ap-card-body">
+                    <div class="ap-tabs">
+                        <button class="ap-tab-btn active" data-target="tab-daily">
+                            <i class="fa fa-bar-chart mr-1"></i> Daily Report
+                        </button>
+                        <button class="ap-tab-btn" data-target="tab-other">
+                            <i class="fa fa-file-text mr-1"></i> Other Reports
+                        </button>
+                    </div>
+
+                    <div class="ap-tab-pane active" id="tab-daily">
+                        <button class="rpt-btn t-all filter-btn" data-filter="all"><i class="fa fa-list mr-1"></i> All</button>
+                        <button class="rpt-btn t-ok filter-btn" data-filter="present"><i class="fa fa-check mr-1"></i> Present</button>
+                        <button class="rpt-btn t-no filter-btn" data-filter="absent"><i class="fa fa-times mr-1"></i> Absent</button>
+                        <button class="rpt-btn t-late filter-btn" data-filter="late"><i class="fa fa-clock-o mr-1"></i> Late</button>
+                        <button class="rpt-btn t-leave filter-btn" data-filter="leave"><i class="fa fa-sign-out mr-1"></i> Leave</button>
+                    </div>
+
+                    <div class="ap-tab-pane" id="tab-other">
+                        <button class="rpt-btn t-all filter-btn" data-filter="job_card"><i class="fa fa-id-card mr-1"></i> Job Card</button>
+                        <button class="rpt-btn t-ok filter-btn" data-filter="general_report"><i class="fa fa-users mr-1"></i> General Report</button>
                     </div>
                 </div>
             </div>
         </div>
+
+        {{-- RIGHT PANEL --}}
+        <div class="col-md-4">
+            <div class="emp-panel">
+                <div class="emp-panel-head">
+                    <h6><i class="fa fa-users mr-1"></i> Employee List</h6>
+                    <span class="emp-count-badge" id="emp-count">{{ $users->count() }}</span>
+                </div>
+                <div class="emp-search-wrap">
+                    <input type="text" id="emp-search" placeholder="&#xf002; Search by name or ID...">
+                </div>
+                <div class="emp-sel-bar">
+                    <label>
+                        <input type="checkbox" id="select-all" class="emp-cb"> Select All
+                    </label>
+                    <span class="sel-count" id="sel-count">0 selected</span>
+                </div>
+                <div class="emp-list" id="emp-list">
+                    @foreach($users as $user)
+                    @php
+                        $fn = $user->name ?? '';
+                        $ln = $user->last_name ?? '';
+                        $init = strtoupper(substr($fn,0,1)) . strtoupper(substr($ln,0,1));
+                    @endphp
+                    <div class="emp-item" data-id="{{ $user->id }}" data-name="{{ strtolower($fn.' '.$ln) }}">
+                        <input type="checkbox" class="emp-cb user-checkbox" value="{{ $user->id }}">
+                        <div class="emp-avatar">{{ $init ?: '?' }}</div>
+                        <div>
+                            <div class="emp-info-name">{{ $fn }} {{ $ln }}</div>
+                            <div class="emp-info-id">{{ $user->emp_id ?? 'N/A' }}</div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
     </div>
-    @push('scripts')
-        <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-        <script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-        <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
-        <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
-        <script>
-            $(function () {
-                // $('#from_date, #to_date').datepicker({
-                //     dateFormat: 'yy-mm-dd',
-                // });
+</div>
 
-                $('#manual-attendance-btn').on('click', function() {
-                    $('#manual-attendance-card').toggle();
-                });
+@push('scripts')
+<script>
+$(function() {
 
-                $('#select-all').on('click', function () {
-                    $('.user-checkbox').prop('checked', $(this).prop('checked'));
-                });
+    /* ---- Tabs ---- */
+    $('.ap-tab-btn').on('click', function() {
+        $('.ap-tab-btn').removeClass('active');
+        $('.ap-tab-pane').removeClass('active');
+        $(this).addClass('active');
+        $('#' + $(this).data('target')).addClass('active');
+    });
 
-                $('#branch_id, #department_id, #designation_id').on('change', function () {
-                    filterUsers();
-                });
+    /* ---- Employee item click ---- */
+    $(document).on('click', '.emp-item', function(e) {
+        if ($(e.target).hasClass('emp-cb')) return;
+        var cb = $(this).find('.user-checkbox');
+        cb.prop('checked', !cb.prop('checked'));
+        updateSelected();
+    });
+    $(document).on('change', '.user-checkbox', updateSelected);
 
-                function filterUsers() {
-                    var data = {
-                        branch_id: $('#branch_id').val(),
-                        department_id: $('#department_id').val(),
-                        designation_id: $('#designation_id').val(),
-                    };
+    function updateSelected() {
+        var cnt = $('.user-checkbox:checked').length;
+        $('#sel-count').text(cnt + ' selected');
+        $('.emp-item').each(function() {
+            $(this).toggleClass('is-checked', $(this).find('.user-checkbox').prop('checked'));
+        });
+    }
 
-                    $.ajax({
-                        type: 'GET',
-                        url: '{{ route("attendance.filter") }}',
-                        data: data,
-                        success: function (users) {
-                            var tbody = $('#user-table tbody');
-                            tbody.empty();
-                            users.forEach(function (user) {
-                                var row = '<tr>' +
-                                    '<td><input type="checkbox" name="users[]" value="' + user.id + '" class="user-checkbox"></td>' +
-                                    '<td>' + user.name + '</td>' +
-                                    '</tr>';
-                                tbody.append(row);
-                            });
-                        }
-                    });
+    /* ---- Select All ---- */
+    $('#select-all').on('change', function() {
+        $('.emp-list .user-checkbox').prop('checked', $(this).prop('checked'));
+        updateSelected();
+    });
+
+    /* ---- Search ---- */
+    $('#emp-search').on('input', function() {
+        var q = $(this).val().toLowerCase();
+        $('#emp-list .emp-item').each(function() {
+            var match = $(this).data('name').includes(q) || ($(this).find('.emp-info-id').text().toLowerCase().includes(q));
+            $(this).toggle(match);
+        });
+    });
+
+    /* ---- Filter dropdowns ---- */
+    $('#branch_id, #department_id, #designation_id').on('change', function() {
+        $.ajax({
+            type: 'GET',
+            url: '{{ route("attendance.filter") }}',
+            data: { branch_id: $('#branch_id').val(), department_id: $('#department_id').val(), designation_id: $('#designation_id').val() },
+            success: function(users) {
+                var list = $('#emp-list');
+                list.empty();
+                if (!users.length) {
+                    list.html('<div class="emp-no-data"><i class="fa fa-inbox fa-2x" style="display:block;margin-bottom:8px;"></i>No employees found</div>');
+                    $('#emp-count').text(0); return;
                 }
-
-                $('#process-attendance-btn').on('click', function (e) {
-                    e.preventDefault();
-                    $('.loader').show();
-
-                    var userIds = [];
-                    $('.user-checkbox:checked').each(function () {
-                        userIds.push($(this).val());
-                    });
-
-                    var data = {
-                        from_date: $('#from_date').val(),
-                        users: userIds,
-                        _token: '{{ csrf_token() }}'
-                    };
-
-                    $.ajax({
-                        type: 'POST',
-                        url: '{{ route("attendance.process.store") }}',
-                        data: data,
-                        success: function (response) {
-                            $('.loader').hide();
-                            if (response.success) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Success',
-                                    text: response.message,
-                                });
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error',
-                                    text: response.message,
-                                });
-                            }
-                        },
-                        error: function (xhr, status, error) {
-                            $('.loader').hide();
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'An error occurred: ' + error,
-                            });
-                        }
-                    });
+                users.forEach(function(u) {
+                    var fn = u.name || '', ln = u.last_name || '';
+                    var init = (fn[0]||'').toUpperCase() + (ln[0]||'').toUpperCase();
+                    list.append(
+                        '<div class="emp-item" data-id="'+u.id+'" data-name="'+(fn+' '+ln).toLowerCase()+'">' +
+                        '<input type="checkbox" class="emp-cb user-checkbox" value="'+u.id+'">' +
+                        '<div class="emp-avatar">'+(init||'?')+'</div>' +
+                        '<div><div class="emp-info-name">'+fn+' '+ln+'</div><div class="emp-info-id">'+(u.emp_id||'N/A')+'</div></div>' +
+                        '</div>'
+                    );
                 });
+                $('#emp-count').text(users.length);
+                updateSelected();
+            }
+        });
+    });
 
-                $('#process-date-range-btn').on('click', function (e) {
-                    e.preventDefault();
-                    $('.loader').show();
+    /* ---- Manual toggle ---- */
+    $('#btn-manual').on('click', function() { $('#manual-card').slideToggle(200); });
 
-                    var userIds = [];
-                    $('.user-checkbox:checked').each(function () {
-                        userIds.push($(this).val());
-                    });
+    /* ---- Get selected IDs ---- */
+    function getIds() {
+        return $('.user-checkbox:checked').map(function(){ return $(this).val(); }).get();
+    }
 
-                    var fromDate = new Date($('#from_date').val());
-                    var toDate = new Date($('#to_date').val());
+    /* ---- Process Single Date ---- */
+    $('#btn-process').on('click', function() {
+        var ids = getIds();
+        if (!ids.length) { Swal.fire('Warning','Please select at least one employee.','warning'); return; }
+        $.ajax({
+            type: 'POST',
+            url: '{{ route("attendance.process.store") }}',
+            data: { from_date: $('#from_date').val(), users: ids, _token: '{{ csrf_token() }}' },
+            success: function(r) {
+                Swal.fire({ icon: r.success ? 'success' : 'warning', title: r.success ? 'Done!' : 'Note', text: r.message });
+            },
+            error: function(x) { Swal.fire('Error','Server error: '+x.status,'error'); }
+        });
+    });
 
-                    var dates = [];
-                    var currentDate = fromDate;
-                    while (currentDate <= toDate) {
-                        dates.push(new Date(currentDate));
-                        currentDate.setDate(currentDate.getDate() + 1);
-                    }
-
-                    function processDate(index) {
-                        if (index >= dates.length) {
-                            $('.loader').hide();
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success',
-                                text: 'Attendance processed successfully for the selected date range.',
-                            });
-                            return;
-                        }
-
-                        var data = {
-                            from_date: dates[index].toISOString().slice(0, 10),
-                            users: userIds,
-                            _token: '{{ csrf_token() }}'
-                        };
-
-                        $.ajax({
-                            type: 'POST',
-                            url: '{{ route("attendance.process.store") }}',
-                            data: data,
-                            success: function (response) {
-                                if (response.success) {
-                                    processDate(index + 1);
-                                } else {
-                                    $('.loader').hide();
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Error',
-                                        text: response.message,
-                                    });
-                                }
-                            },
-                            error: function (xhr, status, error) {
-                                $('.loader').hide();
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error',
-                                    text: 'An error occurred: ' + error,
-                                });
-                            }
-                        });
-                    }
-
-                    processDate(0);
-                });
-
-                $('#save-manual-attendance-btn').on('click', function() {
-                    var userIds = [];
-                    $('.user-checkbox:checked').each(function() {
-                        userIds.push($(this).val());
-                    });
-
-                    var data = {
-                        users: userIds,
-                        date: $('#from_date').val(),
-                        clock_in: $('#manual_clock_in').val(),
-                        clock_out: $('#manual_clock_out').val(),
-                        _token: '{{ csrf_token() }}'
-                    };
-
-                    $.ajax({
-                        type: 'POST',
-                        url: '{{ route("attendance.manual.store") }}',
-                        data: data,
-                        success: function(response) {
-                            if (response.success) {
-                                Swal.fire('Success', response.message, 'success');
-                            } else {
-                                Swal.fire('Error', response.message, 'error');
-                            }
-                        }
-                    });
-                });
-
-                // Report filtering
-                $('.filter-btn').on('click', function () {
-                    var reportType = $(this).closest('.tab-pane').attr('id');
-                    var tableId = '#' + reportType + '-report-table';
-                    var filterType = $(this).data('filter');
-                    var fromDate = $('#from_date').val();
-                    var toDate = $('#to_date').val();
-                    var userIds = $('.user-checkbox:checked').map(function () {
-                        return $(this).val();
-                    }).get();
-                    if(userIds.length === 0){
-                        alert('Please select at least one user.');
-                        return;
-                    }
-
-                    $.ajax({
-                        url: '{{ route("attendance.report") }}', // Your Laravel route
-                        type: 'POST',
-                        data: {
-                            report_type: reportType,
-                            filter_type: filterType,
-                            from_date  : fromDate,
-                            to_date    : toDate,
-                            user_ids   : userIds,
-                            _token: '{{ csrf_token() }}' // CSRF token for Laravel
-                        },
-                        success: function(response) {
-
-                            var popupWindow = window.open('', '_blank', 'width=1200,height=700,left=' + (screen.width/2 - 500) + ',top=' + (screen.height/2 - 350));
-                            popupWindow.document.write(response); // Write the server response (HTML)
-                            popupWindow.focus();
-                        },
-                        error: function(xhr, status, error) {
-                            alert('Something went wrong: ' + error);
-                        }
-                    });
-                });
+    /* ---- Process Date Range ---- */
+    $('#btn-process-range').on('click', function() {
+        var ids = getIds();
+        if (!ids.length) { Swal.fire('Warning','Please select at least one employee.','warning'); return; }
+        var from = new Date($('#from_date').val()), to = new Date($('#to_date').val());
+        if (!$('#to_date').val() || to < from) { Swal.fire('Warning','Please set a valid To Date.','warning'); return; }
+        var dates = [];
+        for (var d = new Date(from); d <= to; d.setDate(d.getDate()+1)) dates.push(new Date(d).toISOString().slice(0,10));
+        var i = 0;
+        function next() {
+            if (i >= dates.length) { Swal.fire('Done!','Processed '+dates.length+' days.','success'); return; }
+            $.ajax({
+                type: 'POST',
+                url: '{{ route("attendance.process.store") }}',
+                data: { from_date: dates[i], users: ids, _token: '{{ csrf_token() }}' },
+                success: function(){ i++; next(); },
+                error: function(x){ Swal.fire('Error','Failed on '+dates[i]+': '+x.status,'error'); }
             });
-        </script>
-    @endpush
+        }
+        next();
+    });
 
+    /* ---- Save Manual ---- */
+    $('#btn-save-manual').on('click', function() {
+        var ids = getIds();
+        if (!ids.length) { Swal.fire('Warning','Please select at least one employee.','warning'); return; }
+        $.ajax({
+            type: 'POST',
+            url: '{{ route("attendance.manual.store") }}',
+            data: { users: ids, date: $('#from_date').val(), clock_in: $('#manual_clock_in').val(), clock_out: $('#manual_clock_out').val(), _token: '{{ csrf_token() }}' },
+            success: function(r){ Swal.fire({ icon: r.success?'success':'error', title: r.success?'Saved!':'Error', text: r.message }); },
+            error: function(){ Swal.fire('Error','Server error','error'); }
+        });
+    });
+
+    /* ---- Report buttons ---- */
+    $('.filter-btn').on('click', function() {
+        var pane     = $(this).closest('.ap-tab-pane').attr('id');
+        var tabId    = pane === 'tab-daily' ? 'daily' : 'other';
+        var ids      = getIds();
+        if (!ids.length) { Swal.fire('Warning','Please select at least one employee.','warning'); return; }
+        $.ajax({
+            url: '{{ route("attendance.report") }}',
+            type: 'POST',
+            data: { report_type: tabId, filter_type: $(this).data('filter'), from_date: $('#from_date').val(), to_date: $('#to_date').val(), user_ids: ids, _token: '{{ csrf_token() }}' },
+            success: function(html) {
+                var w = window.open('','_blank','width=1200,height=700');
+                w.document.write(html); w.focus();
+            },
+            error: function(){ Swal.fire('Error','Could not load report.','error'); }
+        });
+    });
+});
+</script>
+@endpush
 @endsection

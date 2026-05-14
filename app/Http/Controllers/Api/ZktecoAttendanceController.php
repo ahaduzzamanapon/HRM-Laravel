@@ -3,8 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AttMachineData;
 use App\Models\BiometricAttendanceLog;
 use App\Models\BiometricDevice;
+use App\Models\User;
+use App\Services\AttendanceService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class ZktecoAttendanceController extends Controller
@@ -29,8 +33,7 @@ class ZktecoAttendanceController extends Controller
             'device_name' => 'nullable|string|max:255',
         ]);
 
-        // Auto-register device if not seen before (keyed by ip_address).
-        // serial_number is required/unique in the table, so we use ip_address there.
+        // Auto-register device if not seen before
         $device = BiometricDevice::firstOrCreate(
             ['serial_number' => $data['device_ip']],
             [
@@ -40,27 +43,43 @@ class ZktecoAttendanceController extends Controller
             ]
         );
 
-        // Update ip/name and last_active_at on every punch
         $device->update([
             'ip_address'     => $data['device_ip'],
             'name'           => $data['device_name'] ?? $device->name,
             'last_active_at' => now(),
         ]);
 
-        // Save the attendance log
+        // Save raw biometric log
         BiometricAttendanceLog::create([
             'biometric_device_id' => $device->id,
             'biometric_user_id'   => $data['member_id'],
             'timestamp'           => $data['timestamp'],
         ]);
 
+        // Auto-trigger attendance processing for matched user
+        $user = User::where('biometric_id', $data['member_id'])->first();
+        if ($user) {
+            $dateStr = Carbon::parse($data['timestamp'])->format('Y-m-d');
+
+            // Mirror to att_machine_data if punch_id is set
+            if ($user->punch_id) {
+                AttMachineData::firstOrCreate([
+                    'punch_id'  => $user->punch_id,
+                    'date_time' => Carbon::parse($data['timestamp'])->format('Y-m-d H:i:s'),
+                ], ['device_id' => $device->id]);
+            }
+
+            // Process attendance immediately
+            app(AttendanceService::class)->attn_process($dateStr, [$user->id]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Attendance recorded',
             'data'    => [
-                'member_id'   => $data['member_id'],
-                'timestamp'   => $data['timestamp'],
-                'device'      => $device->name,
+                'member_id' => $data['member_id'],
+                'timestamp' => $data['timestamp'],
+                'device'    => $device->name,
             ],
         ], 200);
     }

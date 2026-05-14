@@ -138,6 +138,7 @@ class AttendanceProcessController extends Controller
     public function filterUsers(Request $request)
     {
         $users = User::with(['branch', 'department', 'designation'])
+            ->where('group_id', '!=', 1)
             ->when($request->filled('branch_id'), function ($query) use ($request) {
                 return $query->where('branch_id', $request->branch_id);
             })
@@ -147,7 +148,7 @@ class AttendanceProcessController extends Controller
             ->when($request->filled('designation_id'), function ($query) use ($request) {
                 return $query->where('designation_id', $request->designation_id);
             })
-            ->get();
+            ->get(['id', 'name', 'last_name', 'emp_id', 'branch_id', 'department_id', 'designation_id']);
 
         return response()->json($users);
     }
