@@ -7,6 +7,7 @@ use App\Models\LeaveApplication;
 use App\Models\Holyday;
 use App\Models\User;
 use App\Models\ShiftDetail;
+use App\Models\BiometricAttendanceLog;
 use Carbon\Carbon;
 
 class AttendanceService
@@ -50,25 +51,34 @@ class AttendanceService
                 $in_time  = null;
                 $out_time = null;
 
-                // Use biometric_id as fallback if punch_id is not set
+                // --- Collect timestamps from BOTH sources ---
+                $allTimestamps = collect();
+
+                // Source 1: att_machine_data (file upload / manual)
                 $punch_id = $row->punch_id ?: $row->biometric_id;
-
-                $in_time_record = \App\Models\AttMachineData::where('punch_id', $punch_id)
-                                                            ->whereDate('date_time', $process_date)
-                                                            ->orderBy('date_time', 'asc')
-                                                            ->first();
-
-                $out_time_record = \App\Models\AttMachineData::where('punch_id', $punch_id)
-                                                            ->whereDate('date_time', $process_date)
-                                                            ->orderBy('date_time', 'desc')
-                                                            ->first();
-
-                if ($in_time_record) {
-                    $in_time = $in_time_record->date_time;
+                if ($punch_id) {
+                    $machineRecords = \App\Models\AttMachineData::where('punch_id', $punch_id)
+                        ->whereDate('date_time', $process_date)
+                        ->pluck('date_time');
+                    $allTimestamps = $allTimestamps->merge($machineRecords);
                 }
 
-                if ($out_time_record) {
-                    $out_time = $out_time_record->date_time;
+                // Source 2: biometric_attendance_logs (ZKTeco device)
+                if ($row->biometric_id) {
+                    $bioRecords = BiometricAttendanceLog::where('biometric_user_id', $row->biometric_id)
+                        ->whereDate('timestamp', $process_date)
+                        ->pluck('timestamp');
+                    $allTimestamps = $allTimestamps->merge($bioRecords);
+                }
+
+                // Sort and pick first/last
+                $allTimestamps = $allTimestamps->map(fn($t) => Carbon::parse($t))->sort()->values();
+
+                if ($allTimestamps->count() > 0) {
+                    $in_time  = $allTimestamps->first()->format('Y-m-d H:i:s');
+                    $out_time = $allTimestamps->count() > 1
+                        ? $allTimestamps->last()->format('Y-m-d H:i:s')
+                        : null;
                 }
 
                 $late_status = 0;
