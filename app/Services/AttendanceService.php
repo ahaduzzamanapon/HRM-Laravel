@@ -290,7 +290,7 @@ class AttendanceService
         )
         ->whereBetween('attendance_date', [$fromDate, $toDate])
         ->whereIn('employee_id', $userIds)
-        ->with('user:id,name,last_name,emp_id')
+        ->with(['user:id,name,last_name,emp_id,department_id,designation_id', 'user.department:id,name', 'user.designation:id,desi_name'])
         ->orderBy('employee_id')
         ->orderBy('attendance_date')
         ->get();

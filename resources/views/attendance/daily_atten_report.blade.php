@@ -3,7 +3,9 @@
         echo "<p style='text-align:center;padding:40px;color:#888;'>No data found.</p>";
         return;
     }
-    $showTime = in_array($filterType, ['present', 'all', 'late']);
+    $showTime    = in_array($filterType, ['present', 'all', 'late', 'intime_only', 'outtime_only']);
+    $inTimeOnly  = $filterType === 'intime_only';
+    $outTimeOnly = $filterType === 'outtime_only';
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -109,8 +111,10 @@
                 <th>Emp. ID</th>
                 <th>Name</th>
                 @if($showTime)
-                    <th>In Time</th>
-                    <th>Out Time</th>
+                    <th>{{ $outTimeOnly ? '—' : 'In Time' }}</th>
+                    @if(!$inTimeOnly)
+                        <th>Out Time</th>
+                    @endif
                 @endif
                 <th>Status</th>
                 @if($filterType === 'late' || $filterType === 'all')
@@ -142,10 +146,16 @@
                 </td>
                 @if($showTime)
                     <td class="time-cell">
-                        {{ $data->clock_in ? date('h:i A', strtotime($data->clock_in)) : '—' }}
-                        @if($data->late_status) <span class="late-dot" title="Late"></span> @endif
+                        @if(!$outTimeOnly)
+                            {{ $data->clock_in ? date('h:i A', strtotime($data->clock_in)) : '—' }}
+                            @if($data->late_status) <span class="late-dot" title="Late"></span> @endif
+                        @else
+                            —
+                        @endif
                     </td>
-                    <td class="time-cell">{{ $data->clock_out ? date('h:i A', strtotime($data->clock_out)) : '—' }}</td>
+                    @if(!$inTimeOnly)
+                        <td class="time-cell">{{ $data->clock_out ? date('h:i A', strtotime($data->clock_out)) : '—' }}</td>
+                    @endif
                 @endif
                 <td><span class="status-badge {{ $badgeClass }}">{{ $status }}</span></td>
                 @if($filterType === 'late' || $filterType === 'all')

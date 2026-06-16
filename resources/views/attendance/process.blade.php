@@ -256,6 +256,9 @@
                     <div class="ap-tab-pane" id="tab-other">
                         <button class="rpt-btn t-all filter-btn" data-filter="job_card"><i class="fa fa-id-card mr-1"></i> Job Card</button>
                         <button class="rpt-btn t-ok filter-btn" data-filter="general_report"><i class="fa fa-users mr-1"></i> General Report</button>
+                        <button class="rpt-btn t-ok filter-btn" data-filter="intime_only" style="border-color:#00838f;color:#00838f;" onmouseover="this.style.background='#00838f';this.style.color='#fff'" onmouseout="this.style.background='none';this.style.color='#00838f'"><i class="fa fa-sign-in mr-1"></i> In-Time Only</button>
+                        <button class="rpt-btn t-late filter-btn" data-filter="outtime_only" style="border-color:#6d4c41;color:#6d4c41;" onmouseover="this.style.background='#6d4c41';this.style.color='#fff'" onmouseout="this.style.background='none';this.style.color='#6d4c41'"><i class="fa fa-sign-out mr-1"></i> Out-Time Only</button>
+                        <button class="rpt-btn t-leave filter-btn" data-filter="branch_wise" style="border-color:#1565c0;color:#1565c0;" onmouseover="this.style.background='#1565c0';this.style.color='#fff'" onmouseout="this.style.background='none';this.style.color='#1565c0'"><i class="fa fa-building mr-1"></i> Branch Wise</button>
                     </div>
                 </div>
             </div>

@@ -96,6 +96,28 @@ class AttendanceProcessController extends Controller
             $data = $this->attendanceService->general_report($userIds);
             return view('attendance.emp_id_card');
         }
+        if ($reportType === 'other' && in_array($filterType, ['intime_only', 'outtime_only'])) {
+            $attendanceDatas = \App\Models\AttendanceTime::with('user')
+                ->whereBetween('attendance_date', [$fromDate, $toDate ?: $fromDate])
+                ->whereIn('employee_id', $userIds)
+                ->where('status', 'Present')
+                ->orderBy('attendance_date')
+                ->get();
+            return view('attendance.daily_atten_report', array_merge($base, [
+                'attendanceDatas' => $attendanceDatas,
+            ]));
+        }
+        if ($reportType === 'other' && $filterType === 'branch_wise') {
+            $records = \App\Models\AttendanceTime::with(['user.branch', 'user.department'])
+                ->whereBetween('attendance_date', [$fromDate, $toDate ?: $fromDate])
+                ->whereIn('employee_id', $userIds)
+                ->orderBy('attendance_date')
+                ->get();
+            $branchData = $records->groupBy(function ($item) {
+                return optional(optional($item->user)->branch)->branch_name ?? 'Unassigned';
+            });
+            return view('attendance.branch_wise_report', array_merge($base, ['branchData' => $branchData]));
+        }
 
         return response()->json(['success' => false, 'message' => 'Invalid report parameters.']);
     }
