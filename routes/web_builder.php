@@ -3,6 +3,8 @@
 
 
 
+Route::post('ckeditor/upload', 'CKEditorController@upload')->name('ckeditor.upload');
+
 Route::resource('siteSettings', 'SiteSettingController');
 Route::get('users/sample', 'UserController@downloadSample')->name('users.sample');
 Route::post('users/import', 'UserController@import')->name('users.import');
@@ -66,3 +68,14 @@ Route::resource('biometricDevices', 'BiometricDeviceController');
 Route::resource('biometricAttendanceLogs', 'BiometricAttendanceLogController');
 Route::resource('biometricEmployeeMappings', 'BiometricEmployeeMappingController')->only(['index', 'update']);
 Route::resource('biometricCommands', 'BiometricCommandController');
+
+// Recruitment System Admin Routes
+Route::resource('recruitments', 'RecruitmentController'); // Original recruitment settings 
+Route::resource('admin/jobs', 'Admin\JobPostController')->names('admin.jobs')->parameters(['jobs' => 'jobPost']);
+Route::get('admin/applications', 'Admin\ApplicationViewerController@index')->name('admin.applications.index');
+Route::patch('admin/applications/{application}/status', 'Admin\ApplicationViewerController@updateStatus')->name('admin.applications.update-status');
+Route::get('admin/applications/{application}/download', 'Admin\ApplicationViewerController@downloadResume')->name('admin.applications.download');
+
+// Career Page Setup
+Route::get('admin/career-page', 'Admin\CareerPageController@index')->name('admin.career-page.index');
+Route::post('admin/career-page/update', 'Admin\CareerPageController@update')->name('admin.career-page.update');

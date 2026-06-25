@@ -38,7 +38,9 @@ class SiteSetting extends Model
         'site_description',
         'site_keywords',
         'site_author',
-        'site_footer'
+        'site_footer',
+        'career_title',
+        'career_subtitle'
     ];
 
     /**
@@ -57,7 +59,9 @@ class SiteSetting extends Model
         'site_description' => 'string',
         'site_keywords' => 'string',
         'site_author' => 'string',
-        'site_footer' => 'string'
+        'site_footer' => 'string',
+        'career_title' => 'string',
+        'career_subtitle' => 'string'
     ];
 
     /**
@@ -75,7 +79,9 @@ class SiteSetting extends Model
         'site_description' => 'nullable',
         'site_keywords' => 'nullable',
         'site_author' => 'nullable',
-        'site_footer' => 'nullable'
+        'site_footer' => 'nullable',
+        'career_title' => 'nullable|string',
+        'career_subtitle' => 'nullable|string'
     ];
 
     

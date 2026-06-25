@@ -13,8 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('new_movement_meetings', function (Blueprint $table) {
+        Schema::create('job_posts', function (Blueprint $table) {
             $table->id();
+            $table->string('title');
+            $table->string('slug')->unique();
+            $table->text('description');
+            $table->string('location')->nullable();
+            $table->enum('status', ['draft', 'published', 'closed'])->default('draft');
+            $table->date('deadline')->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('new_movement_meetings');
+        Schema::dropIfExists('job_posts');
     }
 };

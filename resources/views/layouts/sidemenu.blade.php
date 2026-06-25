@@ -450,6 +450,47 @@
         </ul>
     </li>
 @endif
+{{--Recruitment--}}
+@if(can('recruitment'))
+    <li class="nav-item">
+        <a class="nav-link {!! (Request::is('recruitment*') || Request::is('recruitments*') || Request::is('admin/applications*') || Request::is('admin/career-page*') ? 'active' : '') !!}"
+            data-bs-toggle="collapse" href="#recruitment_menu" role="button" aria-expanded="false"
+            aria-controls="recruitment_menu">
+            <i class="icon im im-icon-Business-Man"></i>
+            <span class="item-name">Recruitment</span>
+            <i class="right-icon im im-icon-Arrow-Right"></i>
+        </a>
+        <ul class="sub-nav collapse  {!!  Request::is('recruitment*') || Request::is('recruitments*') || Request::is('admin/applications*') || Request::is('admin/career-page*') ? 'show' : ''  !!}"
+            id="recruitment_menu" data-bs-parent="#sidebar-menu">
+            @if(can('manage_recruitment'))
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/applications*') ? 'active' : '' !!}"
+                        href="{{ route('admin.applications.index') }}"> 
+                        <i class="icon im im-icon-Student-MaleFemale"></i>
+                        <i class="sidenav-mini-icon"> JA </i>
+                        <span class="item-name">Applications</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('recruitments*') ? 'active' : '' !!}"
+                        href="{{ route('recruitments.index') }}"> 
+                        <i class="icon im im-icon-Business-Man"></i>
+                        <i class="sidenav-mini-icon"> R </i>
+                        <span class="item-name">Recruitment</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/career-page*') ? 'active' : '' !!}" href="{{ route('admin.career-page.index') }}"> 
+                        <i class="icon im im-icon-Globe"></i>
+                        <i class="sidenav-mini-icon"> CP </i>
+                        <span class="item-name">Career Page Setup</span>
+                    </a>
+                </li>
+            @endif
+        </ul>
+    </li>
+@endif
+{{--End Recruitment--}}
 
 {{-- Biometric --}}
 <li class="nav-item">
@@ -497,6 +538,144 @@
     </ul>
 </li>
 
+{{-- Inventory --}}
+@if(can('inventory'))
+<li class="nav-item">
+    <a class="nav-link {!! (Request::is('admin/inventory*') || Request::is('admin/maintenance*') ? 'active' : '') !!}"
+        data-bs-toggle="collapse" href="#inventory_menu" role="button" aria-expanded="false"
+        aria-controls="inventory_menu">
+        <i class="icon im im-icon-Box-withFolders"></i>
+        <span class="item-name">Inventory</span>
+        <i class="right-icon im im-icon-Arrow-Right"></i>
+    </a>
+    <ul class="sub-nav collapse  {!!  Request::is('admin/inventory*') || Request::is('admin/maintenance*') ? 'show' : ''  !!}"
+        id="inventory_menu" data-bs-parent="#sidebar-menu">
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('admin/inventory/asset-categories*') ? 'active' : '' !!}"
+                href="{{ route('admin.inventory.asset-categories.index') }}"> 
+                <i class="icon im im-icon-Folder-Add"></i>
+                <i class="sidenav-mini-icon"> AC </i>
+                <span class="item-name">Asset Categories</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('admin/inventory/assets*') ? 'active' : '' !!}"
+                href="{{ route('admin.inventory.assets.index') }}"> 
+                <i class="icon im im-icon-Box-Full"></i>
+                <i class="sidenav-mini-icon"> A </i>
+                <span class="item-name">Assets Management</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('admin/inventory/asset-assignments*') ? 'active' : '' !!}"
+                href="{{ route('admin.inventory.asset-assignments.index') }}"> 
+                <i class="icon im im-icon-Checked-User"></i>
+                <i class="sidenav-mini-icon"> AA </i>
+                <span class="item-name">Asset Assignments</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('admin/inventory/asset-logs*') ? 'active' : '' !!}"
+                href="{{ route('admin.inventory.asset-logs.index') }}"> 
+                <i class="icon im im-icon-File-Search"></i>
+                <i class="sidenav-mini-icon"> AL </i>
+                <span class="item-name">Asset Audit Logs</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('admin/inventory/reports*') ? 'active' : '' !!}"
+                data-bs-toggle="collapse" href="#inventory_reports_menu" role="button" aria-expanded="false"
+                aria-controls="inventory_reports_menu">
+                <i class="icon im im-icon-File-Chart"></i>
+                <span class="item-name">Inventory Reports</span>
+                <i class="right-icon im im-icon-Arrow-Right"></i>
+            </a>
+            <ul class="sub-nav collapse {!! Request::is('admin/inventory/reports*') ? 'show' : '' !!}"
+                id="inventory_reports_menu" style="padding-left: 15px; list-style-type: none;">
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/inventory/reports/assets*') ? 'active' : '' !!}"
+                        href="{{ route('admin.inventory.reports.assets') }}"> 
+                        <i class="icon im im-icon-File-Search"></i>
+                        <i class="sidenav-mini-icon"> AR </i>
+                        <span class="item-name">Asset Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/inventory/reports/assignments*') ? 'active' : '' !!}"
+                        href="{{ route('admin.inventory.reports.assignments') }}"> 
+                        <i class="icon im im-icon-Checked-User"></i>
+                        <i class="sidenav-mini-icon"> ASR </i>
+                        <span class="item-name">Assignment Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/inventory/reports/lifecycle*') ? 'active' : '' !!}"
+                        href="{{ route('admin.inventory.reports.lifecycle') }}"> 
+                        <i class="icon im im-icon-Time-Backup"></i>
+                        <i class="sidenav-mini-icon"> LR </i>
+                        <span class="item-name">Lifecycle Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/inventory/reports/inventory*') ? 'active' : '' !!}"
+                        href="{{ route('admin.inventory.reports.inventory') }}"> 
+                        <i class="icon im im-icon-Box-Full"></i>
+                        <i class="sidenav-mini-icon"> IR </i>
+                        <span class="item-name">General Reports</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        {{-- Nested Maintenance Menu --}}
+        @if(can('maintenance'))
+        <li class="nav-item">
+            <a class="nav-link {!! (Request::is('admin/maintenance*') ? 'active' : '') !!}"
+                data-bs-toggle="collapse" href="#nested_maintenance_menu" role="button" aria-expanded="false"
+                aria-controls="nested_maintenance_menu">
+                <i class="icon im im-icon-Wrench"></i>
+                <span class="item-name">Maintenance</span>
+                <i class="right-icon im im-icon-Arrow-Right"></i>
+            </a>
+            <ul class="sub-nav collapse {!! Request::is('admin/maintenance*') ? 'show' : '' !!}"
+                id="nested_maintenance_menu" style="padding-left: 15px; list-style-type: none;">
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/maintenance/vendors*') ? 'active' : '' !!}"
+                        href="{{ route('admin.maintenance.vendors.index') }}"> 
+                        <i class="icon im im-icon-MaleFemale"></i>
+                        <i class="sidenav-mini-icon"> MV </i>
+                        <span class="item-name">Vendors</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/maintenance/types*') ? 'active' : '' !!}"
+                        href="{{ route('admin.maintenance.types.index') }}"> 
+                        <i class="icon im im-icon-Tag"></i>
+                        <i class="sidenav-mini-icon"> MT </i>
+                        <span class="item-name">Maintenance Types</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/maintenance/requests*') ? 'active' : '' !!}"
+                        href="{{ route('admin.maintenance.requests.index') }}"> 
+                        <i class="icon im im-icon-Checked-User"></i>
+                        <i class="sidenav-mini-icon"> MR </i>
+                        <span class="item-name">Maintenance Requests</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/maintenance/reports*') ? 'active' : '' !!}"
+                        href="{{ route('admin.maintenance.reports.index') }}"> 
+                        <i class="icon im im-icon-File-Chart"></i>
+                        <i class="sidenav-mini-icon"> RP </i>
+                        <span class="item-name">Reports</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        @endif
+    </ul>
+</li>
+@endif
 {{-- Settings --}}
 @if(can('settings'))
     <li class="nav-item">

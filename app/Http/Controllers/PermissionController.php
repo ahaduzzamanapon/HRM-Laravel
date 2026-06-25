@@ -97,7 +97,9 @@ class PermissionController extends AppBaseController
             return redirect(route('permissions.index'));
         }
 
-        return view('permissions.edit')->with('permission', $permission);
+        $Permission = Permission::where('cat_id', null)->pluck('name', 'key')->prepend('Select Cat', '');
+
+        return view('permissions.edit', compact('Permission'))->with('permission', $permission);
     }
 
     /**

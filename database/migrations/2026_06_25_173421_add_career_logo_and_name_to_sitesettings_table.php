@@ -13,9 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('new_movement_travel_expenses', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('sitesettings', function (Blueprint $table) {
+            //
         });
     }
 
@@ -26,6 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('new_movement_travel_expenses');
+        Schema::table('sitesettings', function (Blueprint $table) {
+            //
+        });
     }
 };

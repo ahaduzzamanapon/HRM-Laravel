@@ -138,9 +138,33 @@ Route::middleware('auth')->prefix('new-movement')->name('new-movement.')->group(
     Route::post('/apply-ta/{id}', [App\Http\Controllers\NewMovementController::class, 'applyTa'])->name('apply-ta');
 });
 
+// Public Career Routes
+Route::get('/careers', 'RecruitmentController@careers')->name('careers.public');
+Route::get('/careers/{slug}', 'RecruitmentController@careerDetails')->name('careers.details');
+Route::post('/careers/{slug}/apply', 'RecruitmentController@apply')->name('careers.apply')->middleware('throttle:5,1');
+Route::post('/careers/search', 'RecruitmentController@search')->name('careers.search');
 
+// Inventory Module - Asset Management
+Route::middleware('auth')->prefix('admin/inventory')->name('admin.inventory.')->group(function () {
+    Route::resource('asset-categories', 'Admin\Inventory\AssetCategoryController');
+    Route::resource('assets', 'Admin\Inventory\AssetController');
+    Route::post('assets/{id}/log', 'Admin\Inventory\AssetController@addLog')->name('assets.addLog');
+    Route::resource('asset-assignments', 'Admin\Inventory\AssetAssignmentController')->except(['show', 'edit', 'update', 'destroy']);
+    Route::get('asset-assignments/{id}/return', 'Admin\Inventory\AssetAssignmentController@returnForm')->name('asset-assignments.returnForm');
+    Route::post('asset-assignments/{id}/return', 'Admin\Inventory\AssetAssignmentController@processReturn')->name('asset-assignments.processReturn');
+    Route::match(['get', 'post'], 'asset-logs', 'Admin\Inventory\AssetLogController@index')->name('asset-logs.index');
+    Route::redirect('reports', 'reports/assets')->name('reports.index');
+    Route::get('reports/assets', 'Admin\Inventory\InventoryReportController@assetReports')->name('reports.assets');
+    Route::get('reports/assignments', 'Admin\Inventory\InventoryReportController@assignmentReports')->name('reports.assignments');
+    Route::get('reports/lifecycle', 'Admin\Inventory\InventoryReportController@lifecycleReports')->name('reports.lifecycle');
+    Route::get('reports/inventory', 'Admin\Inventory\InventoryReportController@inventoryReports')->name('reports.inventory');
+});
 
-
-
-
-
+// Maintenance Module
+Route::middleware('auth')->prefix('admin/maintenance')->name('admin.maintenance.')->group(function () {
+    Route::resource('vendors', 'Admin\Maintenance\VendorController');
+    Route::resource('types', 'Admin\Maintenance\MaintenanceTypeController');
+    Route::resource('requests', 'Admin\Maintenance\MaintenanceRequestController');
+    Route::get('reports', 'Admin\Maintenance\MaintenanceReportController@index')->name('reports.index');
+    Route::get('reports/export', 'Admin\Maintenance\MaintenanceReportController@export')->name('reports.export');
+});
