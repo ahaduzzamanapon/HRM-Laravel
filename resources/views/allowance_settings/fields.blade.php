@@ -27,7 +27,7 @@
     <div class="form-check">
         {!! Form::hidden('city_specific', 0) !!}
         {!! Form::checkbox('city_specific', 1, null, ['class' => 'form-check-input']) !!}
-        {!! Form::label('city_specific', 'City Specific', ['class' => 'form-check-label']) !!}
+        {!! Form::label('city_specific', 'City Specific', ['class' => 'form-check-label ms-2']) !!}
     </div>
 </div>
 
@@ -42,6 +42,6 @@
     <div class="form-check">
         {!! Form::hidden('is_active', 0) !!}
         {!! Form::checkbox('is_active', 1, null, ['class' => 'form-check-input']) !!}
-        {!! Form::label('is_active', 'Is Active', ['class' => 'form-check-label']) !!}
+        {!! Form::label('is_active', 'Is Active', ['class' => 'form-check-label ms-2']) !!}
     </div>
 </div>

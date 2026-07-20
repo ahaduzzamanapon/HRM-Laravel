@@ -24,12 +24,17 @@ class InventoryReportController extends Controller
             'branches' => Branch::pluck('branch_name', 'id'),
             'assets_list' => Asset::pluck('name', 'id'),
             'employees' => User::pluck('name', 'id'),
+            'locations' => Asset::whereNotNull('location')->where('location', '!=', '')->distinct()->pluck('location', 'location'),
         ];
     }
 
     // 2. Asset Reports
     public function assetReports(Request $request)
     {
+        if ($request->input('layout') === 'print' && class_exists('\Barryvdh\Debugbar\Facades\Debugbar')) {
+            \Barryvdh\Debugbar\Facades\Debugbar::disable();
+        }
+
         $query = Asset::with(['category', 'department']);
         
         if ($request->filled('status')) $query->where('status', $request->status);
@@ -51,6 +56,10 @@ class InventoryReportController extends Controller
     // 3. Assignment Reports
     public function assignmentReports(Request $request)
     {
+        if ($request->input('layout') === 'print' && class_exists('\Barryvdh\Debugbar\Facades\Debugbar')) {
+            \Barryvdh\Debugbar\Facades\Debugbar::disable();
+        }
+
         $query = AssetAssignment::with(['asset', 'employee.department', 'employee.branch']);
         
         if ($request->filled('employee_id')) {
@@ -94,6 +103,10 @@ class InventoryReportController extends Controller
     // 4. Lifecycle Reports
     public function lifecycleReports(Request $request)
     {
+        if ($request->input('layout') === 'print' && class_exists('\Barryvdh\Debugbar\Facades\Debugbar')) {
+            \Barryvdh\Debugbar\Facades\Debugbar::disable();
+        }
+
         $query = AssetLog::with(['asset', 'user']);
         
         if ($request->filled('asset_id')) {
@@ -119,10 +132,14 @@ class InventoryReportController extends Controller
     // 6. Inventory Reports (Stock)
     public function inventoryReports(Request $request)
     {
+        if ($request->input('layout') === 'print' && class_exists('\Barryvdh\Debugbar\Facades\Debugbar')) {
+            \Barryvdh\Debugbar\Facades\Debugbar::disable();
+        }
+
         $query = Asset::with('category');
         
         if ($request->filled('location')) {
-            $query->where('location', 'like', '%' . $request->location . '%');
+            $query->where('location', $request->location);
         }
         if ($request->filled('low_stock')) {
             $query->where('status', 'available');
@@ -207,6 +224,7 @@ class InventoryReportController extends Controller
             return $pdf->download("{$type}_report_" . date('Y-m-d') . ".pdf");
         } else {
             // Excel Export
+            $viewData['isExcel'] = true;
             return Excel::download(new GenericReportExport('admin.inventory.reports.export', $viewData), "{$type}_report_" . date('Y-m-d') . ".xlsx");
         }
     }

@@ -23,19 +23,112 @@ class AssetAssignmentController extends Controller
             $query->where('user_id', $request->user_id);
         }
 
-        $assignments = $query->orderBy('assigned_date', 'desc')->get();
+        $assignments = $query->orderBy('assigned_date', 'desc')->paginate(15);
+        $groupedAssignments = $assignments->getCollection()->groupBy('user_id');
         $employees = User::all();
 
-        return view('admin.inventory.asset_assignments.index', compact('assignments', 'employees'));
+        return view('admin.inventory.asset_assignments.index', compact('assignments', 'groupedAssignments', 'employees'));
     }
 
     public function create()
     {
-        // Only fetch available assets
-        $assets = Asset::where('status', 'Available')->get();
+        $categories = \App\Models\AssetCategory::all();
         $employees = User::all();
         
-        return view('admin.inventory.asset_assignments.create', compact('assets', 'employees'));
+        return view('admin.inventory.asset_assignments.create', compact('categories', 'employees'));
+    }
+
+    public function getAvailableAssets(Request $request)
+    {
+        $query = Asset::with('category')->where('status', 'Available');
+        
+        if ($request->has('category_id') && $request->category_id != '') {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('asset_code', 'like', "%{$search}%");
+            });
+        }
+
+        $assets = $query->get();
+        
+        // Return HTML chunks for each asset or JSON data
+        return response()->json(['assets' => $assets]);
+    }
+
+    public function getEmployeeAssets(Request $request)
+    {
+        $user_id = $request->user_id;
+        if (!$user_id) {
+            return response()->json(['assignments' => []]);
+        }
+
+        $assignments = AssetAssignment::with(['asset', 'asset.category'])
+            ->where('user_id', $user_id)
+            ->where('status', 'Assigned')
+            ->get();
+
+        return response()->json(['assignments' => $assignments]);
+    }
+
+    public function assignAssetAjax(Request $request)
+    {
+        $request->validate([
+            'asset_id' => 'required|exists:assets,id',
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $asset = Asset::findOrFail($request->asset_id);
+        
+        if ($asset->status !== 'Available') {
+            return response()->json(['success' => false, 'message' => 'Asset is not available.']);
+        }
+
+        $assignment = AssetAssignment::create([
+            'asset_id' => $asset->id,
+            'user_id' => $request->user_id,
+            'assigned_date' => now(),
+            'status' => 'Assigned',
+            'assigned_by' => Auth::id() ?? 1,
+        ]);
+
+        $asset->update(['status' => 'Assigned']);
+        \App\Models\AssetLog::logEvent($asset->id, 'Assigned', 'Available', 'Assigned', 'Assigned via drag and drop', $request->user_id, $asset->department_id, $assignment);
+
+        return response()->json([
+            'success' => true,
+            'assignment' => $assignment->load('asset')
+        ]);
+    }
+
+    public function removeAssetAjax(Request $request)
+    {
+        $request->validate([
+            'assignment_id' => 'required|exists:asset_assignments,id',
+        ]);
+
+        $assignment = AssetAssignment::findOrFail($request->assignment_id);
+        
+        if ($assignment->status === 'Returned') {
+            return response()->json(['success' => false, 'message' => 'Asset is already returned.']);
+        }
+
+        $assignment->update([
+            'return_date' => now(),
+            'condition_on_return' => 'Same as Assigned',
+            'status' => 'Returned',
+            'returned_to' => Auth::id() ?? 1,
+            'notes' => 'Returned via drag and drop',
+        ]);
+
+        $assignment->asset->update(['status' => 'Available']);
+        \App\Models\AssetLog::logEvent($assignment->asset_id, 'Returned', 'Assigned', 'Available', 'Asset returned via drag and drop.', $assignment->user_id, $assignment->asset->department_id, $assignment);
+
+        return response()->json(['success' => true, 'asset' => $assignment->asset]);
     }
 
     public function store(Request $request)

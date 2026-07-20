@@ -23,11 +23,13 @@ use App\Models\RoleAndPermission; // Import the RoleAndPermission model
 use App\Models\Designation; // Import the Designation model
 use App\Models\Shift; // Import the Shift model
 use App\Models\ProvidentFundContribution; // Import the ProvidentFundContribution model
+use App\Models\EmployeeDeparture; // Import the EmployeeDeparture model
+use App\Traits\HasBilling;
 
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasBilling;
 
     /**
      * The attributes that are mass assignable.
@@ -162,5 +164,10 @@ class User extends Authenticatable
         $employeeSum = $this->providentFundContributions()->sum('employee_contribution');
         $employerSum = $this->providentFundContributions()->sum('employer_contribution');
         return number_format($employeeSum + $employerSum, 2, '.', '');
+    }
+
+    public function departures()
+    {
+        return $this->hasMany(EmployeeDeparture::class);
     }
 }

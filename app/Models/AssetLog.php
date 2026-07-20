@@ -42,6 +42,21 @@ class AssetLog extends Model
         return $this->belongsTo(User::class, 'action_by');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'action_by');
+    }
+
+    public function getActionAttribute()
+    {
+        return $this->event_type;
+    }
+
+    public function getDetailsAttribute()
+    {
+        return $this->notes;
+    }
+
     public function reference()
     {
         return $this->morphTo();

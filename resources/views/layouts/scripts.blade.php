@@ -119,11 +119,30 @@
         $('#loader_div').hide();
     });
     $(window).on('beforeunload', function () {
-        $('#loader_div').show();
+        if (!window.isDownloading) {
+            $('#loader_div').show();
+        }
+        window.isDownloading = false;
     });
     $(window).on('pageshow', function (event) {
         if (event.originalEvent.persisted) {
             $('#loader_div').hide();
+        }
+    });
+
+    // Prevent loader on download/export clicks
+    $(document).on('click', 'a, button', function () {
+        var href = $(this).attr('href') || '';
+        var isDownload = $(this).attr('download') !== undefined || 
+                         href.indexOf('payslip') !== -1 || 
+                         href.indexOf('export') !== -1 ||
+                         $(this).hasClass('no-loader');
+        
+        if (isDownload) {
+            window.isDownloading = true;
+            setTimeout(function () {
+                $('#loader_div').hide();
+            }, 1000);
         }
     });
 </script>

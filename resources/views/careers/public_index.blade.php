@@ -205,11 +205,14 @@
             const formData = new FormData(form);
             formData.append('page', page);
             
-            fetch("{{ route('careers.search') }}", {
-                method: 'POST',
+            //fetch("{{ route('careers.search') }}", {
+            const searchUrl = "{{ route('careers.search') }}".replace("http://", "https://");
+            console.log('Fetching jobs from:', searchUrl, 'with data:', Object.fromEntries(formData.entries()));
+            fetch(searchUrl, {
+                method: "POST",
                 body: formData,
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+                    "X-Requested-With": "XMLHttpRequest"
                 }
             })
             .then(response => response.text())

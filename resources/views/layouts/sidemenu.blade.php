@@ -45,13 +45,13 @@
 {{-- Users Management --}}
 @if(can('staff_management'))
     <li class="nav-item">
-        <a class="nav-link {!! (Request::is('users*') ? 'active' : '') !!}" data-bs-toggle="collapse" href="#users_menu"
+        <a class="nav-link {!! (Request::is('users*') || Request::is('employeeDepartures*') ? 'active' : '') !!}" data-bs-toggle="collapse" href="#users_menu"
             role="button" aria-expanded="false" aria-controls="users_menu">
             <i class="icon im im-icon-User"></i>
             <span class="item-name">Staff</span>
             <i class="right-icon im im-icon-Arrow-Right"></i>
         </a>
-        <ul class="sub-nav collapse {!! (Request::is('users*') ? 'show' : '') !!}" id="users_menu"
+        <ul class="sub-nav collapse {!! (Request::is('users*') || Request::is('employeeDepartures*') ? 'show' : '') !!}" id="users_menu"
             data-bs-parent="#sidebar-menu">
             @if(can('view_employees'))
                 <li class="nav-item">
@@ -61,10 +61,19 @@
                         <span class="item-name">Employees</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('employeeDepartures*') ? 'active' : '' !!}" href="{{ route('employeeDepartures.index') }}">
+                        <i class="icon im im-icon-Exit"></i>
+                        <i class="sidenav-mini-icon"> DE </i>
+                        <span class="item-name">Departed Employees</span>
+                    </a>
+                </li>
             @endif
         </ul>
     </li>
 @endif
+
+
 
 
 
@@ -248,7 +257,7 @@
                     <i class="sidenav-mini-icon"> LT </i>
                     <span class="item-name">Leave Types</span>
                 </a>
-            </li>
+            </li> 
         @endif
     </ul>
 </li>
@@ -259,7 +268,7 @@
         <a class="nav-link {!! (Request::is('payroll*') ? 'active' : '') !!}" data-bs-toggle="collapse" href="#payroll_menu"
             role="button" aria-expanded="false" aria-controls="payroll_menu">
             <i class="icon im im-icon-User"></i>
-            <span class="item-name">Payroll</span>
+            <span class="item-name">Payroll & Compliance Modules</span>
             <i class="right-icon im im-icon-Arrow-Right"></i>
         </a>
         <ul class="sub-nav collapse {!! (Request::is('payroll*') ? 'show' : '') !!}" id="payroll_menu"
@@ -450,19 +459,94 @@
         </ul>
     </li>
 @endif
+
+{{-- Pension Module --}}
+@if(can('pension'))
+    <li class="nav-item">
+        <a class="nav-link {!! (Request::is('admin/pension*') ? 'active' : '') !!}"
+            data-bs-toggle="collapse" href="#pension_menu" role="button" aria-expanded="false"
+            aria-controls="pension_menu">
+            <i class="icon im im-icon-Bank"></i>
+            <span class="item-name">Pension</span>
+            <i class="right-icon im im-icon-Arrow-Right"></i>
+        </a>
+        <ul class="sub-nav collapse  {!!  Request::is('admin/pension*') ? 'show' : ''  !!}"
+            id="pension_menu" data-bs-parent="#sidebar-menu">
+        {{-- <!-- @if(can('manage_pension_policies')) --> --}}
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/pension/policies*') ? 'active' : '' !!}"
+                        href="{{ route('admin.pension.policies.index') }}">
+                        <i class="icon im im-icon-File"></i>
+                        <i class="sidenav-mini-icon"> PP </i>
+                        <span class="item-name">Policies & Schemes</span>
+                    </a>
+                </li>
+            {{-- <!-- @endif --> --}}
+            {{-- <!-- @if(can('manage_pension_eligibility')) --> --}}
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/pension/eligibility*') ? 'active' : '' !!}"
+                        href="{{ route('admin.pension.eligibility.index') }}">
+                        <i class="icon im im-icon-Checked-User"></i>
+                        <i class="sidenav-mini-icon"> EC </i>
+                        <span class="item-name">Eligibility Checks</span>
+                    </a>
+                </li>
+            {{-- <!-- @endif --> --}}
+            {{-- <!-- @if(can('manage_pension_calculations')) --> --}}
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/pension/calculations*') ? 'active' : '' !!}"
+                        href="{{ route('admin.pension.calculations.index') }}">
+                        <i class="icon im im-icon-Calculator"></i>
+                        <i class="sidenav-mini-icon"> PC </i>
+                        <span class="item-name">Calculations</span>
+                    </a>
+                </li>
+            {{-- <!-- @endif --> --}}
+            {{-- <!-- @if(can('manage_pension_disbursements')) --> --}}
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/pension/disbursements*') ? 'active' : '' !!}"
+                        href="{{ route('admin.pension.disbursements.index') }}">
+                        <i class="icon im im-icon-Money-Bag"></i>
+                        <i class="sidenav-mini-icon"> PD </i>
+                        <span class="item-name">Disbursements</span>
+                    </a>
+                </li>
+            {{-- <!-- @endif --> --}}
+            @if(can('manage_arrear_bills'))
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/pension/arrear-bills*') ? 'active' : '' !!}"
+                        href="{{ route('admin.pension.arrear-bills.index') }}">
+                        <i class="icon im im-icon-File-Edit"></i>
+                        <i class="sidenav-mini-icon"> AB </i>
+                        <span class="item-name">Arrear Bills</span>
+                    </a>
+                </li>
+            @endif
+        </ul>
+    </li>
+@endif
+
 {{--Recruitment--}}
 @if(can('recruitment'))
     <li class="nav-item">
-        <a class="nav-link {!! (Request::is('recruitment*') || Request::is('recruitments*') || Request::is('admin/applications*') || Request::is('admin/career-page*') ? 'active' : '') !!}"
+        <a class="nav-link {!! (Request::is('admin/recruitment/dashboard') || Request::is('recruitment*') || Request::is('recruitments*') || Request::is('admin/applications*') || Request::is('admin/career-page*') ? 'active' : '') !!}"
             data-bs-toggle="collapse" href="#recruitment_menu" role="button" aria-expanded="false"
             aria-controls="recruitment_menu">
             <i class="icon im im-icon-Business-Man"></i>
             <span class="item-name">Recruitment</span>
             <i class="right-icon im im-icon-Arrow-Right"></i>
         </a>
-        <ul class="sub-nav collapse  {!!  Request::is('recruitment*') || Request::is('recruitments*') || Request::is('admin/applications*') || Request::is('admin/career-page*') ? 'show' : ''  !!}"
+        <ul class="sub-nav collapse  {!!  Request::is('admin/recruitment/dashboard') || Request::is('recruitment*') || Request::is('recruitments*') || Request::is('admin/applications*') || Request::is('admin/career-page*') ? 'show' : ''  !!}"
             id="recruitment_menu" data-bs-parent="#sidebar-menu">
             @if(can('manage_recruitment'))
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/recruitment/dashboard') ? 'active' : '' !!}"
+                        href="{{ route('admin.recruitment.dashboard') }}"> 
+                        <i class="icon im im-icon-Dashboard"></i>
+                        <i class="sidenav-mini-icon"> D </i>
+                        <span class="item-name">Dashboard</span>
+                    </a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('admin/applications*') ? 'active' : '' !!}"
                         href="{{ route('admin.applications.index') }}"> 
@@ -638,6 +722,14 @@
             </a>
             <ul class="sub-nav collapse {!! Request::is('admin/maintenance*') ? 'show' : '' !!}"
                 id="nested_maintenance_menu" style="padding-left: 15px; list-style-type: none;">
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/maintenance') ? 'active' : '' !!}"
+                        href="{{ route('admin.maintenance.index') }}"> 
+                        <i class="icon im im-icon-Dashboard"></i>
+                        <i class="sidenav-mini-icon"> DB </i>
+                        <span class="item-name">Dashboard</span>
+                    </a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('admin/maintenance/vendors*') ? 'active' : '' !!}"
                         href="{{ route('admin.maintenance.vendors.index') }}"> 

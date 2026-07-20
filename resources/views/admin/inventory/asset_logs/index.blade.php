@@ -62,7 +62,7 @@ Asset Audit Logs @parent
                                     <option value="">All Employees</option>
                                     @foreach($employees as $emp)
                                         <option value="{{ $emp->id }}" {{ request('user_id') == $emp->id ? 'selected' : '' }}>
-                                            {{ $emp->first_name }} {{ $emp->last_name }}
+                                            {{ $emp->name }} {{ $emp->last_name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -140,13 +140,13 @@ Asset Audit Logs @parent
                                 </td>
                                 <td>
                                     @if($log->employee)
-                                        <i class="fa fa-user text-muted"></i> {{ $log->employee->first_name }} {{ $log->employee->last_name }}<br>
+                                        <i class="fa fa-user text-muted"></i> {{ $log->employee->name }} {{ $log->employee->last_name }}<br>
                                     @endif
                                     @if($log->department)
                                         <i class="fa fa-building text-muted"></i> <small>{{ $log->department->name }}</small>
                                     @endif
                                 </td>
-                                <td>{{ $log->actionBy->first_name ?? 'System' }} {{ $log->actionBy->last_name ?? '' }}</td>
+                                <td>{{ $log->actionBy->name ?? 'System' }} {{ $log->actionBy->last_name ?? '' }}</td>
                             </tr>
                         @empty
                             <tr>

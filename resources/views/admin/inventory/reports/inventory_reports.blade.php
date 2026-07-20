@@ -1,31 +1,32 @@
-@extends('layouts.default')
+@extends(request('layout') == 'print' ? 'layouts.print' : 'layouts.default')
 
 @section('title')
 General Inventory Reports @parent
 @stop
 
 @section('content')
+@if(request('layout') != 'print')
 <section class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1>General Inventory Reports</h1>
-            </div>
-            <div class="col-sm-6 text-right">
-                <a href="{{ route('admin.inventory.reports.inventory', array_merge(request()->all(), ['export' => 'pdf'])) }}" class="btn btn-danger"><i class="fa fa-file-pdf-o"></i> Export PDF</a>
-                <a href="{{ route('admin.inventory.reports.inventory', array_merge(request()->all(), ['export' => 'excel'])) }}" class="btn btn-success ml-2"><i class="fa fa-file-excel-o"></i> Export Excel</a>
+                <h3>General Inventory Reports</h3>
             </div>
         </div>
     </div>
 </section>
+@endif
 
 <div class="content px-3">
-    <div class="card">
+    @if(request('layout') != 'print')
+    <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.inventory.reports.inventory') }}" class="row mb-4">
+            <form method="POST" action="{{ route('admin.inventory.reports.inventory') }}" class="row mb-0" target="inventory_window" onsubmit="window.open('', 'inventory_window', 'width=1200,height=800,scrollbars=yes,resizable=yes');">
+                @csrf
+                <input type="hidden" name="layout" value="print">
                 <div class="form-group col-md-4">
                     <label>Location</label>
-                    <input type="text" name="location" class="form-control" placeholder="Search Location" value="{{ request('location') }}">
+                    {!! Form::select('location', ['' => 'All Locations'] + $data['locations']->toArray(), request('location'), ['class' => 'form-control']) !!}
                 </div>
                 <div class="form-group col-md-4">
                     <label>Department</label>
@@ -37,51 +38,49 @@ General Inventory Reports @parent
                         <label class="custom-control-label" for="low_stock">Show Unallocated (Low Stock Analysis)</label>
                     </div>
                 </div>
-                <div class="form-group col-md-12 text-right">
-                    <button type="submit" class="btn btn-primary">Filter</button>
+                <div class="form-group col-md-12 text-right mb-0">
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-filter"></i> Generate Report</button>
+                    <a href="{{ route('admin.inventory.reports.inventory', array_merge(request()->all(), ['export' => 'pdf'])) }}" class="btn btn-danger ml-2"><i class="fa fa-file-pdf-o"></i> Export PDF</a>
+                    <a href="{{ route('admin.inventory.reports.inventory', array_merge(request()->all(), ['export' => 'excel'])) }}" class="btn btn-success ml-2"><i class="fa fa-file-excel-o"></i> Export Excel</a>
                     <a href="{{ route('admin.inventory.reports.inventory') }}" class="btn btn-default ml-2">Clear</a>
                 </div>
             </form>
+        </div>
+    </div>
 
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="info-box shadow-sm">
-                        <span class="info-box-icon bg-info"><i class="fa fa-boxes"></i></span>
-                        <div class="info-box-content">
-                            <span class="info-box-text">Total Assets</span>
-                            <span class="info-box-number">{{ $stats['total'] }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="info-box shadow-sm">
-                        <span class="info-box-icon bg-success"><i class="fa fa-check"></i></span>
-                        <div class="info-box-content">
-                            <span class="info-box-text">Available (In Stock)</span>
-                            <span class="info-box-number">{{ $stats['available'] }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="info-box shadow-sm">
-                        <span class="info-box-icon bg-warning"><i class="fa fa-user-tag"></i></span>
-                        <div class="info-box-content">
-                            <span class="info-box-text">Allocated</span>
-                            <span class="info-box-number">{{ $stats['allocated'] }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="info-box shadow-sm">
-                        <span class="info-box-icon bg-danger"><i class="fa fa-tools"></i></span>
-                        <div class="info-box-content">
-                            <span class="info-box-text">In Maintenance</span>
-                            <span class="info-box-number">{{ $stats['maintenance'] }}</span>
-                        </div>
-                    </div>
-                </div>
+    @endif
+
+    @if(request('layout') == 'print')
+        @php
+            $siteSetting = \App\Models\SiteSetting::first();
+            $siteName = $siteSetting->site_name ?? 'Corporate HRM';
+            $siteLogo = $siteSetting->site_logo ? asset($siteSetting->site_logo) : null;
+            $siteAddress = $siteSetting->site_address ?? '';
+        @endphp
+        <div class="text-right mb-3 no-print">
+            <a href="{{ route('admin.inventory.reports.inventory', array_merge(request()->all(), ['export' => 'pdf'])) }}" class="btn btn-danger btn-sm"><i class="fa fa-file-pdf-o"></i> Export PDF</a>
+            <a href="{{ route('admin.inventory.reports.inventory', array_merge(request()->all(), ['export' => 'excel'])) }}" class="btn btn-success btn-sm"><i class="fa fa-file-excel-o"></i> Export Excel</a>
+            <button onclick="window.print();" class="btn btn-primary btn-sm"><i class="fa fa-print"></i> Print</button>
+            <button onclick="window.close();" class="btn btn-secondary btn-sm"><i class="fa fa-times"></i> Close</button>
+        </div>
+        <div class="text-center mb-4 border-bottom pb-3">
+            <div class="mb-2">
+                @if($siteLogo)
+                    <img src="{{ $siteLogo }}" alt="Logo" style="height: 60px;">
+                @endif
             </div>
+            <h2 class="mb-1" style="font-weight: bold; color: #333;">{{ $siteName }}</h2>
+            @if($siteAddress)
+                <p class="text-muted mb-2" style="font-size: 14px;">{{ $siteAddress }}</p>
+            @endif
+            <h4 class="mt-3 text-secondary font-weight-bold" style="letter-spacing: 0.5px;">General Inventory Report</h4>
+            <small class="text-muted">Generated on: {{ date('Y-m-d H:i') }}</small>
+        </div>
+    @endif
 
+    @if(request('layout') != 'print' || (request('layout') == 'print' && $inventory->count() > 0))
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered table-striped">
                     <thead>
@@ -118,5 +117,6 @@ General Inventory Reports @parent
             </div>
         </div>
     </div>
+    @endif
 </div>
 @endsection

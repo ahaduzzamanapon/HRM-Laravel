@@ -132,6 +132,16 @@ class UserController extends Controller
             }
         }
 
+        if (in_array($users->status, ['left', 'resign', 'retired'])) {
+            \App\Models\EmployeeDeparture::create([
+                'user_id' => $users->id,
+                'status' => $users->status,
+                'effective_date' => now()->format('Y-m-d'),
+                'reason' => 'Status set to ' . ucfirst($users->status) . ' on creation.',
+                'remarks' => 'Automatically created on employee creation.',
+            ]);
+        }
+
         Flash::success('User saved successfully.');
 
         return redirect(route('users.index'));
@@ -155,7 +165,8 @@ class UserController extends Controller
             'promotionDetails',
             'salaryIncrements',
             'transferDetails',
-            'personalDocuments'
+            'personalDocuments',
+            'departures'
         ])->find($id);
 
         if (empty($users)) {
@@ -186,7 +197,8 @@ class UserController extends Controller
             'salaryIncrements',
             'transferDetails',
             'personalDocuments',
-            'userAllowances' // Add this line
+            'userAllowances', // Add this line
+            'departures'
         ])->find($id);
 
         if (empty($users)) {
@@ -408,6 +420,25 @@ class UserController extends Controller
         $users->gross_salary = $salaryCalculator->calculateGrossSalary($users);
         $users->net_salary = $salaryCalculator->calculateNetSalary($users, $users->gross_salary);
         $users->save(); // Save the user model after updating basic and gross salary
+
+        if (in_array($users->status, ['left', 'resign', 'retired'])) {
+            $departure = \App\Models\EmployeeDeparture::where('user_id', $users->id)->first();
+            if ($departure) {
+                $departure->update([
+                    'status' => $users->status,
+                ]);
+            } else {
+                \App\Models\EmployeeDeparture::create([
+                    'user_id' => $users->id,
+                    'status' => $users->status,
+                    'effective_date' => now()->format('Y-m-d'),
+                    'reason' => 'Status changed to ' . ucfirst($users->status) . ' in user profile.',
+                    'remarks' => 'Automatically created on status change.',
+                ]);
+            }
+        } else {
+            \App\Models\EmployeeDeparture::where('user_id', $users->id)->delete();
+        }
 
         Flash::success('User updated successfully.');
         return redirect(route('users.index'));

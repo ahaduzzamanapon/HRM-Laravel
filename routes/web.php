@@ -150,21 +150,60 @@ Route::middleware('auth')->prefix('admin/inventory')->name('admin.inventory.')->
     Route::resource('assets', 'Admin\Inventory\AssetController');
     Route::post('assets/{id}/log', 'Admin\Inventory\AssetController@addLog')->name('assets.addLog');
     Route::resource('asset-assignments', 'Admin\Inventory\AssetAssignmentController')->except(['show', 'edit', 'update', 'destroy']);
+    Route::get('asset-assignments/ajax/available', 'Admin\Inventory\AssetAssignmentController@getAvailableAssets')->name('asset-assignments.ajax.available');
+    Route::get('asset-assignments/ajax/employee-assets', 'Admin\Inventory\AssetAssignmentController@getEmployeeAssets')->name('asset-assignments.ajax.employee-assets');
+    Route::post('asset-assignments/ajax/assign', 'Admin\Inventory\AssetAssignmentController@assignAssetAjax')->name('asset-assignments.ajax.assign');
+    Route::post('asset-assignments/ajax/remove', 'Admin\Inventory\AssetAssignmentController@removeAssetAjax')->name('asset-assignments.ajax.remove');
     Route::get('asset-assignments/{id}/return', 'Admin\Inventory\AssetAssignmentController@returnForm')->name('asset-assignments.returnForm');
     Route::post('asset-assignments/{id}/return', 'Admin\Inventory\AssetAssignmentController@processReturn')->name('asset-assignments.processReturn');
     Route::match(['get', 'post'], 'asset-logs', 'Admin\Inventory\AssetLogController@index')->name('asset-logs.index');
     Route::redirect('reports', 'reports/assets')->name('reports.index');
-    Route::get('reports/assets', 'Admin\Inventory\InventoryReportController@assetReports')->name('reports.assets');
-    Route::get('reports/assignments', 'Admin\Inventory\InventoryReportController@assignmentReports')->name('reports.assignments');
-    Route::get('reports/lifecycle', 'Admin\Inventory\InventoryReportController@lifecycleReports')->name('reports.lifecycle');
-    Route::get('reports/inventory', 'Admin\Inventory\InventoryReportController@inventoryReports')->name('reports.inventory');
+    Route::match(['get', 'post'], 'reports/assets', 'Admin\Inventory\InventoryReportController@assetReports')->name('reports.assets');
+    Route::match(['get', 'post'], 'reports/assignments', 'Admin\Inventory\InventoryReportController@assignmentReports')->name('reports.assignments');
+    Route::match(['get', 'post'], 'reports/lifecycle', 'Admin\Inventory\InventoryReportController@lifecycleReports')->name('reports.lifecycle');
+    Route::match(['get', 'post'], 'reports/inventory', 'Admin\Inventory\InventoryReportController@inventoryReports')->name('reports.inventory');
 });
 
 // Maintenance Module
 Route::middleware('auth')->prefix('admin/maintenance')->name('admin.maintenance.')->group(function () {
+    Route::get('/', 'Admin\Maintenance\MaintenanceDashboardController@index')->name('index');
     Route::resource('vendors', 'Admin\Maintenance\VendorController');
     Route::resource('types', 'Admin\Maintenance\MaintenanceTypeController');
     Route::resource('requests', 'Admin\Maintenance\MaintenanceRequestController');
-    Route::get('reports', 'Admin\Maintenance\MaintenanceReportController@index')->name('reports.index');
+    Route::match(['get', 'post'], 'reports', 'Admin\Maintenance\MaintenanceReportController@index')->name('reports.index');
     Route::get('reports/export', 'Admin\Maintenance\MaintenanceReportController@export')->name('reports.export');
+});
+
+// Pension Module
+Route::middleware('auth')->prefix('admin/pension')->name('admin.pension.')->group(function () {
+    Route::get('policies/approvals', 'Admin\Pension\PolicyController@approvalList')->name('policies.approvals');
+    Route::get('policies/audit-logs', 'Admin\Pension\PolicyController@auditLogs')->name('policies.audit-logs');
+    Route::get('policies/assignments', 'Admin\Pension\PolicyController@assignmentIndex')->name('policies.assignments');
+    Route::post('policies/assignments/store', 'Admin\Pension\PolicyController@assignmentStore')->name('policies.assignments.store');
+    Route::get('policies/{id}/clone', 'Admin\Pension\PolicyController@clonePolicy')->name('policies.clone');
+    Route::get('policies/{id}/versions', 'Admin\Pension\PolicyController@versionHistory')->name('policies.versions');
+    Route::post('policies/{id}/approve', 'Admin\Pension\PolicyController@approvePolicy')->name('policies.approve');
+    Route::post('policies/{id}/reject', 'Admin\Pension\PolicyController@rejectPolicy')->name('policies.reject');
+    Route::resource('policies', 'Admin\Pension\PolicyController');
+    
+    Route::post('eligibility/run-check', 'Admin\Pension\EligibilityController@runCheck')->name('eligibility.run-check');
+    Route::match(['get', 'post'], 'eligibility', 'Admin\Pension\EligibilityController@index')->name('eligibility.index');
+    Route::resource('eligibility', 'Admin\Pension\EligibilityController')->except(['index', 'store']);
+    
+    Route::post('calculations/process', 'Admin\Pension\CalculationController@process')->name('calculations.process');
+    Route::match(['get', 'post'], 'calculations', 'Admin\Pension\CalculationController@index')->name('calculations.index');
+    Route::resource('calculations', 'Admin\Pension\CalculationController')->except(['index', 'store']);
+    
+    Route::post('disbursements/{id}/pay', 'Admin\Pension\DisbursementController@pay')->name('disbursements.pay');
+    Route::get('disbursements/{id}/payslip', 'Admin\Pension\DisbursementController@downloadPayslip')->name('disbursements.payslip');
+    Route::post('disbursements/process', 'Admin\Pension\DisbursementController@process')->name('disbursements.process');
+    Route::resource('disbursements', 'Admin\Pension\DisbursementController');
+
+    // Arrear Bill System
+    Route::get('arrear-bills', 'Admin\Pension\ArrearBillController@index')->name('arrear-bills.index');
+    Route::get('arrear-bills/create', 'Admin\Pension\ArrearBillController@create')->name('arrear-bills.create');
+    Route::post('arrear-bills', 'Admin\Pension\ArrearBillController@store')->name('arrear-bills.store');
+    Route::post('arrear-bills/allocate', 'Admin\Pension\ArrearBillController@allocate')->name('arrear-bills.allocate');
+    Route::post('arrear-bills/{id}', 'Admin\Pension\ArrearBillController@update')->name('arrear-bills.update');
+    Route::delete('arrear-bills/{id}', 'Admin\Pension\ArrearBillController@destroy')->name('arrear-bills.destroy');
 });

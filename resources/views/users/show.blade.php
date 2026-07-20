@@ -27,6 +27,9 @@ User @parent
                             <li><a href="#salary_increment" data-toggle="tab">Salary Increment</a></li>
                             <li><a href="#transfer_details" data-toggle="tab">Transfer Details</a></li>
                             <li><a href="#personal_documents" data-toggle="tab">Personal Documents</a></li>
+                            @if(in_array($users->status, ['left', 'resign', 'retired']))
+                                <li><a href="#departure_details" data-toggle="tab">Departure Details</a></li>
+                            @endif
                         </ul>
                         <div class="tab-content">
                             <div class="active tab-pane" id="training_details">
@@ -53,6 +56,11 @@ User @parent
                             <div class="tab-pane" id="personal_documents">
                                 @include('users._personal_documents_show')
                             </div>
+                            @if(in_array($users->status, ['left', 'resign', 'retired']))
+                                <div class="tab-pane" id="departure_details">
+                                    @include('users._departure_details_show')
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>

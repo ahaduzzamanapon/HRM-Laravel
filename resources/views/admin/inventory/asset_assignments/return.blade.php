@@ -21,9 +21,8 @@ Return Asset @parent
     <div class="card shadow-sm border-0">
         <div class="card-header bg-light">
             <h3 class="card-title">
-                Asset: <strong>{{ $assignment->asset->name }} ({{ $assignment->asset->asset_code }})</strong>
-                <br>
-                <small class="text-muted">Assigned to: {{ $assignment->employee->first_name ?? '' }} {{ $assignment->employee->last_name ?? '' }}</small>
+                <i class="fa fa-undo"></i> Return {{ $assignment->asset->name }} ({{ $assignment->asset->asset_code }})<br>
+                <small class="text-muted">Assigned to: {{ $assignment->employee->name ?? '' }} {{ $assignment->employee->last_name ?? '' }}</small>
             </h3>
         </div>
         <div class="card-body">

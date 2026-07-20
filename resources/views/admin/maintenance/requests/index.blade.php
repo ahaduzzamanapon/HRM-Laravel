@@ -98,7 +98,7 @@ Maintenance Requests @parent
                                 <span class="badge badge-{{ $badge }} px-3 py-2 rounded-pill">{{ $req->status }}</span>
                             </td>
                             <td class="align-middle">{{ $req->requested_date }}</td>
-                            <td class="align-middle">{{ $req->cost ? '$'.$req->cost : 'N/A' }}</td>
+                            <td class="align-middle">{{ $req->cost ? '৳'.$req->cost : 'N/A' }}</td>
                             <td class="align-middle">
                                 <form action="{{ route('admin.maintenance.requests.destroy', $req->id) }}" method="POST">
                                     <div class='btn-group'>

@@ -59,6 +59,10 @@ User @parent
                                 data-bs-toggle="pill" data-bs-target="#v-pills-child-allowance" type="button" role="tab"
                                 aria-controls="v-pills-child-allowance" aria-selected="false"><i
                                     class="im im-icon-Add-User"></i> Child Allowance</button>
+                            <button style="width: 100%; display: {{ in_array($users->status, ['left', 'resign', 'retired']) ? 'block' : 'none' }};" class="nav-link" id="v-pills-departure-details-tab"
+                                data-bs-toggle="pill" data-bs-target="#v-pills-departure-details" type="button" role="tab"
+                                aria-controls="v-pills-departure-details" aria-selected="false"><i
+                                    class="im im-icon-Exit"></i> Departure Details</button>
                         </div>
                     </div>
                     <div class="col-md-9">
@@ -116,6 +120,10 @@ User @parent
                                 aria-labelledby="v-pills-child-allowance-tab">
                                 @include('users._child_allowance_form')
                             </div>
+                            <div class="tab-pane fade" id="v-pills-departure-details" role="tabpanel"
+                                aria-labelledby="v-pills-departure-details-tab">
+                                @include('users._departure_details_form')
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -146,6 +154,22 @@ User @parent
             if (emp_id == '') {
                 $('#emp_id').val('EMP-' + d.getTime());
             }
+
+            // Toggle Departure Details tab visibility based on Status field
+            function toggleDepartureTab() {
+                var status = $('select[name="status"]').val();
+                if (status === 'left' || status === 'resign' || status === 'retired') {
+                    $('#v-pills-departure-details-tab').show();
+                } else {
+                    $('#v-pills-departure-details-tab').hide();
+                    if ($('#v-pills-departure-details-tab').hasClass('active')) {
+                        $('#v-pills-employee-details-tab').tab('show');
+                    }
+                }
+            }
+
+            $('select[name="status"]').on('change', toggleDepartureTab);
+            toggleDepartureTab(); // Run on load
         });
     </script>
 @endpush

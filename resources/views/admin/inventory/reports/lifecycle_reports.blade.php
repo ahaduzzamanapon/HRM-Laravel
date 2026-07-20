@@ -1,28 +1,29 @@
-@extends('layouts.default')
+@extends(request('layout') == 'print' ? 'layouts.print' : 'layouts.default')
 
 @section('title')
 Lifecycle Reports @parent
 @stop
 
 @section('content')
+@if(request('layout') != 'print')
 <section class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1>Lifecycle Reports</h1>
-            </div>
-            <div class="col-sm-6 text-right">
-                <a href="{{ route('admin.inventory.reports.lifecycle', array_merge(request()->all(), ['export' => 'pdf'])) }}" class="btn btn-danger"><i class="fa fa-file-pdf-o"></i> Export PDF</a>
-                <a href="{{ route('admin.inventory.reports.lifecycle', array_merge(request()->all(), ['export' => 'excel'])) }}" class="btn btn-success ml-2"><i class="fa fa-file-excel-o"></i> Export Excel</a>
+                <h3>Lifecycle Reports</h3>
             </div>
         </div>
     </div>
 </section>
+@endif
 
 <div class="content px-3">
-    <div class="card">
+    @if(request('layout') != 'print')
+    <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.inventory.reports.lifecycle') }}" class="row mb-4">
+            <form method="POST" action="{{ route('admin.inventory.reports.lifecycle') }}" class="row mb-0" target="lifecycle_window" onsubmit="window.open('', 'lifecycle_window', 'width=1200,height=800,scrollbars=yes,resizable=yes');">
+                @csrf
+                <input type="hidden" name="layout" value="print">
                 <div class="form-group col-md-4">
                     <label>Asset</label>
                     {!! Form::select('asset_id', ['' => 'All Assets'] + $data['assets_list']->toArray(), request('asset_id'), ['class' => 'form-control']) !!}
@@ -35,12 +36,48 @@ Lifecycle Reports @parent
                     <label>Date (To)</label>
                     <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
                 </div>
-                <div class="form-group col-md-12 text-right">
-                    <button type="submit" class="btn btn-primary">Filter</button>
+                <div class="form-group col-md-12 text-right mb-0">
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-filter"></i> Generate Report</button>
+                    <a href="{{ route('admin.inventory.reports.lifecycle', array_merge(request()->all(), ['export' => 'pdf'])) }}" class="btn btn-danger ml-2"><i class="fa fa-file-pdf-o"></i> Export PDF</a>
+                    <a href="{{ route('admin.inventory.reports.lifecycle', array_merge(request()->all(), ['export' => 'excel'])) }}" class="btn btn-success ml-2"><i class="fa fa-file-excel-o"></i> Export Excel</a>
                     <a href="{{ route('admin.inventory.reports.lifecycle') }}" class="btn btn-default ml-2">Clear</a>
                 </div>
             </form>
+        </div>
+    </div>
+    @endif
 
+    @if(request('layout') == 'print')
+        @php
+            $siteSetting = \App\Models\SiteSetting::first();
+            $siteName = $siteSetting->site_name ?? 'Corporate HRM';
+            $siteLogo = $siteSetting->site_logo ? asset($siteSetting->site_logo) : null;
+            $siteAddress = $siteSetting->site_address ?? '';
+        @endphp
+        <div class="text-right mb-3 no-print">
+            <a href="{{ route('admin.inventory.reports.lifecycle', array_merge(request()->all(), ['export' => 'pdf'])) }}" class="btn btn-danger btn-sm"><i class="fa fa-file-pdf-o"></i> Export PDF</a>
+            <a href="{{ route('admin.inventory.reports.lifecycle', array_merge(request()->all(), ['export' => 'excel'])) }}" class="btn btn-success btn-sm"><i class="fa fa-file-excel-o"></i> Export Excel</a>
+            <button onclick="window.print();" class="btn btn-primary btn-sm"><i class="fa fa-print"></i> Print</button>
+            <button onclick="window.close();" class="btn btn-secondary btn-sm"><i class="fa fa-times"></i> Close</button>
+        </div>
+        <div class="text-center mb-4 border-bottom pb-3">
+            <div class="mb-2">
+                @if($siteLogo)
+                    <img src="{{ $siteLogo }}" alt="Logo" style="height: 60px;">
+                @endif
+            </div>
+            <h2 class="mb-1" style="font-weight: bold; color: #333;">{{ $siteName }}</h2>
+            @if($siteAddress)
+                <p class="text-muted mb-2" style="font-size: 14px;">{{ $siteAddress }}</p>
+            @endif
+            <h4 class="mt-3 text-secondary font-weight-bold" style="letter-spacing: 0.5px;">Asset Lifecycle Report</h4>
+            <small class="text-muted">Generated on: {{ date('Y-m-d H:i') }}</small>
+        </div>
+    @endif
+
+    @if(request('layout') != 'print' || (request('layout') == 'print' && $logs->count() > 0))
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered table-striped">
                     <thead>
@@ -69,5 +106,6 @@ Lifecycle Reports @parent
             </div>
         </div>
     </div>
+    @endif
 </div>
 @endsection

@@ -16,6 +16,10 @@ class MaintenanceReportController extends Controller
 {
     public function index(Request $request)
     {
+        if ($request->get('layout') === 'print' && app()->bound('debugbar')) {
+            app('debugbar')->disable();
+        }
+
         $assets = Asset::all();
         $vendors = Vendor::all();
 
@@ -89,9 +93,11 @@ class MaintenanceReportController extends Controller
         $viewData = ['title' => 'Maintenance Report', 'headers' => $headers, 'records' => $exportRecords];
 
         if ($request->export == 'pdf') {
+            $viewData['isExcel'] = false;
             $pdf = Pdf::loadView('admin.inventory.reports.export', $viewData);
             return $pdf->download("maintenance_reports_" . date('Y-m-d') . ".pdf");
         } else {
+            $viewData['isExcel'] = true;
             return Excel::download(new GenericReportExport('admin.inventory.reports.export', $viewData), "maintenance_reports_" . date('Y-m-d') . ".xlsx");
         }
     }

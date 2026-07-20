@@ -60,6 +60,8 @@ Route::resource('salaryGrades', 'SalaryGradeController');
 Route::resource('bankSetups', 'BankSetupController');
 Route::resource('childAllowances', 'ChildAllowanceController');
 Route::get('childAllowances/list/{user_id}', [\App\Http\Controllers\ChildAllowanceController::class, 'list']);
+Route::resource('employeeDepartures', 'EmployeeDepartureController');
+Route::get('employeeDepartures/list/{user_id}', [\App\Http\Controllers\EmployeeDepartureController::class, 'list']);
 
 Route::resource('taxSetups', 'TaxSetupController');
 
@@ -70,6 +72,7 @@ Route::resource('biometricEmployeeMappings', 'BiometricEmployeeMappingController
 Route::resource('biometricCommands', 'BiometricCommandController');
 
 // Recruitment System Admin Routes
+Route::get('admin/recruitment/dashboard', 'Admin\RecruitmentDashboardController@index')->name('admin.recruitment.dashboard');
 Route::resource('recruitments', 'RecruitmentController'); // Original recruitment settings 
 Route::resource('admin/jobs', 'Admin\JobPostController')->names('admin.jobs')->parameters(['jobs' => 'jobPost']);
 Route::get('admin/applications', 'Admin\ApplicationViewerController@index')->name('admin.applications.index');
