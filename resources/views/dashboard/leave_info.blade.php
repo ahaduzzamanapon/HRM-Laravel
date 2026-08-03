@@ -23,7 +23,7 @@
                                 <h6 class="col-md-12 p-0" style="font-size: 15px !important;">Pending</h6>
                             </div>
                             <div class="col-md-12 card_flex">
-                                <h3 class="count-all-employees col-md-6" id="count_extra_present_monthly">{{ $totalLeaveApplications }}</h3>
+                                <h3 class="count-all-employees col-md-6" id="count_extra_present_monthly">{{ $pendingLeaveApplications }}</h3>
                                 <i class="fa fa-user-plus col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
                             </div>
                         </div>
@@ -36,7 +36,7 @@
                                 <h6 class="col-md-12 p-0" style="font-size: 15px !important;">Approved</h6>
                             </div>
                             <div class="col-md-12 card_flex">
-                                <h3 class="count-all-employees col-md-6" id="count_late_monthly">{{ $totalLeaveApplications }}</h3>
+                                <h3 class="count-all-employees col-md-6" id="count_late_monthly">{{ $approvedLeaveApplications }}</h3>
                                 <i class="fa fa-clock-o col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
                             </div>
                         </div>
@@ -47,7 +47,7 @@
                                 <h6 class="col-md-12 p-0" style="font-size: 15px !important;">Rejected</h6>
                             </div>
                             <div class="col-md-12 card_flex">
-                                <h3 class="count-all-employees col-md-6" id="count_meeting_monthly">{{ $totalLeaveApplications }}</h3>
+                                <h3 class="count-all-employees col-md-6" id="count_meeting_monthly">{{ $rejectedLeaveApplications }}</h3>
                                 <i class="fa fa-handshake-o col-md-6 fa-3x" style="height: -webkit-fill-available;text-align: -webkit-center;margin: 6px -3px;" aria-hidden="true"></i>
                             </div>
                         </div>

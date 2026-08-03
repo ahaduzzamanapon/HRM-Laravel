@@ -16,11 +16,11 @@
 </div>
 
 
-<!-- Cat Id Field -->
+<!-- Parent Id Field -->
 <div class="col-md-3">
     <div class="form-group">
-        {!! Form::label('cat_id', 'Cat Id:',['class'=>'control-label']) !!}
-        {!! Form::select('cat_id', $Permission, null, ['class' => 'form-control']) !!}
+        {!! Form::label('parent_id', 'Parent Permission:',['class'=>'control-label']) !!}
+        {!! Form::select('parent_id', $parents, null, ['class' => 'form-control']) !!}
     </div>
 </div>
 

@@ -40,11 +40,11 @@ Leave Types @parent
                                 <td>{{ $leaveType->total_days_per_year }}</td>
                                 <td>{{ $leaveType->gender_criteria ?? 'All' }}</td>
                                 <td>
-                                    <div class='btn-group'>
-                                        <a href="{{ route('leaveTypes.show', [$leaveType->id]) }}" class='btn btn-primary btn-xs'>View</a>
-                                        <a href="{{ route('leaveTypes.edit', [$leaveType->id]) }}" class='btn btn-primary btn-xs'>Edit</a>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <a href="{{ route('leaveTypes.show', [$leaveType->id]) }}" class='btn btn-info btn-xs text-white' title="View"><i class="fa fa-eye me-1"></i>View</a>
+                                        <a href="{{ route('leaveTypes.edit', [$leaveType->id]) }}" class='btn btn-warning btn-xs text-dark' title="Edit"><i class="fa fa-pencil me-1"></i>Edit</a>
                                         {!! Form::open(['route' => ['leaveTypes.destroy', $leaveType->id], 'method' => 'delete', 'class' => 'd-inline']) !!}
-                                        <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Are you sure you want to delete this leave type?')">Delete</button>
+                                        <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Are you sure you want to delete this leave type?')" title="Delete"><i class="fa fa-trash me-1"></i>Delete</button>
                                         {!! Form::close() !!}
                                     </div>
                                 </td>

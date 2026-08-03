@@ -59,12 +59,24 @@
 
         {{-- TA Info --}}
         <div class="detail-section">
-            <div class="sec-head"><span class="sec-icon"><i class="fa fa-money"></i></span>Travel Allowance (TA)</div>
+            <div class="sec-head"><span class="sec-icon"><i class="fa fa-money"></i></span>Travel Allowance (TA) Summary</div>
             <div class="info-grid">
                 <div class="info-cell"><div class="lbl">TA Status</div><div class="val"><span class="sm-badge {{ $movement->ta_status }}">{{ str_replace('_',' ',ucfirst($movement->ta_status)) }}</span></div></div>
-                <div class="info-cell"><div class="lbl">Applied</div><div class="val fw-bold">৳{{ number_format($movement->ta_amount, 2) }}</div></div>
-                <div class="info-cell"><div class="lbl">Approved</div><div class="val fw-bold text-success">৳{{ number_format($movement->ta_app_amt, 2) }}</div></div>
-                <div class="info-cell"><div class="lbl">Expenses</div><div class="val">{{ $movement->expenses->count() }} item(s)</div></div>
+                <div class="info-cell"><div class="lbl">Employee Branch</div><div class="val"><span class="badge bg-light text-dark border">{{ $movement->user->branch->name ?? 'Head Office' }}</span></div></div>
+                <div class="info-cell"><div class="lbl">Applied by Employee</div><div class="val fw-bold text-primary">৳{{ number_format($movement->ta_amount, 2) }}</div></div>
+                <div class="info-cell"><div class="lbl">Approved by Admin</div><div class="val fw-bold text-success">৳{{ number_format($movement->ta_app_amt, 2) }}</div></div>
+                @if($movement->updater)
+                <div class="info-cell" style="grid-column: span 2;">
+                    <div class="lbl">Processed By Admin</div>
+                    <div class="val text-dark fw-bold">
+                        <i class="fa fa-user-circle me-1 text-primary"></i>{{ $movement->updater->name }} {{ $movement->updater->last_name }} 
+                        <span class="badge bg-secondary ms-1" style="font-weight:normal;">{{ $movement->updater->branch->name ?? 'Head Office' }}</span>
+                    </div>
+                </div>
+                @endif
+                @if($movement->admin_note)
+                <div class="info-cell" style="grid-column: span 2;"><div class="lbl">Admin Remarks</div><div class="val text-muted" style="font-size:13px;">{{ $movement->admin_note }}</div></div>
+                @endif
             </div>
         </div>
     </div>
@@ -73,7 +85,7 @@
     <div class="col-md-6">
         {{-- Travels --}}
         <div class="detail-section">
-            <div class="sec-head"><span class="sec-icon"><i class="fa fa-road"></i></span>Travel Legs <span class="ms-auto text-muted fw-normal" style="font-size:12px;">{{ $movement->travels->count() }} legs</span></div>
+            <div class="sec-head"><span class="sec-icon"><i class="fa fa-road"></i></span>Travel Logs <span class="ms-auto text-muted fw-normal" style="font-size:12px;">{{ $movement->travels->count() }} logs</span></div>
             <table class="mini-table w-100">
                 <thead><tr><th>From</th><th>To</th><th>KM</th><th>Status</th></tr></thead>
                 <tbody>
@@ -85,7 +97,7 @@
                         <td><span class="sm-badge {{ $t->status === 'running' ? 'active' : 'completed' }}">{{ ucfirst($t->status) }}</span></td>
                     </tr>
                     @empty
-                    <tr><td colspan="4" class="text-center text-muted py-3">No travel legs.</td></tr>
+                    <tr><td colspan="4" class="text-center text-muted py-3">No travel logs.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -121,7 +133,7 @@
         @forelse($movement->travels as $t)
         <div class="row g-2 align-items-end mb-3 pb-3 border-bottom">
             <div class="col-12 mb-1">
-                <small class="fw-bold text-muted"><i class="fa fa-road me-1"></i>Leg {{ $loop->iteration }}: {{ $t->from_location }} → {{ $t->to_location ?? '?' }}</small>
+                <small class="fw-bold text-muted"><i class="fa fa-road me-1"></i>Log {{ $loop->iteration }}: {{ $t->from_location }} → {{ $t->to_location ?? '?' }}</small>
             </div>
             <input type="hidden" name="expenses[{{ $loop->index }}][travel_id]" value="{{ $t->id }}">
             <div class="col-md-4">
@@ -143,28 +155,106 @@
             </div>
         </div>
         @empty
-        <p class="text-muted">No travel legs found.</p>
+        <p class="text-muted">No travel logs found.</p>
         @endforelse
         <button type="submit" class="btn fw-bold text-white px-4 py-2" style="background:linear-gradient(135deg,#f7971e,#ffd200);border-radius:10px;border:none;"><i class="fa fa-paper-plane me-2"></i>Submit TA Application</button>
     </form>
 </div>
 @elseif($movement->expenses->count() > 0)
-<div class="detail-section mt-2" id="apply-ta">
-    <div class="sec-head"><span class="sec-icon" style="background:#fff3cd;color:#856404;"><i class="fa fa-money"></i></span>Expense Details</div>
+<div class="detail-section mt-3" id="apply-ta">
+    <div class="sec-head d-flex justify-content-between align-items-center">
+        <div>
+            <span class="sec-icon" style="background:#e8f0ff;color:#0177bc;"><i class="fa fa-calculator"></i></span>
+            <span class="fw-bold">TA Expense Approval &amp; Adjustment</span>
+        </div>
+        <span class="sm-badge {{ $movement->ta_status }}">{{ str_replace('_',' ',ucfirst($movement->ta_status)) }}</span>
+    </div>
+
+    @if(can('movements') || auth()->user()->group_id == 1)
+    <form method="POST" action="{{ route('new-movement.admin-approve-ta', $movement->id) }}" class="p-3">
+        @csrf
+        <table class="mini-table w-100 mb-3">
+            <thead>
+                <tr>
+                    <th>Travel Log</th>
+                    <th>Transport Type</th>
+                    <th>Employee Claimed (৳)</th>
+                    <th style="width:200px;">Admin Approved (৳)</th>
+                    <th>Employee Note</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($movement->expenses as $e)
+                <tr>
+                    <td>
+                        <strong>{{ $e->travel->from_location ?? 'Start' }}</strong>
+                        @if($e->travel && $e->travel->to_location)
+                            ➔ {{ $e->travel->to_location }}
+                        @endif
+                    </td>
+                    <td><span class="badge bg-light text-dark border">{{ ucfirst($e->transport_type ?? '—') }}</span></td>
+                    <td class="fw-bold text-primary">৳{{ number_format($e->amount, 2) }}</td>
+                    <td>
+                        <input type="number" step="0.01" min="0" name="expenses[{{ $e->id }}]" class="form-control form-control-sm approved-item-input" value="{{ $e->approve_amount > 0 ? $e->approve_amount : $e->amount }}" required style="font-weight:600;border:2px solid #ced4da;">
+                    </td>
+                    <td class="text-muted">{{ $e->note ?? '—' }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        <div class="row g-3 align-items-center bg-light p-3 rounded-3 mb-3">
+            <div class="col-md-4">
+                <div class="small text-uppercase fw-bold text-muted">Total Employee Claimed</div>
+                <div class="fs-5 fw-bold text-primary">৳<span id="total_claimed_text">{{ number_format($movement->ta_amount, 2) }}</span></div>
+            </div>
+            <div class="col-md-4">
+                <div class="small text-uppercase fw-bold text-muted">Total Admin Approved</div>
+                <div class="fs-5 fw-bold text-success">৳<span id="total_approved_text">{{ number_format($movement->ta_app_amt > 0 ? $movement->ta_app_amt : $movement->ta_amount, 2) }}</span></div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold mb-1">Admin Remarks / Note</label>
+                <input type="text" name="admin_note" class="form-control form-control-sm" placeholder="Reason or note for approval/adjustment" value="{{ $movement->admin_note }}">
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm rounded-pill px-4" onclick="return confirm('Are you sure you want to REJECT this TA bill?')">
+                <i class="fa fa-times me-1"></i> Reject TA
+            </button>
+            <button type="submit" name="action" value="approve" class="btn btn-success btn-sm rounded-pill px-4">
+                <i class="fa fa-check me-1"></i> Approve TA Bill
+            </button>
+        </div>
+    </form>
+
+    <script>
+        document.querySelectorAll('.approved-item-input').forEach(function(input) {
+            input.addEventListener('input', function() {
+                let total = 0;
+                document.querySelectorAll('.approved-item-input').forEach(function(i) {
+                    total += parseFloat(i.value) || 0;
+                });
+                document.getElementById('total_approved_text').innerText = total.toFixed(2);
+            });
+        });
+    </script>
+    @else
     <table class="mini-table w-100">
-        <thead><tr><th>Travel Leg</th><th>Type</th><th>Amount</th><th>Approved</th><th>Note</th></tr></thead>
+        <thead><tr><th>Travel Log</th><th>Type</th><th>Claimed (৳)</th><th>Approved (৳)</th><th>Note</th></tr></thead>
         <tbody>
             @foreach($movement->expenses as $e)
             <tr>
                 <td>{{ $e->travel->from_location ?? '—' }}</td>
                 <td>{{ ucfirst($e->transport_type ?? '—') }}</td>
                 <td>৳{{ number_format($e->amount, 2) }}</td>
-                <td>৳{{ number_format($e->approve_amount, 2) }}</td>
+                <td class="fw-bold text-success">৳{{ number_format($e->approve_amount, 2) }}</td>
                 <td>{{ $e->note ?? '—' }}</td>
             </tr>
             @endforeach
         </tbody>
     </table>
+    @endif
 </div>
 @endif
 

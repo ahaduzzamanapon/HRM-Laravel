@@ -2,7 +2,7 @@
     <div class="d_card" style="background: aliceblue;">
         <div class="row" style="display: flex;flex-direction: row;align-items: center;">
             <h4 class="col-md-6">Monthly</h4>
-            <input class="col-md-4" type="month" onchange="get_monthly_data()" value="2025-10" id="date_monthly" style="border: 1px solid #009cf5;background: transparent;padding: 3px;border-radius: 7px;">
+            <input class="col-md-4" type="month" onchange="get_monthly_data()" value="{{ date('Y-m') }}" id="date_monthly" style="border: 1px solid #009cf5;background: transparent;padding: 3px;border-radius: 7px;">
         </div>
         <div class="row">
             <div class="col-md-6">
@@ -74,24 +74,30 @@
         function get_monthly_data() {
             var loader = '<img src="{{ asset('assets/loader.gif') }}"  alt="loader" style="height: 24px;width: 24px;">';
             $('#count_leave_monthly').html(loader);
-            $('#count_present_monthly').html(loader);
-            $('#count_absent_monthly').html(loader);
+            $('#count_extra_present_monthly').html(loader);
             $('#count_late_monthly').html(loader);
+            $('#count_meeting_monthly').html(loader);
 
-            const date = $('#date_first_card').val();
+            const month = $('#date_monthly').val();
             $.ajax({
                 type: 'POST',
                 url: '{{ route('attendance.daily-report') }}',
                 data: {
-                    date: date,
+                    date: month,
                     _token: '{{ csrf_token() }}'
                 },
                 success: function(response) {
                     var data = response;
-                    $('#count-all-employees').html(data.all_employees);
-                    $('#count_present_monthly').html(data.present_count);
-                    $('#count_absent_monthly').html(data.absent_count);
-                    $('#count_late_monthly').html(data.late_count);
+                    $('#count_leave_monthly').html(data.leave_count ?? data.present_count ?? 0);
+                    $('#count_extra_present_monthly').html(data.extra_present_count ?? 0);
+                    $('#count_late_monthly').html(data.late_count ?? 0);
+                    $('#count_meeting_monthly').html(data.meeting_count ?? 0);
+                },
+                error: function() {
+                    $('#count_leave_monthly').html('—');
+                    $('#count_extra_present_monthly').html('—');
+                    $('#count_late_monthly').html('—');
+                    $('#count_meeting_monthly').html('—');
                 }
             })
         }

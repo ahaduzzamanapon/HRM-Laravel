@@ -46,6 +46,7 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'Approve Leave', 'key' => 'approve_leave', 'parent_id' => $hr->id]);
         Permission::create(['name' => 'Leave Applications', 'key' => 'leave_applications', 'parent_id' => $hr->id]);
         Permission::create(['name' => 'Movements', 'key' => 'movements', 'parent_id' => $hr->id]);
+        Permission::create(['name' => 'Smart Movement', 'key' => 'smart_movement', 'parent_id' => $hr->id]);
         Permission::create(['name' => 'process_attendance', 'key' => 'process_attendance', 'parent_id' => $hr->id]);
 
         // Welfare Fund Permissions
@@ -63,7 +64,18 @@ class PermissionSeeder extends Seeder
         $loansAndAdvances = Permission::create(['name' => 'Loans and Advances', 'key' => 'loans_and_advances']);
         Permission::create(['name' => 'Manage Loan Types', 'key' => 'manage_loan_types', 'parent_id' => $loansAndAdvances->id]);
         Permission::create(['name' => 'Manage Loans', 'key' => 'manage_loans', 'parent_id' => $loansAndAdvances->id]);
+        Permission::create(['name' => 'Apply Loans', 'key' => 'apply_loans', 'parent_id' => $loansAndAdvances->id]);
+        Permission::create(['name' => 'Approve Loans', 'key' => 'approve_loans', 'parent_id' => $loansAndAdvances->id]);
+        Permission::create(['name' => 'Disburse Loans', 'key' => 'disburse_loans', 'parent_id' => $loansAndAdvances->id]);
+        Permission::create(['name' => 'Loan Reports', 'key' => 'loan_reports', 'parent_id' => $loansAndAdvances->id]);
         Permission::create(['name' => 'Manage Loan Repayments', 'key' => 'manage_loan_repayments', 'parent_id' => $loansAndAdvances->id]);
+
+        // Tax Management Permissions
+        $taxManagement = Permission::create(['name' => 'Tax Management', 'key' => 'tax_management']);
+        Permission::create(['name' => 'Manage Tax Configuration', 'key' => 'manage_tax_configuration', 'parent_id' => $taxManagement->id]);
+        Permission::create(['name' => 'Manage Tax Slabs', 'key' => 'manage_tax_slabs', 'parent_id' => $taxManagement->id]);
+        Permission::create(['name' => 'Employee Tax Profiles', 'key' => 'employee_tax_profiles', 'parent_id' => $taxManagement->id]);
+        Permission::create(['name' => 'Tax Reports', 'key' => 'tax_reports', 'parent_id' => $taxManagement->id]);
 
         // Settings Sub-permissions
         Permission::create(['name' => 'Manage Site Settings', 'key' => 'manage_site_settings', 'parent_id' => $settings->id]);

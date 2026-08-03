@@ -22,7 +22,8 @@ class RoleAndPermission extends Model
 
     public $fillable = [
         'name',
-        'key'
+        'key',
+        'branch_id'
     ];
 
     /**
@@ -33,7 +34,8 @@ class RoleAndPermission extends Model
     protected $casts = [
         'id' => 'integer',
         'name' => 'string',
-        'key' => 'string'
+        'key' => 'string',
+        'branch_id' => 'integer'
     ];
 
     /**
@@ -43,14 +45,23 @@ class RoleAndPermission extends Model
      */
     public static $rules = [
         'name' => 'required',
-        'key' => 'required'
+        'key' => 'required',
+        'branch_id' => 'nullable|exists:branchs,id'
     ];
+
+    /**
+     * The branch this role belongs to.
+     */
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
 
     /**
      * The permissions that belong to the role.
      */
     public function permissions()
     {
-        return $this->belongsToMany(Permission::class, 'roll_has', 'roll_id', 'permission_id');
+        return $this->belongsToMany(Permission::class, 'roll_has', 'roll_id', 'permission_id')->with('parent');
     }
 }

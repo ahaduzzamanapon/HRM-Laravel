@@ -34,6 +34,14 @@
     </a>
 </li>
 
+{{-- My Profile --}}
+<li class="nav-item">
+    <a class="nav-link {!! Request::is('my-profile') ? 'active' : '' !!}" href="{{ route('profile') }}">
+        <i class="icon im im-icon-ID-Card"></i>
+        <span class="item-name">My Profile</span>
+    </a>
+</li>
+
 {{-- My Attendance --}}
 {{-- <li class="nav-item">
     <a class="nav-link {!! Request::is('my-attendance') ? 'active' : '' !!}" href="{{ route('attendance.my') }}">
@@ -144,6 +152,7 @@
 @endif
 
 {{-- HR --}}
+@if(can('hr'))
 <li class="nav-item">
     <a class="nav-link {!! (Request::is('holydays*') || Request::is('shifts*') || Request::is('attendanceFileUploads*') || Request::is('leaveTypes*') || Request::is('leaveApplications*') ? 'active' : '') !!}"
         data-bs-toggle="collapse" href="#hr_menu" role="button" aria-expanded="false" aria-controls="settings_menu">
@@ -193,6 +202,7 @@
             </li>
         @endif
         {{-- Smart Movement --}}
+        @if(can('smart_movement') || can('movements'))
         <li class="nav-item">
             <a class="nav-link {!! (Request::is('new-movement*') ? 'active' : '') !!}" data-bs-toggle="collapse" href="#smart_movement_menu"
                role="button" aria-expanded="false" aria-controls="smart_movement_menu">
@@ -200,7 +210,8 @@
                 <span class="item-name">Smart Movement</span>
                 <i class="right-icon im im-icon-Arrow-Right"></i>
             </a>
-            <ul class="sub-nav collapse {!! Request::is('new-movement*') ? 'show' : '' !!}" id="smart_movement_menu" data-bs-parent="#sidebar-menu">
+            <ul class="sub-nav collapse {!! Request::is('new-movement*') ? 'show' : '' !!}" id="smart_movement_menu">
+                @if(can('movements') || can('smart_movement'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('new-movement') ? 'active' : '' !!}" href="{{ route('new-movement.index') }}">
                         <i class="icon im im-icon-Dashboard"></i>
@@ -208,6 +219,7 @@
                         <span class="item-name">Dashboard</span>
                     </a>
                 </li>
+                @endif
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('new-movement/my-dashboard*') ? 'active' : '' !!}" href="{{ route('new-movement.my-dashboard') }}">
                         <i class="icon im im-icon-User"></i>
@@ -215,6 +227,7 @@
                         <span class="item-name">My Movements</span>
                     </a>
                 </li>
+                @if(can('movements') || can('smart_movement'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('new-movement/ta-list*') ? 'active' : '' !!}" href="{{ route('new-movement.ta-list') }}">
                         <i class="icon im im-icon-File-Chart"></i>
@@ -229,8 +242,10 @@
                         <span class="item-name">TA Summary</span>
                     </a>
                 </li>
+                @endif
             </ul>
         </li>
+        @endif
         @if(can('manage_holidays'))
             <li class="nav-item">
                 <a class="nav-link {!! Request::is('holydays*') ? 'active' : '' !!}" href="{{ route('holydays.index') }}">
@@ -261,6 +276,7 @@
         @endif
     </ul>
 </li>
+@endif
 
 {{-- Payroll --}}
 @if(can('payroll'))
@@ -271,7 +287,7 @@
             <span class="item-name">Payroll & Compliance Modules</span>
             <i class="right-icon im im-icon-Arrow-Right"></i>
         </a>
-        <ul class="sub-nav collapse {!! (Request::is('payroll*') ? 'show' : '') !!}" id="payroll_menu"
+        <ul class="sub-nav collapse {!! (Request::is('payroll*') || Request::is('bonuses*') ? 'show' : '') !!}" id="payroll_menu"
             data-bs-parent="#sidebar-menu">
             @if(can('payroll_process'))
                 <li class="nav-item">
@@ -279,6 +295,24 @@
                         <i class="icon im im-icon-Clock-Forward"></i>
                         <i class="sidenav-mini-icon"> P </i>
                         <span class="item-name">Payroll Process</span>
+                    </a>
+                </li>
+            @endif
+            @if(can('manage_bonuses'))
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('bonuses*') ? 'active' : '' !!}" href="{{ route('bonuses.index') }}">
+                        <i class="icon im im-icon-Medal-2"></i>
+                        <i class="sidenav-mini-icon"> B </i>
+                        <span class="item-name">Bonus Management</span>
+                    </a>
+                </li>
+            @endif
+            @if(can('tax_management'))
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('tax-management*') ? 'active' : '' !!}" href="{{ route('taxManagement.index') }}">
+                        <i class="icon im im-icon-Calculator"></i>
+                        <i class="sidenav-mini-icon"> TM </i>
+                        <span class="item-name">Tax Management</span>
                     </a>
                 </li>
             @endif
@@ -365,16 +399,16 @@
     </li>
 @endif
 
-@if(can('loans_and_advances'))
+@if(can('loans_and_advances') || can('manage_loans') || can('apply_loans') || can('approve_loans') || Auth::check())
     <li class="nav-item">
-        <a class="nav-link {!! (Request::is('loanTypes*') || Request::is('loans*') || Request::is('loanRepayments*') ? 'active' : '') !!}"
+        <a class="nav-link {!! (Request::is('loanTypes*') || Request::is('loans*') || Request::is('employee-loans*') || Request::is('loanRepayments*') ? 'active' : '') !!}"
             data-bs-toggle="collapse" href="#loans_and_advances_menu" role="button" aria-expanded="false"
             aria-controls="loans_and_advances_menu">
             <i class="icon im im-icon-Money-Bag"></i>
             <span class="item-name">Loans and Advances</span>
             <i class="right-icon im im-icon-Arrow-Right"></i>
         </a>
-        <ul class="sub-nav collapse  {!!  Request::is('loanTypes*') || Request::is('loans*') || Request::is('loanRepayments*') ? 'show' : ''  !!}"
+        <ul class="sub-nav collapse  {!!  Request::is('loanTypes*') || Request::is('loans*') || Request::is('employee-loans*') || Request::is('loanRepayments*') ? 'show' : ''  !!}"
             id="loans_and_advances_menu" data-bs-parent="#sidebar-menu">
             @if(can('manage_loan_types'))
                 <li class="nav-item">
@@ -385,12 +419,12 @@
                     </a>
                 </li>
             @endif
-            @if(can('manage_loans'))
+            @if(Auth::check())
                 <li class="nav-item">
-                    <a class="nav-link {!! Request::is('loans*') ? 'active' : '' !!}" href="{{ route('loans.index') }}">
-                        <i class="icon im im-icon-File-Edit"></i>
-                        <i class="sidenav-mini-icon"> LA </i>
-                        <span class="item-name">Loan Applications</span>
+                    <a class="nav-link {!! Request::is('employee-loans*') || Request::is('loans*') ? 'active' : '' !!}" href="{{ route('employeeLoans.index') }}">
+                        <i class="icon im im-icon-Coins"></i>
+                        <i class="sidenav-mini-icon"> EL </i>
+                        <span class="item-name">Employee Loans</span>
                     </a>
                 </li>
             @endif
@@ -408,54 +442,88 @@
     </li>
 @endif
 
+
+{{-- Provident Fund --}}
 @if(can('provident_fund'))
     <li class="nav-item">
-        <a class="nav-link {!! (Request::is('providentFundSettings*') || Request::is('providentFunds*') ? 'active' : '') !!}"
-            data-bs-toggle="collapse" href="#provident_fund_menu" role="button" aria-expanded="false"
-            aria-controls="provident_fund_menu">
+        <a class="nav-link {!! (Request::is('pf*') ? 'active' : '') !!}"
+            data-bs-toggle="collapse" href="#new_pf_menu" role="button" aria-expanded="false"
+            aria-controls="new_pf_menu">
             <i class="icon im im-icon-Safe-Box"></i>
             <span class="item-name">Provident Fund</span>
             <i class="right-icon im im-icon-Arrow-Right"></i>
         </a>
-        <ul class="sub-nav collapse  {!!  Request::is('providentFundSettings*') || Request::is('providentFunds*') ? 'show' : ''  !!}"
-            id="provident_fund_menu" data-bs-parent="#sidebar-menu">
-            @if(can('manage_provident_fund_settings'))
+        <ul class="sub-nav collapse  {!!  Request::is('pf*') ? 'show' : ''  !!}"
+            id="new_pf_menu" data-bs-parent="#sidebar-menu">
+            
+            @if(can('manage_pf_schemes'))
                 <li class="nav-item">
-                    <a class="nav-link {!! Request::is('providentFundSettings*') ? 'active' : '' !!}"
-                        href="{{ route('providentFundSettings.index') }}">
+                    <a class="nav-link {!! Request::is('pf/schemes*') ? 'active' : '' !!}"
+                        href="{{ route('pf.schemes.index') }}">
                         <i class="icon im im-icon-Gear"></i>
                         <i class="sidenav-mini-icon"> S </i>
-                        <span class="item-name">Settings</span>
+                        <span class="item-name">PF Settings</span>
                     </a>
                 </li>
             @endif
-            @if(can('view_provident_fund_statements'))
+            
+            <li class="nav-item">
+                <a class="nav-link {!! Request::is('pf/employees*') ? 'active' : '' !!}"
+                    href="{{ route('pf.employees.index') }}">
+                    <i class="icon im im-icon-User"></i>
+                    <i class="sidenav-mini-icon"> E </i>
+                    <span class="item-name">Employee List</span>
+                </a>
+            </li>
+
+            @if(can('process_pf_contributions'))
                 <li class="nav-item">
-                    <a class="nav-link {!! Request::is('providentFunds*') ? 'active' : '' !!}"
-                        href="{{ route('providentFunds.index') }}">
+                    <a class="nav-link {!! Request::is('pf/contributions*') ? 'active' : '' !!}"
+                        href="{{ route('pf.contributions.index') }}">
                         <i class="icon im im-icon-File-Chart"></i>
-                        <i class="sidenav-mini-icon"> S </i>
-                        <span class="item-name">Statements</span>
+                        <i class="sidenav-mini-icon"> C </i>
+                        <span class="item-name">Monthly Contributions</span>
                     </a>
                 </li>
             @endif
 
             <li class="nav-item">
-                <a class="nav-link {!! Request::is('providentFundLoans*') ? 'active' : '' !!}"
-                    href="{{ route('providentFundLoans.index') }}">
-                    <i class="icon im im-icon-Safe-Box"></i>
+                <a class="nav-link {!! Request::is('pf/reports/yearly*') ? 'active' : '' !!}"
+                    href="{{ route('pf.reports.yearly') }}">
+                    <i class="icon im im-icon-Calendar-4"></i>
+                    <i class="sidenav-mini-icon"> Y </i>
+                    <span class="item-name">Yearly Reports</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {!! Request::is('pf/withdrawals*') ? 'active' : '' !!}"
+                    href="{{ route('pf.withdrawals.index') }}">
+                    <i class="icon im im-icon-Hand-Touch"></i>
+                    <i class="sidenav-mini-icon"> W </i>
+                    <span class="item-name">Withdrawal Requests</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {!! Request::is('pf/loans*') ? 'active' : '' !!}"
+                    href="{{ route('pf.loans.index') }}">
+                    <i class="icon im im-icon-Money-Bag"></i>
                     <i class="sidenav-mini-icon"> L </i>
                     <span class="item-name">Loan Applications</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link {!! Request::is('providentFundLoanRepayments*') ? 'active' : '' !!}"
-                    href="{{ route('providentFundLoanRepayments.index') }}">
-                    <i class="icon im im-icon-Security-Settings"></i>
-                    <i class="sidenav-mini-icon"> LR </i>
-                    <span class="item-name">Loan Repayments</span>
-                </a>
-            </li>
+
+            @if(can('view_pf_reports'))
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('pf/reports/analytics*') ? 'active' : '' !!}"
+                        href="{{ route('pf.reports.analytics') }}">
+                        <i class="icon im im-icon-Bar-Chart"></i>
+                        <i class="sidenav-mini-icon"> R </i>
+                        <span class="item-name">Reports & Analytics</span>
+                    </a>
+                </li>
+            @endif
         </ul>
     </li>
 @endif
@@ -522,6 +590,14 @@
                     </a>
                 </li>
             @endif
+            <li class="nav-item">
+                <a class="nav-link {!! Request::is('admin/pension/reports*') ? 'active' : '' !!}"
+                    href="{{ route('admin.pension.reports.index') }}">
+                    <i class="icon im im-icon-File-Chart"></i>
+                    <i class="sidenav-mini-icon"> PR </i>
+                    <span class="item-name">Pension Reports</span>
+                </a>
+            </li>
         </ul>
     </li>
 @endif

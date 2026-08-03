@@ -51,9 +51,17 @@ class ForgotPasswordController extends Controller
             ]
         );
 
-        // Send the OTP to the user's email
-        Mail::to($email)->send(new PasswordResetMail($otp));
+        // Store reset email persistently in session
+        session(['reset_email' => $email]);
 
-        return redirect()->route('password.otp')->with('email', $email);
+        // Send the OTP to the user's email with exception safety
+        try {
+            Mail::to($email)->send(new PasswordResetMail($otp));
+            return redirect()->route('password.otp')->with('success', 'OTP has been sent to your email (' . $email . ').');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Password reset mail failed for ' . $email . ': ' . $e->getMessage());
+            return redirect()->route('password.otp')
+                ->with('warning', 'Mail notice: Could not send email automatically. For testing, your OTP is: ' . $otp);
+        }
     }
 }

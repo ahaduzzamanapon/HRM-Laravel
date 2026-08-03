@@ -17,7 +17,9 @@ class EmployeeDepartureController extends Controller
      */
     public function index()
     {
-        $employeeDepartures = EmployeeDeparture::with('user')->get();
+        $query = EmployeeDeparture::with('user');
+        applyUserBranchScope($query, 'user');
+        $employeeDepartures = $query->get();
         return view('employee_departures.index')->with('employeeDepartures', $employeeDepartures);
     }
 
@@ -28,7 +30,9 @@ class EmployeeDepartureController extends Controller
      */
     public function create()
     {
-        $users = User::pluck('name', 'id');
+        $empQuery = User::where('status', 'active');
+        applyBranchScope($empQuery, 'branch_id');
+        $users = $empQuery->pluck('name', 'id');
         return view('employee_departures.create')->with('users', $users);
     }
 

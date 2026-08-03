@@ -15,7 +15,7 @@ Movement Details @parent
             <div class="row">
                 <!-- Movement Details Fields -->
                 <div class="col-md-12">
-                    <p><b>User:</b> {{ $movement->user->name ?? 'N/A' }}</p>
+                    <p><b>User:</b> {{ $movement->user->name ?? 'N/A' }} {{ $movement->user->last_name ?? '' }}</p>
                     <p><b>From:</b> {{ $movement->from_location }}</p>
                     <p><b>To:</b> {{ $movement->to_location }}</p>
                     <p><b>Distance:</b> {{ $movement->distance }}</p>

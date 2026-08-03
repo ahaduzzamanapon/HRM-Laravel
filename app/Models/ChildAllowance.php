@@ -25,4 +25,9 @@ class ChildAllowance extends Model
         'pay_amt',
         'updated_by'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
 }

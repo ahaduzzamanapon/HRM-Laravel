@@ -2,29 +2,34 @@
 
 {{-- Page title --}}
 @section('title')
-Role And Permission @parent
+Create Role & Permission @parent
 @stop
 
 @section('content')
-    <section class="content-header">
-    {{--<div aria-label="breadcrumb" class="card-breadcrumb">
-        <h1>{{ __('Create New') }} Role And Permission</h1>
+<div class="content pt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="fw-bold mb-1"><i class="im im-icon-Shield me-2 text-primary"></i> Create New Role & Permissions</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ route('roleAndPermissions.index') }}">Role Management</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Create Role</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="{{ route('roleAndPermissions.index') }}" class="btn btn-outline-secondary">
+            <i class="im im-icon-Arrow-Left me-1"></i> Back to List
+        </a>
     </div>
-    <div class="separator-breadcrumb border-top"></div>--}}
-    </section>
-    <div class="content">
-        @include('adminlte-templates::common.errors')
-        <div class="card">
-            <div class="card-body">
-                <div class="row">
-                    {!! Form::open(['route' => 'roleAndPermissions.store','class' => 'form-horizontal col-md-12']) !!}
-                    <div class="row">
-                        @include('role_and_permissions.fields')
-                    </div>
 
-                    {!! Form::close() !!}
-                </div>
-            </div>
+    @include('adminlte-templates::common.errors')
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            {!! Form::open(['route' => 'roleAndPermissions.store', 'class' => 'form-horizontal']) !!}
+                @include('role_and_permissions.fields')
+            {!! Form::close() !!}
         </div>
     </div>
+</div>
 @endsection

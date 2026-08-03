@@ -69,6 +69,12 @@ class User extends Authenticatable
         'biometric_id'
     ];
 
+    public function getFullNameAttribute()
+    {
+        $fullName = trim(($this->name ?? '') . ' ' . ($this->last_name ?? ''));
+        return $fullName !== '' ? $fullName : '—';
+    }
+
 
     public function trainingDetails()
     {
@@ -169,5 +175,30 @@ class User extends Authenticatable
     public function departures()
     {
         return $this->hasMany(EmployeeDeparture::class);
+    }
+
+    public function leaveAssignments()
+    {
+        return $this->hasMany(UserLeaveAssignment::class, 'user_id', 'id');
+    }
+
+    public function assignedLeaveTypes()
+    {
+        return $this->belongsToMany(LeaveType::class, 'user_leave_assignments', 'user_id', 'leave_type_id')->withPivot('allowed_days')->withTimestamps();
+    }
+
+    public function pfLedgers()
+    {
+        return $this->hasMany(PfLedger::class, 'employee_id');
+    }
+
+    public function pfWithdrawals()
+    {
+        return $this->hasMany(PfWithdrawal::class, 'employee_id');
+    }
+
+    public function pfSettlements()
+    {
+        return $this->hasMany(PfSettlement::class, 'employee_id');
     }
 }

@@ -5,51 +5,197 @@ namespace App\Http\Controllers;
 use App\Models\LeaveApplication;
 use App\Models\LeaveType;
 use App\Models\User;
+use App\Models\Branch;
 use Illuminate\Http\Request;
 use Flash;
-use Response;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class LeaveApplicationController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Display a listing of leave applications with stats, filters, and balances.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $user = Auth::user();
-        $query = LeaveApplication::with(['user', 'leaveType', 'approver', 'finalApprover']);
+        $authUser = Auth::user();
+        $canManageLeaves = isSuperAdmin() || can('approve_leave') || can('manage_leave_types');
 
-        if ($user->role->name == 'Employee') {
-            $query->where('user_id', $user->id);
+        $query = LeaveApplication::with(['user.branch', 'user.department', 'leaveType', 'approver', 'finalApprover'])
+            ->orderBy('created_at', 'desc');
+
+        if (!$canManageLeaves) {
+            $query->where('user_id', $authUser->id);
+        } else {
+            applyUserBranchScope($query, 'user');
+
+            if ($request->filled('branch_id')) {
+                $query->whereHas('user', function ($q) use ($request) {
+                    $q->where('branch_id', $request->branch_id);
+                });
+            }
+            if ($request->filled('user_id')) {
+                $query->where('user_id', $request->user_id);
+            }
         }
 
-        $leaveApplications = $query->paginate(10);
-        return view('leave_applications.index')->with('leaveApplications', $leaveApplications);
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('leave_type_id')) {
+            $query->where('leave_type_id', $request->leave_type_id);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('emp_id', 'like', "%{$search}%");
+            });
+        }
+
+        $leaveApplications = $query->paginate(15);
+
+        // Stats calculation
+        $statsQuery = LeaveApplication::query();
+        if (!$canManageLeaves) {
+            $statsQuery->where('user_id', $authUser->id);
+        } else {
+            applyUserBranchScope($statsQuery, 'user');
+        }
+        $totalCount = (clone $statsQuery)->count();
+        $pendingCount = (clone $statsQuery)->where('status', 'Pending')->count();
+        $approvedCount = (clone $statsQuery)->whereIn('status', ['Approved', 'First Level Approved'])->count();
+        $rejectedCount = (clone $statsQuery)->where('status', 'Rejected')->count();
+
+        // Calculate leave balances for the logged-in user or employee (only for employee view)
+        $targetUser = $authUser;
+        $userLeaveBalances = [];
+
+        if (!$canManageLeaves) {
+            $userAssigned = \App\Models\UserLeaveAssignment::where('user_id', $targetUser->id)->pluck('allowed_days', 'leave_type_id')->toArray();
+
+            $allTypes = LeaveType::all();
+            $allowedLeaveTypesList = [];
+
+            foreach ($allTypes as $type) {
+                if (!array_key_exists($type->id, $userAssigned)) {
+                    continue; // Skip leave types not explicitly assigned by Admin to this employee
+                }
+                // Gender criteria check
+                if ($type->gender_criteria !== 'All' && !empty($type->gender_criteria) && $targetUser->gender && strtolower($type->gender_criteria) !== strtolower($targetUser->gender)) {
+                    continue;
+                }
+
+                $allowedLeaveTypesList[] = $type;
+
+                $totalDays = (isset($userAssigned[$type->id]) && $userAssigned[$type->id] !== null) ? $userAssigned[$type->id] : $type->total_days_per_year;
+                $usedDays = LeaveApplication::where('user_id', $targetUser->id)
+                    ->where('leave_type_id', $type->id)
+                    ->where('status', 'Approved')
+                    ->whereYear('start_date', now()->year)
+                    ->sum('requested_days');
+
+                $userLeaveBalances[] = [
+                    'id' => $type->id,
+                    'name' => $type->name,
+                    'total' => $totalDays,
+                    'used' => $usedDays,
+                    'remaining' => max(0, $totalDays - $usedDays),
+                ];
+            }
+            $leaveTypes = collect($allowedLeaveTypesList);
+        } else {
+            $leaveTypes = LeaveType::all();
+        }
+
+        $branchesQuery = Branch::query();
+        applyBranchScope($branchesQuery, 'id');
+        $branches = $branchesQuery->pluck('branch_name', 'id');
+
+        $employeesQuery = User::where('group_id', '!=', 1)->where('status', '!=', 'left');
+        applyBranchScope($employeesQuery, 'branch_id');
+        $employees = $employeesQuery->select('id', 'name', 'last_name', 'emp_id')->get();
+
+        return view('leave_applications.index', compact(
+            'leaveApplications',
+            'leaveTypes',
+            'branches',
+            'employees',
+            'totalCount',
+            'pendingCount',
+            'approvedCount',
+            'rejectedCount',
+            'userLeaveBalances',
+            'canManageLeaves'
+        ));
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Show the form for creating a new leave application.
      */
     public function create()
     {
-        $leaveTypes = LeaveType::pluck('name', 'id');
-        return view('leave_applications.create')->with('leaveTypes', $leaveTypes);
+        $authUser = Auth::user();
+        $canManageLeaves = isSuperAdmin() || can('approve_leave') || can('manage_leave_types');
+
+        $userAssigned = \App\Models\UserLeaveAssignment::where('user_id', $authUser->id)->pluck('allowed_days', 'leave_type_id')->toArray();
+
+        $allTypes = LeaveType::all();
+        $leaveBalances = [];
+        $availableTypesForDropdown = [];
+
+        foreach ($allTypes as $type) {
+            if (!$canManageLeaves && !array_key_exists($type->id, $userAssigned)) {
+                continue;
+            }
+            if ($type->gender_criteria !== 'All' && !empty($type->gender_criteria) && $authUser->gender && strtolower($type->gender_criteria) !== strtolower($authUser->gender)) {
+                continue;
+            }
+
+            $availableTypesForDropdown[$type->id] = $type->name;
+
+            $totalDays = (isset($userAssigned[$type->id]) && $userAssigned[$type->id] !== null) ? $userAssigned[$type->id] : $type->total_days_per_year;
+            $usedDays = LeaveApplication::where('user_id', $authUser->id)
+                ->where('leave_type_id', $type->id)
+                ->where('status', 'Approved')
+                ->whereYear('start_date', now()->year)
+                ->sum('requested_days');
+
+            $leaveBalances[] = [
+                'name' => $type->name,
+                'total' => $totalDays,
+                'used' => $usedDays,
+                'remaining' => max(0, $totalDays - $usedDays),
+            ];
+        }
+
+        if ($canManageLeaves) {
+            $leaveTypes = LeaveType::pluck('name', 'id');
+        } else {
+            $leaveTypes = collect($availableTypesForDropdown);
+        }
+
+        $employees = null;
+        if ($canManageLeaves) {
+            $empQuery = User::where('group_id', '!=', 1)->where('status', 'active');
+            applyBranchScope($empQuery, 'branch_id');
+            $employees = $empQuery->select('id', 'name', 'last_name', 'emp_id')->get();
+        }
+
+        return view('leave_applications.create', compact('leaveTypes', 'leaveBalances', 'employees', 'canManageLeaves'));
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Store a newly created leave application in storage.
      */
     public function store(Request $request)
     {
+        $authUser = Auth::user();
+        $canManageLeaves = isSuperAdmin() || can('approve_leave') || can('manage_leave_types');
+
         $request->validate([
             'leave_type_id' => 'required|exists:leave_types,id',
             'start_date' => 'required|date',
@@ -57,53 +203,79 @@ class LeaveApplicationController extends Controller
             'reason' => 'required|string',
         ]);
 
-        $input = $request->all();
-        
-        if (!Auth::check()) {
-            Flash::error('You must be logged in to apply for leave.');
-            return redirect(route('login'));
+        $targetUserId = (!$canManageLeaves || !$request->filled('user_id')) ? $authUser->id : $request->user_id;
+
+        $targetUser = User::find($targetUserId);
+        if (!$targetUser) {
+            Flash::error('Selected employee not found.');
+            return redirect()->back()->withInput();
         }
 
-        $input['user_id'] = Auth::id();
+        if ($canManageLeaves && $targetUser->id !== $authUser->id) {
+            checkBranchAccess($targetUser->branch_id);
+        }
 
-        $startDate = Carbon::parse($input['start_date']);
-        $endDate = Carbon::parse($input['end_date']);
+        $startDate = Carbon::parse($request->start_date);
+        $endDate = Carbon::parse($request->end_date);
         $requestedDays = $startDate->diffInDays($endDate) + 1;
 
-        if (isset($input['is_half_day']) && $input['is_half_day']) {
+        if ($request->has('is_half_day') && $request->is_half_day) {
             $requestedDays = 0.5;
         }
 
-        $leaveType = LeaveType::find($input['leave_type_id']);
-        $user = Auth::user();
-        $userGender = $user->gender;
+        $leaveType = LeaveType::find($request->leave_type_id);
 
-        if ($leaveType->gender_criteria !== 'All' && $leaveType->gender_criteria !== $userGender) {
-            Flash::error('This leave type is not available for your gender.');
-            return redirect(route('leaveApplications.create'));
+        // Gender criteria check
+        if ($leaveType->gender_criteria !== 'All' && $targetUser->gender && strtolower($leaveType->gender_criteria) !== strtolower($targetUser->gender)) {
+            Flash::error('This leave type is not applicable for employee gender (' . $targetUser->gender . ').');
+            return redirect()->back()->withInput();
         }
 
-        $availableLeave = $leaveType->total_days_per_year;
-        $usedLeaves = LeaveApplication::where('user_id', Auth::id())
+        // Leave balance check
+        $usedLeaves = LeaveApplication::where('user_id', $targetUserId)
             ->where('leave_type_id', $leaveType->id)
             ->where('status', 'Approved')
-            ->whereYear('start_date', Carbon::now()->year)
+            ->whereYear('start_date', now()->year)
             ->sum('requested_days');
 
-        if (($usedLeaves + $requestedDays) > $availableLeave) {
-            Flash::error('Insufficient leave balance for this leave type.');
-            return redirect(route('leaveApplications.create'));
+        $availableLeave = $leaveType->total_days_per_year;
+        if (($usedLeaves + $requestedDays) > $availableLeave && !$canManageLeaves) {
+            Flash::error("Insufficient leave balance. Available: " . max(0, $availableLeave - $usedLeaves) . " days, Requested: {$requestedDays} days.");
+            return redirect()->back()->withInput();
         }
 
-        $input['requested_days'] = $requestedDays;
-        $input['status'] = 'Pending';
-        $input['approver_level'] = 'first_level';
+        // Overlapping leave check
+        $overlap = LeaveApplication::where('user_id', $targetUserId)
+            ->whereIn('status', ['Pending', 'First Level Approved', 'Approved'])
+            ->where(function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('start_date', [$startDate, $endDate])
+                  ->orWhereBetween('end_date', [$startDate, $endDate])
+                  ->orWhere(function ($q2) use ($startDate, $endDate) {
+                      $q2->where('start_date', '<=', $startDate)
+                         ->where('end_date', '>=', $endDate);
+                  });
+            })->exists();
 
-        // Find first level approver (HR)
-        $firstApprover = User::whereHas('role', function($q){
-            $q->where('name', 'HR');
-        })->first();
-        $input['approver_id'] = $firstApprover ? $firstApprover->id : null;
+        if ($overlap) {
+            Flash::error('An active leave application already exists for the selected date range.');
+            return redirect()->back()->withInput();
+        }
+
+        $status = ($request->filled('status') && $canManageLeaves) ? $request->status : 'Pending';
+
+        $input = [
+            'user_id' => $targetUserId,
+            'leave_type_id' => $leaveType->id,
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date' => $endDate->format('Y-m-d'),
+            'is_half_day' => $request->has('is_half_day') ? 1 : 0,
+            'requested_days' => $requestedDays,
+            'reason' => $request->reason,
+            'status' => $status,
+            'approver_level' => ($status === 'Approved') ? 'approved' : 'first_level',
+            'approved_by' => ($status === 'Approved') ? $authUser->id : null,
+            'approved_at' => ($status === 'Approved') ? now() : null,
+        ];
 
         LeaveApplication::create($input);
 
@@ -111,35 +283,108 @@ class LeaveApplicationController extends Controller
         return redirect(route('leaveApplications.index'));
     }
 
-    public function show($id)
+    /**
+     * Display the specified leave application.
+     */
+    public function show($id, Request $request)
     {
-        $leaveApplication = LeaveApplication::with(['user', 'leaveType', 'approver', 'finalApprover'])->find($id);
+        $leaveApplication = LeaveApplication::with(['user.branch', 'user.department', 'leaveType', 'approver', 'finalApprover'])->find($id);
 
         if (empty($leaveApplication)) {
-            Flash::error('Leave Application not found');
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Leave Application not found.'], 404);
+            }
+            Flash::error('Leave Application not found.');
             return redirect(route('leaveApplications.index'));
         }
 
-        return view('leave_applications.show')->with('leaveApplication', $leaveApplication);
+        if ($leaveApplication->user) {
+            checkBranchAccess($leaveApplication->user->branch_id);
+        }
+
+        $canManageLeaves = isSuperAdmin() || can('approve_leave') || can('manage_leave_types');
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $leaveApplication->id,
+                    'user_name' => ($leaveApplication->user->name ?? 'N/A') . ' ' . ($leaveApplication->user->last_name ?? ''),
+                    'emp_id' => $leaveApplication->user->emp_id ?? 'N/A',
+                    'branch_name' => optional(optional($leaveApplication->user)->branch)->branch_name ?? 'N/A',
+                    'leave_type_id' => $leaveApplication->leave_type_id,
+                    'leave_type_name' => $leaveApplication->leaveType->name ?? 'N/A',
+                    'start_date' => \Carbon\Carbon::parse($leaveApplication->start_date)->format('Y-m-d'),
+                    'end_date' => \Carbon\Carbon::parse($leaveApplication->end_date)->format('Y-m-d'),
+                    'start_date_formatted' => \Carbon\Carbon::parse($leaveApplication->start_date)->format('d M, Y'),
+                    'end_date_formatted' => \Carbon\Carbon::parse($leaveApplication->end_date)->format('d M, Y'),
+                    'requested_days' => $leaveApplication->requested_days,
+                    'is_half_day' => $leaveApplication->is_half_day,
+                    'reason' => $leaveApplication->reason,
+                    'status' => $leaveApplication->status,
+                    'approver_name' => $leaveApplication->approver->name ?? 'N/A',
+                    'final_approver_name' => $leaveApplication->finalApprover->name ?? ($leaveApplication->approved_by ? 'Admin' : 'N/A'),
+                ],
+                'canManageLeaves' => $canManageLeaves
+            ]);
+        }
+
+        return view('leave_applications.show', compact('leaveApplication', 'canManageLeaves'));
     }
 
-    public function edit($id)
+    /**
+     * Show the form for editing/modifying the specified leave application.
+     */
+    public function edit($id, Request $request)
     {
-        $leaveApplication = LeaveApplication::find($id);
+        $leaveApplication = LeaveApplication::with('user')->find($id);
+
+        if (empty($leaveApplication)) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Leave Application not found.'], 404);
+            }
+            Flash::error('Leave Application not found.');
+            return redirect(route('leaveApplications.index'));
+        }
+
+        if ($leaveApplication->user) {
+            checkBranchAccess($leaveApplication->user->branch_id);
+        }
+
+        $canManageLeaves = isSuperAdmin() || can('approve_leave') || can('manage_leave_types');
+
         $leaveTypes = LeaveType::pluck('name', 'id');
+        $statuses = ['Pending' => 'Pending', 'First Level Approved' => 'First Level Approved', 'Approved' => 'Approved', 'Rejected' => 'Rejected'];
 
-        if (empty($leaveApplication)) {
-            Flash::error('Leave Application not found');
-            return redirect(route('leaveApplications.index'));
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $leaveApplication->id,
+                    'user_name' => ($leaveApplication->user->name ?? 'N/A') . ' ' . ($leaveApplication->user->last_name ?? ''),
+                    'emp_id' => $leaveApplication->user->emp_id ?? 'N/A',
+                    'leave_type_id' => $leaveApplication->leave_type_id,
+                    'start_date' => \Carbon\Carbon::parse($leaveApplication->start_date)->format('Y-m-d'),
+                    'end_date' => \Carbon\Carbon::parse($leaveApplication->end_date)->format('Y-m-d'),
+                    'requested_days' => $leaveApplication->requested_days,
+                    'is_half_day' => $leaveApplication->is_half_day,
+                    'reason' => $leaveApplication->reason,
+                    'status' => $leaveApplication->status,
+                ],
+                'leaveTypes' => $leaveTypes,
+                'statuses' => $statuses,
+                'canManageLeaves' => $canManageLeaves
+            ]);
         }
 
-        return view('leave_applications.edit')->with(['leaveApplication' => $leaveApplication, 'leaveTypes' => $leaveTypes]);
+        return view('leave_applications.edit', compact('leaveApplication', 'leaveTypes', 'statuses', 'canManageLeaves'));
     }
 
+    /**
+     * Update the specified leave application in storage (Modify/Approve/Reject by Admin/HR).
+     */
     public function update(Request $request, $id)
     {
-        // This method might need to be adjusted based on your workflow for updates.
-        // For now, it will have basic update functionality.
         $request->validate([
             'leave_type_id' => 'required|exists:leave_types,id',
             'start_date' => 'required|date',
@@ -147,27 +392,67 @@ class LeaveApplicationController extends Controller
             'reason' => 'required|string',
         ]);
 
-        $leaveApplication = LeaveApplication::find($id);
+        $leaveApplication = LeaveApplication::with('user')->find($id);
 
         if (empty($leaveApplication)) {
-            Flash::error('Leave Application not found');
+            Flash::error('Leave Application not found.');
             return redirect(route('leaveApplications.index'));
         }
 
-        $input = $request->all();
+        if ($leaveApplication->user) {
+            checkBranchAccess($leaveApplication->user->branch_id);
+        }
+
+        $startDate = Carbon::parse($request->start_date);
+        $endDate = Carbon::parse($request->end_date);
+        $calculatedDays = $startDate->diffInDays($endDate) + 1;
+
+        if ($request->has('is_half_day') && $request->is_half_day) {
+            $requestedDays = 0.5;
+        } elseif ($request->filled('requested_days') && is_numeric($request->requested_days) && (float)$request->requested_days > 0) {
+            $requestedDays = (float)$request->requested_days;
+        } else {
+            $requestedDays = $calculatedDays;
+        }
+
+        $input = [
+            'leave_type_id' => $request->leave_type_id,
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date' => $endDate->format('Y-m-d'),
+            'is_half_day' => $request->has('is_half_day') ? 1 : 0,
+            'requested_days' => $requestedDays,
+            'reason' => $request->reason,
+        ];
+
+        if ($request->filled('status')) {
+            $input['status'] = $request->status;
+            if ($request->status === 'Approved') {
+                $input['approved_by'] = Auth::id();
+                $input['approved_at'] = now();
+                $input['approver_level'] = 'approved';
+            }
+        }
+
         $leaveApplication->update($input);
 
-        Flash::success('Leave Application updated successfully.');
+        Flash::success('Leave Application updated/modified successfully.');
         return redirect(route('leaveApplications.index'));
     }
 
+    /**
+     * Remove the specified leave application from storage.
+     */
     public function destroy($id)
     {
-        $leaveApplication = LeaveApplication::find($id);
+        $leaveApplication = LeaveApplication::with('user')->find($id);
 
         if (empty($leaveApplication)) {
-            Flash::error('Leave Application not found');
+            Flash::error('Leave Application not found.');
             return redirect(route('leaveApplications.index'));
+        }
+
+        if ($leaveApplication->user) {
+            checkBranchAccess($leaveApplication->user->branch_id);
         }
 
         $leaveApplication->delete();
@@ -176,17 +461,32 @@ class LeaveApplicationController extends Controller
         return redirect(route('leaveApplications.index'));
     }
 
+    /**
+     * Approve leave application.
+     */
+    public function approve($id)
+    {
+        return $this->finalApprove($id);
+    }
+
     public function firstLevelApprove($id)
     {
-        $leaveApplication = LeaveApplication::find($id);
+        if (!isSuperAdmin() && !can('approve_leave')) {
+            abort(403, 'You do not have permission to approve or reject leave applications.');
+        }
+
+        $leaveApplication = LeaveApplication::with('user')->find($id);
 
         if (empty($leaveApplication)) {
-            Flash::error('Leave Application not found or you are not authorized to approve.');
+            Flash::error('Leave Application not found.');
             return redirect(route('leaveApplications.index'));
         }
 
-        // Find final approver (Admin)
-        $finalApprover = User::whereHas('role', function($q){
+        if ($leaveApplication->user) {
+            checkBranchAccess($leaveApplication->user->branch_id);
+        }
+
+        $finalApprover = User::whereHas('role', function ($q) {
             $q->where('name', 'Admin');
         })->first();
 
@@ -201,11 +501,19 @@ class LeaveApplicationController extends Controller
 
     public function finalApprove($id)
     {
-        $leaveApplication = LeaveApplication::find($id);
+        if (!isSuperAdmin() && !can('approve_leave')) {
+            abort(403, 'You do not have permission to approve or reject leave applications.');
+        }
+
+        $leaveApplication = LeaveApplication::with('user')->find($id);
 
         if (empty($leaveApplication)) {
-            Flash::error('Leave Application not found or you are not authorized for final approval.');
+            Flash::error('Leave Application not found.');
             return redirect(route('leaveApplications.index'));
+        }
+
+        if ($leaveApplication->user) {
+            checkBranchAccess($leaveApplication->user->branch_id);
         }
 
         $leaveApplication->status = 'Approved';
@@ -220,11 +528,19 @@ class LeaveApplicationController extends Controller
 
     public function reject($id)
     {
-        $leaveApplication = LeaveApplication::find($id);
+        if (!isSuperAdmin() && !can('approve_leave')) {
+            abort(403, 'You do not have permission to approve or reject leave applications.');
+        }
+
+        $leaveApplication = LeaveApplication::with('user')->find($id);
 
         if (empty($leaveApplication)) {
-            Flash::error('Leave Application not found');
+            Flash::error('Leave Application not found.');
             return redirect(route('leaveApplications.index'));
+        }
+
+        if ($leaveApplication->user) {
+            checkBranchAccess($leaveApplication->user->branch_id);
         }
 
         $leaveApplication->status = 'Rejected';

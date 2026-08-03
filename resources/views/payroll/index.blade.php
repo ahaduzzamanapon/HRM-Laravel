@@ -104,7 +104,7 @@
                                     <tr>
                                         <td><input type="checkbox" name="users[]" value="{{ $user->id }}" class="user-checkbox">
                                         </td>
-                                        <td>{{ $user->name }}</td>
+                                        <td>{{ $user->name }} {{ $user->last_name ?? '' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>

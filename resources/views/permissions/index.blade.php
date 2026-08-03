@@ -2,40 +2,30 @@
 
 {{-- Page title --}}
 @section('title')
-Permissions @parent
+System Permission Keys @parent
 @stop
 
 @section('content')
-<!-- Content Header (Page header) -->
-<section class="content-header">
-    {{--<div aria-label="breadcrumb" class="card-breadcrumb">
-        <h1>Permissions</h1>
-    </div>
-    <div class="separator-breadcrumb border-top"></div>--}}
-</section>
-
-<!-- Main content -->
-<div class="content">
+<div class="content pt-3">
     <div class="clearfix"></div>
-
     @include('flash::message')
-
     <div class="clearfix"></div>
-    <div class="card" width="88vw;">
-        <section class="card-header">
-            <h5 class="card-title d-inline">Permissions</h5>
-            <span class="float-right">
-                <a class="btn btn-primary pull-right" href="{{ route('permissions.create') }}">Add New</a>
-            </span>
+
+    <div class="card shadow-sm border-0">
+        <section class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5 class="card-title m-0 fw-bold text-primary">
+                <i class="im im-icon-Key me-2"></i> System Permission Keys Registry
+            </h5>
+            <a class="btn btn-primary btn-sm shadow-sm" href="{{ route('permissions.create') }}">
+                <i class="im im-icon-Add me-1"></i> Add Permission Key
+            </a>
         </section>
-        <div class="card-body table-responsive" >
+        <div class="card-body p-0 table-responsive">
             @include('permissions.table')
         </div>
-    </div>
-    <div class="text-center">
-        
-        @include('adminlte-templates::common.paginate', ['records' => $permissions])
-
+        <div class="card-footer bg-white border-0 py-2 d-flex justify-content-end">
+            {{ $permissions->links() }}
+        </div>
     </div>
 </div>
 @endsection

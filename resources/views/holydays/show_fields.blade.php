@@ -1,47 +1,45 @@
 <tr>
-    <th scopre="row">{!! Form::label('id', 'Id:') !!}</th>
+    <th scope="row">{!! Form::label('id', 'Id:') !!}</th>
     <td>{{ $holyday->id }}</td>
 </tr>
 
-
 <tr>
-    <th scopre="row">{!! Form::label('branch_id', 'Branch Id:') !!}</th>
-    <td>{{ $holyday->branch_id }}</td>
+    <th scope="row">{!! Form::label('branch_id', 'Branch:') !!}</th>
+    <td>{{ $holyday->branch ? $holyday->branch->branch_name : 'All Branches' }}</td>
 </tr>
 
-
 <tr>
-    <th scopre="row">{!! Form::label('title', 'Title:') !!}</th>
+    <th scope="row">{!! Form::label('title', 'Title:') !!}</th>
     <td>{{ $holyday->title }}</td>
 </tr>
 
-
 <tr>
-    <th scopre="row">{!! Form::label('status', 'Status:') !!}</th>
-    <td>{{ $holyday->status }}</td>
+    <th scope="row">{!! Form::label('status', 'Status:') !!}</th>
+    <td>
+        <span class="badge bg-{{ $holyday->status == 'Published' ? 'success' : 'warning' }}">
+            {{ $holyday->status }}
+        </span>
+    </td>
 </tr>
 
-
 <tr>
-    <th scopre="row">{!! Form::label('date', 'Date:') !!}</th>
-    <td>{{ $holyday->date }}</td>
+    <th scope="row">{!! Form::label('date', 'Date:') !!}</th>
+    <td>{{ $holyday->date ? \Carbon\Carbon::parse($holyday->date)->format('d M, Y') : 'N/A' }}</td>
 </tr>
 
-
 <tr>
-    <th scopre="row">{!! Form::label('descreption', 'Descreption:') !!}</th>
+    <th scope="row">{!! Form::label('descreption', 'Description:') !!}</th>
     <td>{{ $holyday->descreption }}</td>
 </tr>
 
 
 <tr>
-    <th scopre="row">{!! Form::label('created_at', 'Created At:') !!}</th>
+    <th scope="row">{!! Form::label('created_at', 'Created At:') !!}</th>
     <td>{{ $holyday->created_at }}</td>
 </tr>
 
-
 <tr>
-    <th scopre="row">{!! Form::label('updated_at', 'Updated At:') !!}</th>
+    <th scope="row">{!! Form::label('updated_at', 'Updated At:') !!}</th>
     <td>{{ $holyday->updated_at }}</td>
 </tr>
 

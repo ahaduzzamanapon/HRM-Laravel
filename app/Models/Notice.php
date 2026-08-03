@@ -23,6 +23,7 @@ class Notice extends Model
 
 
     public $fillable = [
+        'branch_id',
         'title',
         'status',
         'documents',
@@ -51,5 +52,8 @@ class Notice extends Model
         
     ];
 
-    
+    public function branch()
+    {
+        return $this->belongsTo(\App\Models\Branch::class, 'branch_id');
+    }
 }

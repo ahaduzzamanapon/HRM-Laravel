@@ -12,47 +12,174 @@ use App\Models\Loan;
 use App\Models\ChildAllowance;
 use App\Models\ProvidentFundContribution;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        if (Auth::user()->role->name == 'Admin') {
-            $totalEmployees = User::where('group_id', '!=', 1)->count();
-            $totalDepartments = Department::count();
-            $totalBranches = Branch::count();
-            $newEmployees = User::where('group_id', '!=', 1)->where('created_at', '>=', Carbon::now()->subDays(30))->count();
-            $totalSalaryGrades = SalaryGrade::count();
-            $totalTaxSetups = TaxSetup::count();
-            $totalLeaveApplications = LeaveApplication::count();
-            $pendingLeaveApplications = LeaveApplication::where('status', 'pending')->count();
-            $totalLoans = Loan::count();
-            $pendingLoans = Loan::where('status', 'pending')->count();
-            $totalChildren = ChildAllowance::count();
-            $totalProvidentFund = ProvidentFundContribution::sum('employee_contribution') + ProvidentFundContribution::sum('employer_contribution');
+        $authUser = Auth::user();
+        $roleName = strtolower(optional($authUser->role)->name ?? optional($authUser->role)->role_name ?? '');
+        $isAdmin  = isSuperAdmin() 
+            || $authUser->group_id == 1 
+            || $authUser->group_id == 2 
+            || in_array($roleName, ['admin', 'super admin', 'superadmin', 'hr manager', 'branch admin'])
+            || (can('staff_management') && (can('manage_site_settings') || can('manage_roles_and_permissions') || can('manage_branches')));
 
-            $employeeJoinData = User::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as count')
+        if ($isAdmin) {
+            $branches = Branch::all();
+
+            // Determine active branch filter (default to All Branches for Super Admin)
+            if (isSuperAdmin()) {
+                if ($request->has('branch_id')) {
+                    $branchInput = $request->get('branch_id');
+                    $selectedBranchId = ($branchInput === '' || $branchInput === 'all' || $branchInput === null) ? null : $branchInput;
+                    session(['dashboard_branch_id' => $selectedBranchId]);
+                } else {
+                    $selectedBranchId = session('dashboard_branch_id');
+                    if ($selectedBranchId === 'all') {
+                        $selectedBranchId = null;
+                    }
+                }
+            } else {
+                $selectedBranchId = userBranchId();
+            }
+
+            // Employee query (branch-aware)
+            $empQuery = User::where('group_id', '!=', 1);
+            if ($selectedBranchId) {
+                $empQuery->where('branch_id', $selectedBranchId);
+            } else {
+                applyBranchScope($empQuery, 'branch_id');
+            }
+
+            $totalEmployees   = (clone $empQuery)->count();
+            $newEmployees     = (clone $empQuery)->where('created_at', '>=', Carbon::now()->subDays(30))->count();
+
+            // Department count (filtered if branch selected)
+            if ($selectedBranchId) {
+                $totalDepartments = Department::whereHas('users', function($q) use ($selectedBranchId) {
+                    $q->where('branch_id', $selectedBranchId);
+                })->count();
+                if ($totalDepartments === 0) {
+                    $totalDepartments = Department::count();
+                }
+            } else {
+                $totalDepartments = Department::count();
+            }
+
+            // Branch count: super admin sees all branches or 1 if filtered
+            if ($selectedBranchId) {
+                $totalBranches = 1;
+            } else {
+                $totalBranches = Branch::count();
+            }
+
+            $totalSalaryGrades = SalaryGrade::count();
+            $totalTaxSetups    = TaxSetup::count();
+
+            // Leave stats (branch-scoped)
+            $leaveBase = LeaveApplication::query();
+            if ($selectedBranchId) {
+                $leaveBase->whereHas('user', function($q) use ($selectedBranchId) {
+                    $q->where('branch_id', $selectedBranchId);
+                });
+            } else {
+                applyUserBranchScope($leaveBase, 'user');
+            }
+
+            $totalLeaveApplications    = (clone $leaveBase)->count();
+            $pendingLeaveApplications  = (clone $leaveBase)->where('status', 'Pending')->count();
+            $approvedLeaveApplications = (clone $leaveBase)->whereIn('status', ['Approved', 'First Level Approved'])->count();
+            $rejectedLeaveApplications = (clone $leaveBase)->where('status', 'Rejected')->count();
+
+            // Loan stats (branch-scoped)
+            $loanBase = Loan::query();
+            if ($selectedBranchId) {
+                $loanBase->whereHas('employee', function($q) use ($selectedBranchId) {
+                    $q->where('branch_id', $selectedBranchId);
+                });
+            } else {
+                applyUserBranchScope($loanBase, 'employee');
+            }
+
+            $totalLoans   = (clone $loanBase)->count();
+            $pendingLoans = (clone $loanBase)->where('status', 'pending')->count();
+
+            // Allowance & Provident Fund (branch-scoped)
+            $childBase = ChildAllowance::query();
+            if ($selectedBranchId) {
+                $childBase->whereHas('user', function($q) use ($selectedBranchId) {
+                    $q->where('branch_id', $selectedBranchId);
+                });
+            } else {
+                applyUserBranchScope($childBase, 'user');
+            }
+            $totalChildren = $childBase->count();
+
+            $pfBase = ProvidentFundContribution::query();
+            if ($selectedBranchId) {
+                $pfBase->whereHas('employee', function($q) use ($selectedBranchId) {
+                    $q->where('branch_id', $selectedBranchId);
+                });
+            } else {
+                applyUserBranchScope($pfBase, 'employee');
+            }
+
+            $totalProvidentFund = (clone $pfBase)->sum('employee_contribution')
+                                + (clone $pfBase)->sum('employer_contribution');
+
+            // Employee join chart (branch-scoped)
+            $joinQuery = User::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as count')
                 ->where('created_at', '>=', Carbon::now()->subMonths(7))
-                ->where('group_id', '!=', 1)->groupBy('month')
-                ->orderBy('month', 'asc')
-                ->get();
+                ->where('group_id', '!=', 1);
+            if ($selectedBranchId) {
+                $joinQuery->where('branch_id', $selectedBranchId);
+            } else {
+                applyBranchScope($joinQuery, 'branch_id');
+            }
+
+            $employeeJoinData = $joinQuery->groupBy('month')->orderBy('month', 'asc')->get();
 
             $labels = $employeeJoinData->pluck('month');
-            $data = $employeeJoinData->pluck('count');
+            $data   = $employeeJoinData->pluck('count');
 
-            return view('index', compact('totalEmployees', 'totalDepartments', 'totalBranches', 'newEmployees', 'totalSalaryGrades', 'totalTaxSetups', 'totalLeaveApplications', 'pendingLeaveApplications', 'totalLoans', 'pendingLoans', 'totalChildren', 'totalProvidentFund', 'labels', 'data'));
+            // Get active branch details if filtered
+            $activeBranch = $selectedBranchId ? Branch::find($selectedBranchId) : null;
+
+            return view('index', compact(
+                'branches', 'selectedBranchId', 'activeBranch',
+                'totalEmployees', 'totalDepartments', 'totalBranches', 'newEmployees',
+                'totalSalaryGrades', 'totalTaxSetups',
+                'totalLeaveApplications', 'pendingLeaveApplications',
+                'approvedLeaveApplications', 'rejectedLeaveApplications',
+                'totalLoans', 'pendingLoans',
+                'totalChildren', 'totalProvidentFund',
+                'labels', 'data'
+            ));
         } else {
-            $user = Auth::user();
-            $totalLeaveApplications = LeaveApplication::where('user_id', $user->id)->count();
-            $pendingLeaveApplications = LeaveApplication::where('user_id', $user->id)->where('status', 'pending')->count();
-            $totalLoans = Loan::where('employee_id', $user->id)->count();
-            $pendingLoans = Loan::where('employee_id', $user->id)->where('status', 'pending')->count();
-            $mySalaryGrade = $user->salaryGrade->grade ?? 'N/A';
-            $myProvidentFund = ProvidentFundContribution::where('employee_id', $user->id)->sum('employee_contribution') + ProvidentFundContribution::where('employee_id', $user->id)->sum('employer_contribution');
-            $myChildren = ChildAllowance::where('user_id', $user->id)->count();
+            $user = $authUser;
 
-            return view('employee_dashboard', compact('totalLeaveApplications', 'pendingLeaveApplications', 'totalLoans', 'pendingLoans', 'mySalaryGrade', 'myProvidentFund', 'myChildren'));
+            $totalLeaveApplications    = LeaveApplication::where('user_id', $user->id)->count();
+            $pendingLeaveApplications  = LeaveApplication::where('user_id', $user->id)->where('status', 'Pending')->count();
+            $approvedLeaveApplications = LeaveApplication::where('user_id', $user->id)->whereIn('status', ['Approved', 'First Level Approved'])->count();
+            $rejectedLeaveApplications = LeaveApplication::where('user_id', $user->id)->where('status', 'Rejected')->count();
+
+            $totalLoans   = Loan::where('employee_id', $user->id)->count();
+            $pendingLoans = Loan::where('employee_id', $user->id)->where('status', 'pending')->count();
+
+            $mySalaryGrade    = optional($user->salaryGrade)->grade ?? 'N/A';
+            $myProvidentFund  = ProvidentFundContribution::where('employee_id', $user->id)->sum('employee_contribution')
+                              + ProvidentFundContribution::where('employee_id', $user->id)->sum('employer_contribution');
+            $myChildren       = ChildAllowance::where('user_id', $user->id)->count();
+
+            return view('employee_dashboard', compact(
+                'totalLeaveApplications', 'pendingLeaveApplications',
+                'approvedLeaveApplications', 'rejectedLeaveApplications',
+                'totalLoans', 'pendingLoans',
+                'mySalaryGrade', 'myProvidentFund', 'myChildren'
+            ));
         }
     }
 }

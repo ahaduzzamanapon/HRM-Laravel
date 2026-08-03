@@ -32,21 +32,12 @@
                         N/A
                     @endif
                 </td>
-                <td>
-                    <div class='btn-group'>
-                        <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            Action <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a href="{{ route('siteSettings.show', [$siteSetting->id]) }}" class='dropdown-item'>View</a></li>
-                            <li><a href="{{ route('siteSettings.edit', [$siteSetting->id]) }}" class='dropdown-item'>Edit</a></li>
-                            <li>
-                                {!! Form::open(['route' => ['siteSettings.destroy', $siteSetting->id], 'method' => 'delete']) !!}
-                                <button type="submit" class="dropdown-item" onclick="return confirm('Are you sure?')">Delete</button>
-                                {!! Form::close() !!}
-                            </li>
-                        </ul>
-                    </div>
+                                <td>
+                    @include('layouts.partials.action_buttons', [
+                        'viewRoute' => route('siteSettings.show', [$siteSetting->id]),
+                        'editRoute' => route('siteSettings.edit', [$siteSetting->id]),
+                        'deleteRoute' => route('siteSettings.destroy', [$siteSetting->id]),
+                    ])
                 </td>
             </tr>
         @endforeach

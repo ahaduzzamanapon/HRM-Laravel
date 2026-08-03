@@ -21,8 +21,9 @@ class HolydayController extends AppBaseController
      */
     public function index(Request $request)
     {
-        /** @var Holyday $holydays */
-        $holydays = Holyday::paginate(10);
+        $query = Holyday::with('branch');
+        applyBranchScope($query, 'branch_id');
+        $holydays = $query->paginate(10);
 
         return view('holydays.index')
             ->with('holydays', $holydays);
@@ -35,7 +36,9 @@ class HolydayController extends AppBaseController
      */
     public function create()
     {
-        $branches = \App\Models\Branch::pluck('branch_name', 'id');
+        $branchesQuery = \App\Models\Branch::query();
+        applyBranchScope($branchesQuery, 'id');
+        $branches = $branchesQuery->pluck('branch_name', 'id');
         return view('holydays.create')->with('branches', $branches);
     }
 
@@ -49,6 +52,11 @@ class HolydayController extends AppBaseController
     public function store(CreateHolydayRequest $request)
     {
         $input = $request->all();
+        if (!isSuperAdmin()) {
+            $input['branch_id'] = userBranchId();
+        } elseif (empty($input['branch_id'])) {
+            $input['branch_id'] = null;
+        }
 
         /** @var Holyday $holyday */
         $holyday = Holyday::create($input);
@@ -68,13 +76,15 @@ class HolydayController extends AppBaseController
     public function show($id)
     {
         /** @var Holyday $holyday */
-        $holyday = Holyday::find($id);
+        $holyday = Holyday::with('branch')->find($id);
 
         if (empty($holyday)) {
             Flash::error('Holyday not found');
 
             return redirect(route('holydays.index'));
         }
+
+        checkBranchAccess($holyday->branch_id);
 
         return view('holydays.show')->with('holyday', $holyday);
     }
@@ -90,13 +100,18 @@ class HolydayController extends AppBaseController
     {
         /** @var Holyday $holyday */
         $holyday = Holyday::find($id);
-        $branches = \App\Models\Branch::pluck('branch_name', 'id');
 
         if (empty($holyday)) {
             Flash::error('Holyday not found');
 
             return redirect(route('holydays.index'));
         }
+
+        checkBranchAccess($holyday->branch_id);
+
+        $branchesQuery = \App\Models\Branch::query();
+        applyBranchScope($branchesQuery, 'id');
+        $branches = $branchesQuery->pluck('branch_name', 'id');
 
         return view('holydays.edit')->with(['holyday' => $holyday, 'branches' => $branches]);
     }
@@ -120,7 +135,16 @@ class HolydayController extends AppBaseController
             return redirect(route('holydays.index'));
         }
 
-        $holyday->fill($request->all());
+        checkBranchAccess($holyday->branch_id);
+
+        $input = $request->all();
+        if (!isSuperAdmin()) {
+            $input['branch_id'] = userBranchId();
+        } elseif (empty($input['branch_id'])) {
+            $input['branch_id'] = null;
+        }
+
+        $holyday->fill($input);
         $holyday->save();
 
         Flash::success('Holyday updated successfully.');
@@ -147,6 +171,8 @@ class HolydayController extends AppBaseController
 
             return redirect(route('holydays.index'));
         }
+
+        checkBranchAccess($holyday->branch_id);
 
         $holyday->delete();
 

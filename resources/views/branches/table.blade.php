@@ -19,15 +19,12 @@
             <td>{{ $branch->Address }}</td>
             <td>{{ $branch->status }}</td>
             <td>{{ $branch->description }}</td>
-                <td>
-                    {!! Form::open(['route' => ['branches.destroy', $branch->id], 'method' => 'delete']) !!}
-                    <div class='btn-group'>
-                        <a href="{{ route('branches.show', [$branch->id]) }}" class='btn btn-outline-primary btn-xs'><i class="im im-icon-Eye" data-placement="top" title="View"></i></a>
-                        <a href="{{ route('branches.edit', [$branch->id]) }}" class='btn btn-outline-primary btn-xs'><i
-                                class="im im-icon-Pen"  data-toggle="tooltip" data-placement="top" title="Edit"></i></a>
-                        {!! Form::button('<i class="im im-icon-Remove" data-toggle="tooltip" data-placement="top" title="Delete"></i>', ['type' => 'submit', 'class' => 'btn btn-outline-danger btn-xs', 'onclick' => "return confirm('Are you sure?')"]) !!}
-                    </div>
-                    {!! Form::close() !!}
+                                <td>
+                    @include('layouts.partials.action_buttons', [
+                        'viewRoute' => route('branches.show', [$branch->id]),
+                        'editRoute' => route('branches.edit', [$branch->id]),
+                        'deleteRoute' => route('branches.destroy', [$branch->id]),
+                    ])
                 </td>
             </tr>
         @endforeach

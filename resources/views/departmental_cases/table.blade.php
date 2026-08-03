@@ -18,15 +18,12 @@
                 <td>{{ $departmentalCase->allegation_category }}</td>
                 <td>{{ $departmentalCase->penalty->name ?? 'N/A' }}</td>
                 <td>{{ $departmentalCase->final_action_taken }}</td>
-                <td>
-                    {!! Form::open(['route' => ['departmentalCases.destroy', $departmentalCase->id], 'method' => 'delete']) !!}
-                    <div class='btn-group'>
-                        <a href="{{ route('departmentalCases.show', [$departmentalCase->id]) }}" class='btn btn-outline-primary btn-xs'><i class="im im-icon-Eye" data-placement="top" title="View"></i></a>
-                        <a href="{{ route('departmentalCases.edit', [$departmentalCase->id]) }}" class='btn btn-outline-primary btn-xs'><i
-                                class="im im-icon-Pen"  data-toggle="tooltip" data-placement="top" title="Edit"></i></a>
-                        {!! Form::button('<i class="im im-icon-Remove" data-toggle="tooltip" data-placement="top" title="Delete"></i>', ['type' => 'submit', 'class' => 'btn btn-outline-danger btn-xs', 'onclick' => "return confirm('Are you sure?')"]) !!}
-                    </div>
-                    {!! Form::close() !!}
+                                <td>
+                    @include('layouts.partials.action_buttons', [
+                        'viewRoute' => route('departmentalCases.show', [$departmentalCase->id]),
+                        'editRoute' => route('departmentalCases.edit', [$departmentalCase->id]),
+                        'deleteRoute' => route('departmentalCases.destroy', [$departmentalCase->id]),
+                    ])
                 </td>
             </tr>
         @endforeach

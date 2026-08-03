@@ -23,8 +23,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // if (config('app.env') !== 'local') {
-        //     \URL::forceScheme('https');
-        // }
+        // Fix invalid CA file path in Windows/XAMPP environment
+        $caFile = ini_get('openssl.cafile');
+        if ($caFile && !file_exists($caFile)) {
+            $realCaFile = 'G:\\xampp\\apache\\bin\\curl-ca-bundle.crt';
+            if (file_exists($realCaFile)) {
+                ini_set('openssl.cafile', $realCaFile);
+                ini_set('curl.cainfo', $realCaFile);
+            } else {
+                ini_set('openssl.cafile', '');
+            }
+        }
     }
 }

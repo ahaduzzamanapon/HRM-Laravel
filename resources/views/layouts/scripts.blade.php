@@ -72,6 +72,9 @@
 <script>
     $(document).ready(function () {
         $('.table_data').DataTable({
+            columnDefs: [
+                { orderable: false, targets: -1 }
+            ],
             dom: 'Bfrtip',
             buttons: [
                 {
@@ -109,25 +112,58 @@
     });
 </script>
 <script>
+    var loaderSafetyTimer = null;
+
+    function forceHideLoader() {
+        if (loaderSafetyTimer) {
+            clearTimeout(loaderSafetyTimer);
+            loaderSafetyTimer = null;
+        }
+        $('#loader_div').stop(true, true).hide();
+    }
+
+    function showLoaderSafely(maxDurationMs) {
+        $('#loader_div').show();
+        if (loaderSafetyTimer) clearTimeout(loaderSafetyTimer);
+        loaderSafetyTimer = setTimeout(function () {
+            forceHideLoader();
+        }, maxDurationMs || 2000);
+    }
+
+    // Override native alert to ALWAYS hide loader first and display non-blocking SweetAlert2
+    window.alert = function (msg) {
+        forceHideLoader();
+        if (typeof Swal !== 'undefined') {
+            var strMsg = msg ? msg.toString() : '';
+            var isErr = strMsg && (strMsg.toLowerCase().indexOf('error') !== -1 || strMsg.toLowerCase().indexOf('failed') !== -1);
+            Swal.fire({
+                icon: isErr ? 'error' : 'success',
+                title: isErr ? 'Notice' : 'Success',
+                text: strMsg,
+                confirmButtonColor: '#0177bc'
+            });
+        }
+    };
 
     $(document).ready(function () {
-        $('#loader_div').hide();
+        forceHideLoader();
     });
+
     $(document).on('ajaxStart', function () {
-        $('#loader_div').show();
-    }).on('ajaxStop', function () {
-        $('#loader_div').hide();
+        showLoaderSafely(2500);
+    }).on('ajaxStop ajaxComplete ajaxError', function () {
+        forceHideLoader();
     });
+
     $(window).on('beforeunload', function () {
         if (!window.isDownloading) {
-            $('#loader_div').show();
+            showLoaderSafely(1500);
         }
         window.isDownloading = false;
     });
-    $(window).on('pageshow', function (event) {
-        if (event.originalEvent.persisted) {
-            $('#loader_div').hide();
-        }
+
+    $(window).on('pageshow focus blur', function () {
+        setTimeout(forceHideLoader, 100);
     });
 
     // Prevent loader on download/export clicks
@@ -141,8 +177,54 @@
         if (isDownload) {
             window.isDownloading = true;
             setTimeout(function () {
-                $('#loader_div').hide();
-            }, 1000);
+                forceHideLoader();
+            }, 500);
         }
+    });
+</script>
+
+<!-- Select2 JS & Automatic System-Wide Initialization -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    function initGlobalSelect2(context) {
+        if (typeof $.fn.select2 === 'undefined') return;
+        
+        var $scope = context ? $(context) : $(document);
+        $scope.find('select').each(function() {
+            var $select = $(this);
+            
+            // Exclude selects marked with .no-select2, DataTables controls, or calendar/picker dropdowns
+            if ($select.hasClass('no-select2') || 
+                $select.hasClass('dt-input') || 
+                $select.parents('.dataTables_length').length > 0 ||
+                $select.hasClass('swal2-select')) {
+                return;
+            }
+
+            if (!$select.hasClass('select2-hidden-accessible')) {
+                var parentModal = $select.closest('.modal');
+                $select.select2({
+                    theme: 'bootstrap-5',
+                    width: '100%',
+                    placeholder: $select.attr('placeholder') || 'Select an option',
+                    allowClear: true,
+                    dropdownParent: parentModal.length ? parentModal : $(document.body)
+                });
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        initGlobalSelect2();
+    });
+
+    // Re-initialize Select2 when Bootstrap modals are opened
+    $(document).on('shown.bs.modal', function(e) {
+        initGlobalSelect2(e.target);
+    });
+
+    // Re-initialize Select2 when tab panels are displayed
+    $(document).on('shown.bs.tab', function(e) {
+        initGlobalSelect2(e.target);
     });
 </script>

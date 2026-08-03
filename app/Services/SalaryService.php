@@ -74,6 +74,9 @@ class SalaryService
 
                 // child allowance
                 $child_allow = $this->get_child_allowances($emp_id, $first_date);
+                // bonus allowance (dynamic connection to employee bonus)
+                $bonus_allow = $this->get_bonus_allowance($emp_id, $first_date, $salary, $gross_salary, $row->religion);
+                
                 // pf allowance
                 $pf_emp = 0; $pf_bank = 0; $interest_rate = 0;
                 if ($row->is_pf_member == 1) {
@@ -83,7 +86,7 @@ class SalaryService
                     $interest_rate = isset($pf_a_bank['interest_rate']) ? (float)$pf_a_bank['interest_rate'] : 0.0;
                 }
                 // total allowance
-                $total_allow = $h_rent + $m_allow + $f_allow + $child_allow + $trans_allow;
+                $total_allow = $h_rent + $m_allow + $f_allow + $child_allow + $trans_allow + $bonus_allow;
                 $total_gross = ($pay_salary + $total_allow);
                 // ------- Allowance Calculation end  ------- //
 
@@ -95,9 +98,8 @@ class SalaryService
                 // total absent deduction
                 $total_ab_deduct = $aba_deduct + $absent_deduct;
 
-                //  tax deduction
-                $tax_deduct = 0;
-                $tax_deduct = $this->get_tax_deduction($total_gross);
+                // dynamic tax deduction
+                $tax_deduct = $this->get_tax_deduction($emp_id, $total_gross);
                 // auto mobile deduction
                 $loans = $this->get_loans_deduction($emp_id);
                 $h_loan_deduct = isset($loans['Housing Loan']) ? (float)$loans['Housing Loan'] : 0.00;
@@ -134,7 +136,7 @@ class SalaryService
                     'h_rent'            => $h_rent,
                     'm_allow'           => $m_allow,
                     'f_allow'           => $f_allow,
-                    'special_allow'     => 0,
+                    'special_allow'     => $bonus_allow,
                     'child_allow'       => $child_allow,
                     'trans_allow'       => $trans_allow,
                     'pf_allow_bank'     => $pf_bank,
@@ -198,15 +200,72 @@ class SalaryService
         return $array;
     }
 
-    // tax deduction cal
-    function get_tax_deduction($salary)
+    // dynamic tax deduction calculation
+    function get_tax_deduction($emp_id, $total_gross)
     {
-        $tax = TaxSetup::where('min_salary', '<=', $salary)->where('max_salary', '>=', $salary)->first();
-        $tax_deduct = 0;
-        if (!empty($tax)) {
-            $tax_deduct = $tax->tax_monthly;
+        // 1. Check Employee Tax Profile first
+        $profile = \App\Models\EmployeeTaxProfile::where('user_id', $emp_id)->first();
+        if ($profile && $profile->monthly_tax_deduction > 0) {
+            return (float) $profile->monthly_tax_deduction;
         }
-        return $tax_deduct;
+
+        // 2. Fallback to TaxSetup
+        $tax = TaxSetup::where('min_salary', '<=', $total_gross)->where('max_salary', '>=', $total_gross)->first();
+        if (!empty($tax)) {
+            return (float) $tax->tax_monthly;
+        }
+
+        // 3. Fallback to TaxSlabs
+        $annualIncome = $total_gross * 12;
+        $taxableIncome = max(0, $annualIncome - 350000);
+        $slabs = \App\Models\TaxSlab::where('status', 'Active')->orderBy('slab_order', 'asc')->get();
+        if ($slabs->count() > 0) {
+            $totalTax = 0;
+            foreach ($slabs as $slab) {
+                if ($taxableIncome > $slab->min_income) {
+                    $taxableSegment = min($taxableIncome, $slab->max_income) - $slab->min_income;
+                    $totalTax += ($taxableSegment * ($slab->tax_rate / 100)) + $slab->fixed_amount;
+                }
+            }
+            return round($totalTax / 12, 2);
+        }
+
+        return 0;
+    }
+
+    // dynamic bonus calculation
+    function get_bonus_allowance($emp_id, $salary_month, $basic_salary = 0, $gross_salary = 0, $religion = null)
+    {
+        $month = date('Y-m', strtotime($salary_month));
+        
+        // 1. Check EmployeeBonus records for explicit paid bonuses
+        $employeeBonus = \App\Models\EmployeeBonus::where('user_id', $emp_id)
+            ->where('bonus_month', 'like', "{$month}%")
+            ->where('payment_status', 'paid')
+            ->sum('bonus_amount');
+
+        if ($employeeBonus > 0) {
+            return (float) $employeeBonus;
+        }
+
+        // 2. Check active BonusSettings
+        $bonus = 0;
+        $bonusSettings = \App\Models\BonusSetting::where('status', 'Active')
+            ->where('bonus_month', 'like', "{$month}%")
+            ->get();
+
+        foreach ($bonusSettings as $setting) {
+            if (empty($setting->religion) || strtolower($setting->religion) === 'all' || strtolower($setting->religion) === strtolower($religion)) {
+                $base = ($setting->calculation_base === 'basic_salary') ? $basic_salary : $gross_salary;
+                if ($setting->bonus_type === 'percentage') {
+                    $bonus += round(($base * (float)$setting->amount_percentage) / 100, 2);
+                } else {
+                    $bonus += (float)$setting->amount_percentage;
+                }
+            }
+        }
+
+        return (float) $bonus;
     }
 
     // pf allowances cal

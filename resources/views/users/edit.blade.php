@@ -59,6 +59,10 @@ User @parent
                                 data-bs-toggle="pill" data-bs-target="#v-pills-child-allowance" type="button" role="tab"
                                 aria-controls="v-pills-child-allowance" aria-selected="false"><i
                                     class="im im-icon-Add-User"></i> Child Allowance</button>
+                            <button style="width: 100%;" class="nav-link" id="v-pills-leave-assignment-tab"
+                                data-bs-toggle="pill" data-bs-target="#v-pills-leave-assignment" type="button" role="tab"
+                                aria-controls="v-pills-leave-assignment" aria-selected="false"><i
+                                    class="im im-icon-Calendar"></i> Leave Assignment</button>
                             <button style="width: 100%; display: {{ in_array($users->status, ['left', 'resign', 'retired']) ? 'block' : 'none' }};" class="nav-link" id="v-pills-departure-details-tab"
                                 data-bs-toggle="pill" data-bs-target="#v-pills-departure-details" type="button" role="tab"
                                 aria-controls="v-pills-departure-details" aria-selected="false"><i
@@ -120,6 +124,10 @@ User @parent
                                 aria-labelledby="v-pills-child-allowance-tab">
                                 @include('users._child_allowance_form')
                             </div>
+                            <div class="tab-pane fade" id="v-pills-leave-assignment" role="tabpanel"
+                                aria-labelledby="v-pills-leave-assignment-tab">
+                                @include('users._leave_assignment_form')
+                            </div>
                             <div class="tab-pane fade" id="v-pills-departure-details" role="tabpanel"
                                 aria-labelledby="v-pills-departure-details-tab">
                                 @include('users._departure_details_form')
@@ -135,9 +143,12 @@ User @parent
 @push('scripts')
     <script>
         $(document).ready(function () {
-            // Function to save active tab to localStorage
-            $("button[data-bs-toggle=\"pill\"]").on("shown.bs.tab", function (e) {
-                localStorage.setItem("activeUserTab", $(e.target).attr("id"));
+            // Function to save active tab to localStorage & ensure loader hides
+            $("button[data-bs-toggle=\"pill\"]").on("click shown.bs.tab", function (e) {
+                if (typeof forceHideLoader === 'function') forceHideLoader();
+                if (e.target && $(e.target).attr("id")) {
+                    localStorage.setItem("activeUserTab", $(e.target).attr("id"));
+                }
             });
 
             // Function to activate tab on page load

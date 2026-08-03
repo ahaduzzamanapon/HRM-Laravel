@@ -33,8 +33,15 @@ class NewMovementController extends Controller
     private function getTaStats($employeeId = null, $startDate = null, $endDate = null)
     {
         $base = function () use ($employeeId, $startDate, $endDate) {
-            $q = NewMovementExpense::join('new_movement_movements', 'new_movement_movements.id', '=', 'new_movement_travel_expenses.movement_id');
-            if ($employeeId) $q->where('new_movement_movements.employee_id', $employeeId);
+            $q = NewMovementExpense::join('new_movement_movements', 'new_movement_movements.id', '=', 'new_movement_travel_expenses.movement_id')
+                ->join('users', 'users.id', '=', 'new_movement_movements.employee_id');
+
+            if ($employeeId) {
+                $q->where('new_movement_movements.employee_id', $employeeId);
+            } elseif (!isSuperAdmin()) {
+                applyBranchScope($q, 'users.branch_id');
+            }
+
             if ($startDate && $endDate) {
                 $q->whereDate('new_movement_movements.created_at', '>=', $startDate)
                   ->whereDate('new_movement_movements.created_at', '<=', $endDate);
@@ -57,7 +64,13 @@ class NewMovementController extends Controller
     // GET /new-movement  →  Admin Dashboard
     public function index()
     {
-        $movements = NewMovement::with('user')->latest()->get();
+        $q = NewMovement::with(['user.branch'])->latest();
+        if (!isSuperAdmin()) {
+            $q->whereHas('user', function ($u) {
+                applyBranchScope($u, 'branch_id');
+            });
+        }
+        $movements = $q->get();
         foreach ($movements as $m) {
             if ($m->status === 'active') {
                 $travel  = NewMovementTravel::where('movement_id', $m->id)->where('status', 'running')->latest()->first();
@@ -94,7 +107,13 @@ class NewMovementController extends Controller
     // GET /new-movement/ta-list
     public function taList(Request $request)
     {
-        $q = NewMovement::with('user')->where('ta_status', '!=', 'not_applied');
+        $q = NewMovement::with(['user.branch', 'updater.branch'])->where('ta_status', '!=', 'not_applied');
+        if (!isSuperAdmin()) {
+            $q->whereHas('user', function ($u) {
+                applyBranchScope($u, 'branch_id');
+            });
+        }
+
         if ($request->ta_status) $q->where('ta_status', $request->ta_status);
         if ($request->employee_id) $q->where('employee_id', $request->employee_id);
         if ($request->start_date && $request->end_date) {
@@ -102,7 +121,13 @@ class NewMovementController extends Controller
               ->whereDate('created_at', '<=', $request->end_date);
         }
         $movements = $q->latest()->get();
-        $employees = User::orderBy('name')->get();
+
+        $empQuery = User::orderBy('name');
+        if (!isSuperAdmin()) {
+            applyBranchScope($empQuery, 'branch_id');
+        }
+        $employees = $empQuery->get();
+
         return view('new_movement.ta_list', compact('movements', 'employees'));
     }
 
@@ -115,15 +140,27 @@ class NewMovementController extends Controller
         $employeeId = $request->employee_id;
 
         $q = NewMovement::selectRaw('employee_id, COUNT(id) as total_movements, SUM(ta_amount) as applied_amount, SUM(ta_app_amt) as approved_amount')
-            ->with('user')
+            ->with(['user.branch'])
             ->where('ta_status', '!=', 'not_applied')
             ->where('ta_status', $taStatus)
             ->whereDate('created_at', '>=', $startDate)
-            ->whereDate('created_at', '<=', $endDate)
-            ->groupBy('employee_id');
+            ->whereDate('created_at', '<=', $endDate);
+
+        if (!isSuperAdmin()) {
+            $q->whereHas('user', function ($u) {
+                applyBranchScope($u, 'branch_id');
+            });
+        }
         if ($employeeId) $q->where('employee_id', $employeeId);
-        $summary   = $q->get();
-        $employees = User::orderBy('name')->get();
+
+        $summary = $q->groupBy('employee_id')->get();
+
+        $empQuery = User::orderBy('name');
+        if (!isSuperAdmin()) {
+            applyBranchScope($empQuery, 'branch_id');
+        }
+        $employees = $empQuery->get();
+
         return view('new_movement.ta_summary', compact('summary', 'employees', 'startDate', 'endDate', 'taStatus'));
     }
 
@@ -132,7 +169,12 @@ class NewMovementController extends Controller
     {
         $employeeId = $request->employee_id;
         if (!$employeeId) abort(400, 'Employee ID required');
-        $employee  = User::findOrFail($employeeId);
+        $employee  = User::with('branch')->findOrFail($employeeId);
+
+        if (!isSuperAdmin()) {
+            checkBranchAccess($employee->branch_id);
+        }
+
         $q = NewMovement::where('employee_id', $employeeId)->where('ta_status', $request->ta_status ?? 'approved');
         if ($request->start_date && $request->end_date) {
             $q->whereDate('created_at', '>=', $request->start_date)->whereDate('created_at', '<=', $request->end_date);
@@ -145,6 +187,12 @@ class NewMovementController extends Controller
     public function taSummaryApprove(Request $request)
     {
         $q = NewMovement::where('ta_status', 'approved');
+        if (!isSuperAdmin()) {
+            $q->whereHas('user', function ($u) {
+                applyBranchScope($u, 'branch_id');
+            });
+        }
+
         if ($request->employee_id) $q->where('employee_id', $request->employee_id);
         if ($request->start_date && $request->end_date) {
             $q->whereDate('created_at', '>=', $request->start_date)->whereDate('created_at', '<=', $request->end_date);
@@ -156,8 +204,79 @@ class NewMovementController extends Controller
     // GET /new-movement/details/{id}
     public function details($id)
     {
-        $movement = NewMovement::with(['user', 'travels', 'meetings', 'expenses'])->findOrFail($id);
+        $movement = NewMovement::with(['user.branch', 'updater.branch', 'travels', 'meetings', 'expenses.travel'])->findOrFail($id);
+
+        if (!can('movements') && auth()->user()->group_id != 1) {
+            if ($movement->employee_id != auth()->id()) {
+                abort(403, 'Unauthorized. You can only view your own movements.');
+            }
+        } elseif (!isSuperAdmin()) {
+            checkBranchAccess($movement->user->branch_id);
+        }
+
         return view('new_movement.details', compact('movement'));
+    }
+
+    // POST /new-movement/admin-approve-ta/{id}
+    public function adminApproveTa(Request $request, $id)
+    {
+        $movement = NewMovement::with(['user', 'expenses'])->findOrFail($id);
+
+        if (!can('movements') && auth()->user()->group_id != 1) {
+            return back()->with('error', 'Unauthorized action.');
+        }
+
+        if (!isSuperAdmin()) {
+            checkBranchAccess($movement->user->branch_id);
+        }
+
+        $action = $request->input('action', 'approve'); // 'approve' or 'reject'
+
+        \DB::beginTransaction();
+        try {
+            if ($action === 'reject') {
+                $movement->update([
+                    'ta_status'  => 'rejected',
+                    'ta_app_amt' => 0,
+                    'admin_note' => $request->input('admin_note'),
+                    'updated_by' => auth()->id(),
+                ]);
+
+                foreach ($movement->expenses as $exp) {
+                    $exp->update(['approve_amount' => 0]);
+                }
+
+                \DB::commit();
+                return back()->with('success', 'TA Application rejected successfully.');
+            }
+
+            // Approve action
+            $expensesData = $request->input('expenses', []);
+            $totalApproved = 0;
+
+            foreach ($movement->expenses as $exp) {
+                $approvedAmt = isset($expensesData[$exp->id]) ? max(0, (float)$expensesData[$exp->id]) : $exp->amount;
+                $exp->update(['approve_amount' => $approvedAmt]);
+                $totalApproved += $approvedAmt;
+            }
+
+            if ($request->filled('total_approved_amount')) {
+                $totalApproved = max(0, (float)$request->input('total_approved_amount'));
+            }
+
+            $movement->update([
+                'ta_status'  => 'approved',
+                'ta_app_amt' => $totalApproved,
+                'admin_note' => $request->input('admin_note'),
+                'updated_by' => auth()->id(),
+            ]);
+
+            \DB::commit();
+            return back()->with('success', 'TA Application approved successfully. Total approved amount: ৳' . number_format($totalApproved, 2));
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     // ================================================================

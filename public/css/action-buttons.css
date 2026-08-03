@@ -1,0 +1,340 @@
+/* Standard Action Buttons CSS */
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    font-size: 14px;
+    padding: 0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    text-decoration: none;
+    color: #fff;
+    margin: 0 2px;
+}
+
+.btn-action:hover {
+    color: #fff;
+}
+
+.btn-action i {
+    pointer-events: none;
+}
+
+.btn-action:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Action Colors */
+/* View / Details */
+.btn-action-view {
+    background-color: #0dcaf0;
+    color: #fff;
+}
+.btn-action-view:hover, .btn-action-view:focus {
+    background-color: #0bacce;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(13, 202, 240, 0.4);
+}
+.btn-action-view:active {
+    transform: scale(0.95);
+}
+
+/* Edit / Modify */
+.btn-action-edit {
+    background-color: #ffc107;
+    color: #000;
+}
+.btn-action-edit:hover, .btn-action-edit:focus {
+    background-color: #e0a800;
+    color: #000;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(255, 193, 7, 0.4);
+}
+.btn-action-edit:active {
+    transform: scale(0.95);
+}
+
+/* Delete / Remove */
+.btn-action-delete {
+    background-color: #dc3545;
+    color: #fff;
+}
+.btn-action-delete:hover, .btn-action-delete:focus {
+    background-color: #c82333;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.4);
+}
+.btn-action-delete:active {
+    transform: scale(0.95);
+}
+
+/* Approve */
+.btn-action-approve {
+    background-color: #198754;
+    color: #fff;
+}
+.btn-action-approve:hover, .btn-action-approve:focus {
+    background-color: #157347;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(25, 135, 84, 0.4);
+}
+.btn-action-approve:active {
+    transform: scale(0.95);
+}
+
+/* Reject / Cancel */
+.btn-action-reject {
+    background-color: #fd7e14;
+    color: #fff;
+}
+.btn-action-reject:hover, .btn-action-reject:focus {
+    background-color: #e86b0c;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(253, 126, 20, 0.4);
+}
+.btn-action-reject:active {
+    transform: scale(0.95);
+}
+
+/* Print */
+.btn-action-print {
+    background-color: #6c757d;
+    color: #fff;
+}
+.btn-action-print:hover, .btn-action-print:focus {
+    background-color: #5a6268;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(108, 117, 125, 0.4);
+}
+.btn-action-print:active {
+    transform: scale(0.95);
+}
+
+/* Download */
+.btn-action-download {
+    background-color: #6610f2;
+    color: #fff;
+}
+.btn-action-download:hover, .btn-action-download:focus {
+    background-color: #520dc2;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(102, 16, 242, 0.4);
+}
+.btn-action-download:active {
+    transform: scale(0.95);
+}
+
+/* Export */
+.btn-action-export {
+    background-color: #20c997;
+    color: #fff;
+}
+.btn-action-export:hover, .btn-action-export:focus {
+    background-color: #1aa179;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(32, 201, 151, 0.4);
+}
+.btn-action-export:active {
+    transform: scale(0.95);
+}
+
+/* Import */
+.btn-action-import {
+    background-color: #d63384;
+    color: #fff;
+}
+.btn-action-import:hover, .btn-action-import:focus {
+    background-color: #b82a70;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(214, 51, 132, 0.4);
+}
+.btn-action-import:active {
+    transform: scale(0.95);
+}
+
+/* Send / Email */
+.btn-action-send {
+    background-color: #0d6efd;
+    color: #fff;
+}
+.btn-action-send:hover, .btn-action-send:focus {
+    background-color: #0b5ed7;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(13, 110, 253, 0.4);
+}
+.btn-action-send:active {
+    transform: scale(0.95);
+}
+
+/* Assign */
+.btn-action-assign {
+    background-color: #0dcaf0;
+    color: #fff;
+}
+.btn-action-assign:hover, .btn-action-assign:focus {
+    background-color: #0bacce;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(13, 202, 240, 0.4);
+}
+.btn-action-assign:active {
+    transform: scale(0.95);
+}
+
+/* Refresh / Reload */
+.btn-action-refresh {
+    background-color: #adb5bd;
+    color: #fff;
+}
+.btn-action-refresh:hover, .btn-action-refresh:focus {
+    background-color: #929ba3;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(173, 181, 189, 0.4);
+}
+.btn-action-refresh:active {
+    transform: scale(0.95);
+}
+
+/* Create / Add */
+.btn-action-create {
+    background-color: #0177bc;
+    color: #fff;
+}
+.btn-action-create:hover, .btn-action-create:focus {
+    background-color: #01629b;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(1, 119, 188, 0.4);
+}
+.btn-action-create:active {
+    transform: scale(0.95);
+}
+
+/* Save / Update */
+.btn-action-save {
+    background-color: #198754;
+    color: #fff;
+}
+.btn-action-save:hover, .btn-action-save:focus {
+    background-color: #157347;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(25, 135, 84, 0.4);
+}
+.btn-action-save:active {
+    transform: scale(0.95);
+}
+
+/* Search */
+.btn-action-search {
+    background-color: #0d6efd;
+    color: #fff;
+}
+.btn-action-search:hover, .btn-action-search:focus {
+    background-color: #0b5ed7;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(13, 110, 253, 0.4);
+}
+.btn-action-search:active {
+    transform: scale(0.95);
+}
+
+/* Filter */
+.btn-action-filter {
+    background-color: #6f42c1;
+    color: #fff;
+}
+.btn-action-filter:hover, .btn-action-filter:focus {
+    background-color: #5c37a0;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(111, 66, 193, 0.4);
+}
+.btn-action-filter:active {
+    transform: scale(0.95);
+}
+
+/* Copy / Duplicate */
+.btn-action-copy {
+    background-color: #fd7e14;
+    color: #fff;
+}
+.btn-action-copy:hover, .btn-action-copy:focus {
+    background-color: #e86b0c;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(253, 126, 20, 0.4);
+}
+.btn-action-copy:active {
+    transform: scale(0.95);
+}
+
+/* Archive / Restore */
+.btn-action-archive {
+    background-color: #795548;
+    color: #fff;
+}
+.btn-action-archive:hover, .btn-action-archive:focus {
+    background-color: #62443a;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(121, 85, 72, 0.4);
+}
+.btn-action-archive:active {
+    transform: scale(0.95);
+}
+
+/* Transfer */
+.btn-action-transfer {
+    background-color: #20c997;
+    color: #fff;
+}
+.btn-action-transfer:hover, .btn-action-transfer:focus {
+    background-color: #1aa179;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(32, 201, 151, 0.4);
+}
+.btn-action-transfer:active {
+    transform: scale(0.95);
+}
+
+/* Process */
+.btn-action-process {
+    background-color: #0177bc;
+    color: #fff;
+}
+.btn-action-process:hover, .btn-action-process:focus {
+    background-color: #01629b;
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 4px rgba(1, 119, 188, 0.4);
+}
+.btn-action-process:active {
+    transform: scale(0.95);
+}
+
+/* Utility classes for layout */
+.action-buttons-group {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+}

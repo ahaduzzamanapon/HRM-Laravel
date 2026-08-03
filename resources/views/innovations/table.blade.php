@@ -20,15 +20,12 @@
                 <td>{{ $innovation->submission_date }}</td>
                 <td>{{ $innovation->verifier->name }}</td>
                 <td>{{ $innovation->verification_status }}</td>
-                <td>
-                    {!! Form::open(['route' => ['innovations.destroy', $innovation->id], 'method' => 'delete']) !!}
-                    <div class='btn-group'>
-                        <a href="{{ route('innovations.show', [$innovation->id]) }}" class='btn btn-outline-primary btn-xs'><i class="im im-icon-Eye" data-placement="top" title="View"></i></a>
-                        <a href="{{ route('innovations.edit', [$innovation->id]) }}" class='btn btn-outline-primary btn-xs'><i
-                                class="im im-icon-Pen"  data-toggle="tooltip" data-placement="top" title="Edit"></i></a>
-                        {!! Form::button('<i class="im im-icon-Remove" data-toggle="tooltip" data-placement="top" title="Delete"></i>', ['type' => 'submit', 'class' => 'btn btn-outline-danger btn-xs', 'onclick' => "return confirm('Are you sure?')"]) !!}
-                    </div>
-                    {!! Form::close() !!}
+                                <td>
+                    @include('layouts.partials.action_buttons', [
+                        'viewRoute' => route('innovations.show', [$innovation->id]),
+                        'editRoute' => route('innovations.edit', [$innovation->id]),
+                        'deleteRoute' => route('innovations.destroy', [$innovation->id]),
+                    ])
                 </td>
             </tr>
         @endforeach

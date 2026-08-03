@@ -23,6 +23,11 @@ class TransferDetail extends Model
         'transfer_date' => 'date',
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
     public function oldBranchName()
     {
         return $this->belongsTo(Branch::class, 'old_branch', 'id');

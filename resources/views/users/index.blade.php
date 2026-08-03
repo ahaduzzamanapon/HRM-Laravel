@@ -20,12 +20,14 @@ Users @parent
     <div class="card" width="88vw;">
         <section class="card-header">
             <h5 class="card-title d-inline">Users</h5>
+            @if(can('add_employee'))
             <span class="float-right">
                 <button type="button" class="btn btn-success mr-1" data-bs-toggle="modal" data-bs-target="#importEmployeesModal">
                     <i class="fa fa-upload"></i> Import CSV
                 </button>
                 <a class="btn btn-primary" href="{{ route('users.create') }}">Add New</a>
             </span>
+            @endif
         </section>
         <div class="card-body table-responsive">
             @include('users.table')

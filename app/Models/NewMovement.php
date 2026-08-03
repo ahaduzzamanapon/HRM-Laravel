@@ -25,12 +25,18 @@ class NewMovement extends Model
         'ta_status',
         'ta_amount',
         'ta_app_amt',
+        'admin_note',
         'updated_by',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class, 'employee_id');
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 
     public function travels()

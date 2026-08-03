@@ -18,7 +18,9 @@ class DepartmentalCaseController extends Controller
      */
     public function index()
     {
-        $departmentalCases = DepartmentalCase::with(['employee', 'penalty'])->paginate(10);
+        $query = DepartmentalCase::with(['employee', 'penalty']);
+        applyUserBranchScope($query, 'employee');
+        $departmentalCases = $query->paginate(10);
         return view('departmental_cases.index', compact('departmentalCases'));
     }
 
@@ -29,7 +31,9 @@ class DepartmentalCaseController extends Controller
      */
     public function create()
     {
-        $users = User::all();
+        $empQuery = User::where('status', 'active');
+        applyBranchScope($empQuery, 'branch_id');
+        $users     = $empQuery->get();
         $penalties = Penalty::all();
         return view('departmental_cases.create', compact('users', 'penalties'));
     }

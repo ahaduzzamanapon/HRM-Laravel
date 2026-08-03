@@ -21,11 +21,14 @@ class PayrollController extends Controller
 
     public function index(Request $request)
     {
-        $branches = Branch::pluck('branch_name', 'id');
+        $branchesQuery = Branch::query();
+        applyBranchScope($branchesQuery, 'id');
+        $branches = $branchesQuery->pluck('branch_name', 'id');
+
         $departments = Department::pluck('name', 'id');
         $designations = Designation::pluck('desi_name', 'id');
 
-        $users = User::where('group_id', '!=', 1)->with(['branch', 'department', 'designation'])
+        $usersQuery = User::where('group_id', '!=', 1)->with(['branch', 'department', 'designation'])
             ->when($request->filled('branch_id'), function ($query) use ($request) {
                 return $query->where('branch_id', $request->branch_id);
             })
@@ -34,8 +37,10 @@ class PayrollController extends Controller
             })
             ->when($request->filled('designation_id'), function ($query) use ($request) {
                 return $query->where('designation_id', $request->designation_id);
-            })
-            ->get();
+            });
+
+        applyBranchScope($usersQuery, 'branch_id');
+        $users = $usersQuery->get();
 
         return view('payroll.index', compact('users', 'branches', 'departments', 'designations'));
     }
@@ -49,6 +54,14 @@ class PayrollController extends Controller
             return response()->json(['success' => false, 'message' => 'Please select at least one user.']);
         }
 
+        if (!isSuperAdmin()) {
+            $allowedUserIds = User::whereIn('id', $userIds)->where('branch_id', userBranchId())->pluck('id')->toArray();
+            $userIds = $allowedUserIds;
+            if (empty($userIds)) {
+                return response()->json(['success' => false, 'message' => 'Selected users are outside your assigned branch.']);
+            }
+        }
+
         $result = $this->salaryService->salary_process($salary_month, $userIds);
 
         if (empty($result['errors'])) {
@@ -58,39 +71,43 @@ class PayrollController extends Controller
         }
     }
 
-
     public function salaryReport(Request $request)
     {
-        $salary_reports = Payroll::select('payrolls.*', 'users.name', 'users.last_name', 'users.basic_salary', 'users.account_no', 'users.emp_type', 'designations.desi_name', 'salary_grades.*', 'banksetups.*')
+        $query = Payroll::select('payrolls.*', 'users.name', 'users.last_name', 'users.basic_salary', 'users.account_no', 'users.emp_type', 'designations.desi_name', 'salary_grades.*', 'banksetups.*')
             ->join('users', 'payrolls.user_id', '=', 'users.id', 'LEFT')
             ->join('designations', 'payrolls.user_id', '=', 'designations.id', 'LEFT')
             ->join('salary_grades', 'users.salary_grade_id', '=', 'salary_grades.id', 'LEFT')
             ->join('banksetups', 'users.bank_id', '=', 'banksetups.id', 'LEFT')
-            ->whereIn('payrolls.user_id', $request->user_ids)
-            ->where('payrolls.salary_month', date('Y-m-01', strtotime($request->salary_month)))
-            ->get();
+            ->whereIn('payrolls.user_id', (array)$request->user_ids)
+            ->where('payrolls.salary_month', date('Y-m-01', strtotime($request->salary_month)));
+
+        applyBranchScope($query, 'users.branch_id');
+        $salary_reports = $query->get();
+
         $salary_month = $request->salary_month;
         return view('payroll.salary_report', compact('salary_reports', 'salary_month'));
     }
     public function payslip(Request $request)
     {
-        $salary_reports = Payroll::select('payrolls.*', 'users.name', 'users.last_name', 'users.basic_salary', 'users.account_no', 'users.emp_type', 'designations.desi_name', 'salary_grades.*', 'banksetups.*')
+        $query = Payroll::select('payrolls.*', 'users.name', 'users.last_name', 'users.basic_salary', 'users.account_no', 'users.emp_type', 'designations.desi_name', 'salary_grades.*', 'banksetups.*')
             ->join('users', 'payrolls.user_id', '=', 'users.id', 'LEFT')
             ->join('designations', 'payrolls.user_id', '=', 'designations.id', 'LEFT')
             ->join('salary_grades', 'users.salary_grade_id', '=', 'salary_grades.id', 'LEFT')
             ->join('banksetups', 'users.bank_id', '=', 'banksetups.id', 'LEFT')
-            ->whereIn('payrolls.user_id', $request->user_ids)
-            ->where('payrolls.salary_month', date('Y-m-01', strtotime($request->salary_month)))
-            ->get();
+            ->whereIn('payrolls.user_id', (array)$request->user_ids)
+            ->where('payrolls.salary_month', date('Y-m-01', strtotime($request->salary_month)));
+
+        applyBranchScope($query, 'users.branch_id');
+        $salary_reports = $query->get();
+
         $salary_month = $request->salary_month;
         return view('payroll.payslip', compact('salary_reports', 'salary_month'));
     }
     public function tax(Request $request)
     {
-        // dd($request->user_ids);
         $selectedMonth = date('Y-m-01', strtotime($request->salary_month));
         $startDate = date('Y-m-01', strtotime('-11 months', strtotime($selectedMonth)));
-        $salary_reports = Payroll::select(
+        $query = Payroll::select(
             'payrolls.*',
             'users.name',
             'users.last_name',
@@ -107,14 +124,15 @@ class PayrollController extends Controller
             ->join('departments', 'users.department_id', '=', 'departments.id', 'LEFT')
             ->join('salary_grades', 'users.salary_grade_id', '=', 'salary_grades.id', 'LEFT')
             ->join('banksetups', 'users.bank_id', '=', 'banksetups.id', 'LEFT')
-            ->whereIn('payrolls.user_id', $request->user_ids)
+            ->whereIn('payrolls.user_id', (array)$request->user_ids)
             ->where('payrolls.tax_deduct', '>', 0)
-            // ->whereBetween('payrolls.salary_month', [$startDate, $selectedMonth])
             ->where('payrolls.salary_month', $selectedMonth)
-            ->orderBy('payrolls.salary_month', 'asc')
-            ->get();
+            ->orderBy('payrolls.salary_month', 'asc');
+
+        applyBranchScope($query, 'users.branch_id');
+        $salary_reports = $query->get();
+
         $salary_month = $request->salary_month;
-        // dd($salary_reports);
         return view('payroll.tax', compact('salary_reports', 'salary_month'));
     }
 

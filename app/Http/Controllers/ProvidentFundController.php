@@ -16,11 +16,15 @@ class ProvidentFundController extends Controller
      */
     public function index(Request $request)
     {
-        $user = \Illuminate\Support\Facades\Auth::user();
-        $query = User::where('is_pf_member', true);
+        $authUser = \Illuminate\Support\Facades\Auth::user();
+        $query    = User::where('is_pf_member', true);
 
-        if ($user->role->name == 'Employee') {
-            $query->where('id', $user->id);
+        // Employees can only see themselves
+        if (!isSuperAdmin() && !can('provident_fund')) {
+            $query->where('id', $authUser->id);
+        } else {
+            // Admin/HR: filter to their branch
+            applyBranchScope($query, 'branch_id');
         }
 
         $users = $query->paginate(10);
@@ -56,12 +60,17 @@ class ProvidentFundController extends Controller
      */
     public function show($id)
     {
-        $user = User::with('providentFundContributions')->find($id);
+        $user     = User::with('providentFundContributions')->find($id);
         $authUser = \Illuminate\Support\Facades\Auth::user();
 
-        if ($authUser->role->name == 'Employee' && $authUser->id != $id) {
-            Flash::error('You are not authorized to view this page.');
-            return redirect(route('providentFunds.index'));
+        // Employees may only view their own record
+        if (!isSuperAdmin() && !can('provident_fund') && $authUser->id != $id) {
+            abort(403, 'You are not authorized to view this page.');
+        }
+
+        // Non-super-admins enforce branch ownership
+        if ($user) {
+            enforceBranchOwnership($user);
         }
 
         if (empty($user) || !$user->is_pf_member) {

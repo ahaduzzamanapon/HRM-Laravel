@@ -24,15 +24,12 @@
             <td>{{ $bankSetup->description }}</td>
             <td>{{ $bankSetup->created_at }}</td>
             <td>{{ $bankSetup->updated_at }}</td>
-                <td>
-                    {!! Form::open(['route' => ['bankSetups.destroy', $bankSetup->id], 'method' => 'delete']) !!}
-                    <div class='btn-group'>
-                        <a href="{{ route('bankSetups.show', [$bankSetup->id]) }}" class='btn btn-outline-primary btn-xs'><i class="im im-icon-Eye" data-placement="top" title="View"></i></a>
-                        <a href="{{ route('bankSetups.edit', [$bankSetup->id]) }}" class='btn btn-outline-primary btn-xs'><i
-                                class="im im-icon-Pen"  data-toggle="tooltip" data-placement="top" title="Edit"></i></a>
-                        {!! Form::button('<i class="im im-icon-Remove" data-toggle="tooltip" data-placement="top" title="Delete"></i>', ['type' => 'submit', 'class' => 'btn btn-outline-danger btn-xs', 'onclick' => "return confirm('Are you sure?')"]) !!}
-                    </div>
-                    {!! Form::close() !!}
+                                <td>
+                    @include('layouts.partials.action_buttons', [
+                        'viewRoute' => route('bankSetups.show', [$bankSetup->id]),
+                        'editRoute' => route('bankSetups.edit', [$bankSetup->id]),
+                        'deleteRoute' => route('bankSetups.destroy', [$bankSetup->id]),
+                    ])
                 </td>
             </tr>
         @endforeach

@@ -28,7 +28,7 @@ class EducationalQualificationController extends Controller
      */
     public function create()
     {
-        $users = User::pluck('name', 'id'); // Get users for dropdown
+        $users = getEmployeeDropdownOptions();
         return view('educational_qualifications.create')->with('users', $users);
     }
 
@@ -88,7 +88,7 @@ class EducationalQualificationController extends Controller
     public function edit($id)
     {
         $educationalQualification = EducationalQualification::find($id);
-        $users = User::pluck('name', 'id'); // Get users for dropdown
+        $users = getEmployeeDropdownOptions();
 
         if (empty($educationalQualification)) {
             Flash::error('Educational Qualification not found');

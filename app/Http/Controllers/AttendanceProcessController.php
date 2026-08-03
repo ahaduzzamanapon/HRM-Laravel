@@ -21,11 +21,14 @@ class AttendanceProcessController extends Controller
 
     public function index(Request $request)
     {
-        $branches = Branch::pluck('branch_name', 'id');
+        $branchesQuery = Branch::query();
+        applyBranchScope($branchesQuery, 'id');
+        $branches = $branchesQuery->pluck('branch_name', 'id');
+
         $departments = Department::pluck('name', 'id');
         $designations = Designation::pluck('desi_name', 'id');
 
-        $users = User::where('group_id', '!=', 1)->with(['branch', 'department', 'designation'])
+        $usersQuery = User::where('group_id', '!=', 1)->with(['branch', 'department', 'designation'])
             ->when($request->filled('branch_id'), function ($query) use ($request) {
                 return $query->where('branch_id', $request->branch_id);
             })
@@ -34,8 +37,10 @@ class AttendanceProcessController extends Controller
             })
             ->when($request->filled('designation_id'), function ($query) use ($request) {
                 return $query->where('designation_id', $request->designation_id);
-            })
-            ->get();
+            });
+
+        applyBranchScope($usersQuery, 'branch_id');
+        $users = $usersQuery->get();
 
         return view('attendance.process', compact('users', 'branches', 'departments', 'designations'));
     }
@@ -159,7 +164,7 @@ class AttendanceProcessController extends Controller
 
     public function filterUsers(Request $request)
     {
-        $users = User::with(['branch', 'department', 'designation'])
+        $usersQuery = User::with(['branch', 'department', 'designation'])
             ->where('group_id', '!=', 1)
             ->when($request->filled('branch_id'), function ($query) use ($request) {
                 return $query->where('branch_id', $request->branch_id);
@@ -169,8 +174,10 @@ class AttendanceProcessController extends Controller
             })
             ->when($request->filled('designation_id'), function ($query) use ($request) {
                 return $query->where('designation_id', $request->designation_id);
-            })
-            ->get(['id', 'name', 'last_name', 'emp_id', 'branch_id', 'department_id', 'designation_id']);
+            });
+
+        applyBranchScope($usersQuery, 'branch_id');
+        $users = $usersQuery->get(['id', 'name', 'last_name', 'emp_id', 'branch_id', 'department_id', 'designation_id']);
 
         return response()->json($users);
     }

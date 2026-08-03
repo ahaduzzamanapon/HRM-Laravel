@@ -22,7 +22,7 @@ class PermissionController extends AppBaseController
     public function index(Request $request)
     {
         /** @var Permission $permissions */
-        $permissions = Permission::paginate(10);
+        $permissions = Permission::with('parent')->paginate(10);
 
         return view('permissions.index')
             ->with('permissions', $permissions);
@@ -35,8 +35,8 @@ class PermissionController extends AppBaseController
      */
     public function create()
     {
-        $Permission = Permission::where('cat_id', null)->pluck('name', 'key')->prepend('Select Cat', '');
-        return view('permissions.create', compact('Permission'));
+        $parents = Permission::whereNull('parent_id')->pluck('name', 'id')->prepend('Select Parent Permission (Root)', '');
+        return view('permissions.create', compact('parents'));
     }
 
     /**
@@ -97,9 +97,9 @@ class PermissionController extends AppBaseController
             return redirect(route('permissions.index'));
         }
 
-        $Permission = Permission::where('cat_id', null)->pluck('name', 'key')->prepend('Select Cat', '');
+        $parents = Permission::whereNull('parent_id')->where('id', '!=', $id)->pluck('name', 'id')->prepend('Select Parent Permission (Root)', '');
 
-        return view('permissions.edit', compact('Permission'))->with('permission', $permission);
+        return view('permissions.edit', compact('parents'))->with('permission', $permission);
     }
 
     /**

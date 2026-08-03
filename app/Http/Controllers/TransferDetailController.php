@@ -15,9 +15,14 @@ class TransferDetailController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $transferDetails = TransferDetail::paginate(10);
+        $transferDetails = TransferDetail::with(['user', 'oldBranchName', 'newBranchName'])->paginate(15);
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['transferDetails' => $transferDetails], 200);
+        }
+
         return view('transfer_details.index')->with('transferDetails', $transferDetails);
     }
 
@@ -64,7 +69,12 @@ class TransferDetailController extends Controller
             }
         }
 
-        return response()->json(['success' => true, 'message' => 'Transfer Detail saved successfully.']);
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Transfer Detail saved successfully.']);
+        }
+
+        Flash::success('Transfer Detail saved successfully.');
+        return redirect()->back();
     }
 
     /**
@@ -113,7 +123,11 @@ class TransferDetailController extends Controller
     {
         $transferDetail = TransferDetail::find($id);
         if (empty($transferDetail)) {
-            return response()->json(['error' => true, 'message' => 'Transfer Detail not found'], 404);
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['error' => true, 'message' => 'Transfer Detail not found'], 404);
+            }
+            Flash::error('Transfer Detail not found');
+            return redirect()->back();
         }
         $input = $request->except(['_token']); // Exclude _token
         if ($request->hasFile('document')) {
@@ -134,7 +148,13 @@ class TransferDetailController extends Controller
                 $user->save();
             }
         }
-        return response()->json(['success' => true, 'message' => 'Transfer Detail updated successfully.']);
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Transfer Detail updated successfully.']);
+        }
+
+        Flash::success('Transfer Detail updated successfully.');
+        return redirect()->back();
     }
 
     /**
@@ -148,7 +168,11 @@ class TransferDetailController extends Controller
         $transferDetail = TransferDetail::find($id);
 
         if (empty($transferDetail)) {
-            return response()->json(['success' => false, 'message' => 'Transfer Detail not found'], 404);
+            if (request()->expectsJson() || request()->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Transfer Detail not found'], 404);
+            }
+            Flash::error('Transfer Detail not found');
+            return redirect()->back();
         }
 
         // Delete associated document if exists
@@ -156,7 +180,13 @@ class TransferDetailController extends Controller
             unlink(public_path($transferDetail->document));
         }
         $transferDetail->delete();
-        return response()->json(['success' => true, 'message' => 'Transfer Detail deleted successfully.']);
+
+        if (request()->expectsJson() || request()->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Transfer Detail deleted successfully.']);
+        }
+
+        Flash::success('Transfer Detail deleted successfully.');
+        return redirect()->back();
     }
     public function list($user_id)
     {

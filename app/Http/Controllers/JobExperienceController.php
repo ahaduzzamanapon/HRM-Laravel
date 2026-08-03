@@ -28,7 +28,7 @@ class JobExperienceController extends Controller
      */
     public function create()
     {
-        $users = User::pluck('name', 'id'); // Get users for dropdown
+        $users = getEmployeeDropdownOptions();
         return view('job_experiences.create')->with('users', $users);
     }
 
@@ -74,7 +74,7 @@ class JobExperienceController extends Controller
     public function edit($id)
     {
         $jobExperience = JobExperience::find($id);
-        $users = User::pluck('name', 'id'); // Get users for dropdown
+        $users = getEmployeeDropdownOptions();
 
         if (empty($jobExperience)) {
             return response()->json(['error' => false, 'message' => 'Job Experience not found.'], 404);

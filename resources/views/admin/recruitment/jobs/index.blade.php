@@ -49,12 +49,11 @@ Job Posts @parent
                         </td>
                         <td>{{ $job->deadline ? $job->deadline->format('Y-m-d') : 'N/A' }}</td>
                         <td>
-                            <div class='btn-group'>
-                                <a href="{{ route('admin.jobs.edit', [$job->id]) }}" class='btn btn-outline-primary btn-xs'><i class="im im-icon-Pen"></i></a>
-                                {!! Form::open(['route' => ['admin.jobs.destroy', $job->id], 'method' => 'delete']) !!}
-                                {!! Form::button('<i class="im im-icon-Remove"></i>', ['type' => 'submit', 'class' => 'btn btn-outline-danger btn-xs', 'onclick' => "return confirm('Are you sure?')"]) !!}
-                                {!! Form::close() !!}
-                            </div>
+                            @include('layouts.partials.action_buttons', [
+                                'showView' => false,
+                                'editRoute' => route('admin.jobs.edit', [$job->id]),
+                                'deleteRoute' => route('admin.jobs.destroy', [$job->id])
+                            ])
                         </td>
                     </tr>
                 @endforeach

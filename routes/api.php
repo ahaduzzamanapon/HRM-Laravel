@@ -90,48 +90,48 @@ Route::get('zkteco/attendance', [ZktecoAttendanceController::class, 'store']);
         Route::get('my-dashboard', [DashboardApiController::class, 'myDashboard']);
 
         // ── Master Data ───────────────────────────────────────────────
-        Route::apiResource('branches', BranchApiController::class);
-        Route::apiResource('departments', DepartmentApiController::class);
-        Route::apiResource('designations', DesignationApiController::class);
-        Route::apiResource('shifts', ShiftApiController::class);
-        Route::apiResource('holidays', HolydayApiController::class);
-        Route::apiResource('leave-types', LeaveTypeApiController::class);
-        Route::apiResource('allowance-settings', AllowanceSettingApiController::class);
-        Route::apiResource('salary-grades', SalaryGradeApiController::class);
-        Route::apiResource('bank-setups', BankSetupApiController::class);
-        Route::apiResource('tax-setups', TaxSetupApiController::class);
-        Route::apiResource('loan-types', LoanTypeApiController::class);
-        Route::apiResource('roles', RoleAndPermissionApiController::class);
+        Route::apiResource('branches', BranchApiController::class, ['as' => 'api']);
+        Route::apiResource('departments', DepartmentApiController::class, ['as' => 'api']);
+        Route::apiResource('designations', DesignationApiController::class, ['as' => 'api']);
+        Route::apiResource('shifts', ShiftApiController::class, ['as' => 'api']);
+        Route::apiResource('holidays', HolydayApiController::class, ['as' => 'api']);
+        Route::apiResource('leave-types', LeaveTypeApiController::class, ['as' => 'api']);
+        Route::apiResource('allowance-settings', AllowanceSettingApiController::class, ['as' => 'api']);
+        Route::apiResource('salary-grades', SalaryGradeApiController::class, ['as' => 'api']);
+        Route::apiResource('bank-setups', BankSetupApiController::class, ['as' => 'api']);
+        Route::apiResource('tax-setups', TaxSetupApiController::class, ['as' => 'api']);
+        Route::apiResource('loan-types', LoanTypeApiController::class, ['as' => 'api']);
+        Route::apiResource('roles', RoleAndPermissionApiController::class, ['as' => 'api']);
         Route::get('permissions', [RoleAndPermissionApiController::class, 'permissions']);
 
         // ── Employees ─────────────────────────────────────────────────
         Route::patch('users/{id}/salary', [UserApiController::class, 'updateSalary']);
-        Route::apiResource('users', UserApiController::class);
+        Route::apiResource('users', UserApiController::class, ['as' => 'api']);
 
         // Employee sub-records (list by user_id + CRUD)
         Route::get('training-details/by-user/{userId}', [TrainingDetailApiController::class, 'listByUser']);
-        Route::apiResource('training-details', TrainingDetailApiController::class);
+        Route::apiResource('training-details', TrainingDetailApiController::class, ['as' => 'api']);
 
         Route::get('job-experiences/by-user/{userId}', [JobExperienceApiController::class, 'listByUser']);
-        Route::apiResource('job-experiences', JobExperienceApiController::class);
+        Route::apiResource('job-experiences', JobExperienceApiController::class, ['as' => 'api']);
 
         Route::get('educational-qualifications/by-user/{userId}', [EducationalQualificationApiController::class, 'listByUser']);
-        Route::apiResource('educational-qualifications', EducationalQualificationApiController::class);
+        Route::apiResource('educational-qualifications', EducationalQualificationApiController::class, ['as' => 'api']);
 
         Route::get('nominee-information/by-user/{userId}', [NomineeInformationApiController::class, 'listByUser']);
-        Route::apiResource('nominee-information', NomineeInformationApiController::class);
+        Route::apiResource('nominee-information', NomineeInformationApiController::class, ['as' => 'api']);
 
         Route::get('promotion-details/by-user/{userId}', [PromotionDetailApiController::class, 'listByUser']);
-        Route::apiResource('promotion-details', PromotionDetailApiController::class);
+        Route::apiResource('promotion-details', PromotionDetailApiController::class, ['as' => 'api']);
 
         Route::get('salary-increments/by-user/{userId}', [SalaryIncrementApiController::class, 'listByUser']);
-        Route::apiResource('salary-increments', SalaryIncrementApiController::class);
+        Route::apiResource('salary-increments', SalaryIncrementApiController::class, ['as' => 'api']);
 
         Route::get('transfer-details/by-user/{userId}', [TransferDetailApiController::class, 'listByUser']);
-        Route::apiResource('transfer-details', TransferDetailApiController::class);
+        Route::apiResource('transfer-details', TransferDetailApiController::class, ['as' => 'api']);
 
         Route::get('personal-documents/by-user/{userId}', [PersonalDocumentApiController::class, 'listByUser']);
-        Route::apiResource('personal-documents', PersonalDocumentApiController::class);
+        Route::apiResource('personal-documents', PersonalDocumentApiController::class, ['as' => 'api']);
 
         // ── Attendance ────────────────────────────────────────────────
         Route::prefix('attendance')->group(function () {
@@ -144,7 +144,7 @@ Route::get('zkteco/attendance', [ZktecoAttendanceController::class, 'store']);
         });
 
         // Biometric
-        Route::apiResource('biometric-devices', BiometricDeviceApiController::class);
+        Route::apiResource('biometric-devices', BiometricDeviceApiController::class, ['as' => 'api']);
         Route::get('biometric-logs', [BiometricAttendanceLogApiController::class, 'index']);
         Route::get('biometric-logs/{id}', [BiometricAttendanceLogApiController::class, 'show']);
         Route::apiResource('biometric-commands', BiometricCommandApiController::class)->except(['update']);
@@ -153,9 +153,9 @@ Route::get('zkteco/attendance', [ZktecoAttendanceController::class, 'store']);
         Route::post('leave-applications/{id}/first-approve', [LeaveApplicationApiController::class, 'firstApprove']);
         Route::post('leave-applications/{id}/final-approve', [LeaveApplicationApiController::class, 'finalApprove']);
         Route::post('leave-applications/{id}/reject', [LeaveApplicationApiController::class, 'reject']);
-        Route::apiResource('leave-applications', LeaveApplicationApiController::class);
+        Route::apiResource('leave-applications', LeaveApplicationApiController::class, ['as' => 'api']);
 
-        Route::apiResource('movements', MovementApiController::class);
+        Route::apiResource('movements', MovementApiController::class, ['as' => 'api']);
 
 
 
@@ -174,27 +174,27 @@ Route::get('zkteco/attendance', [ZktecoAttendanceController::class, 'store']);
         Route::get('provident-fund/balance/{userId}', [ProvidentFundApiController::class, 'balance']);
         Route::get('provident-fund-settings', [ProvidentFundSettingApiController::class, 'index']);
         Route::post('provident-fund-settings', [ProvidentFundSettingApiController::class, 'store']);
-        Route::apiResource('provident-fund-loans', ProvidentFundLoanApiController::class);
+        Route::apiResource('provident-fund-loans', ProvidentFundLoanApiController::class, ['as' => 'api']);
         Route::apiResource('provident-fund-repayments', ProvidentFundLoanRepaymentApiController::class)->except(['update']);
 
         // ── Loans ─────────────────────────────────────────────────────
-        Route::apiResource('loans', LoanApiController::class);
+        Route::apiResource('loans', LoanApiController::class, ['as' => 'api']);
         Route::apiResource('loan-repayments', LoanRepaymentApiController::class)->except(['update']);
 
         // ── Child Allowances ──────────────────────────────────────────
-        Route::apiResource('child-allowances', ChildAllowanceApiController::class);
+        Route::apiResource('child-allowances', ChildAllowanceApiController::class, ['as' => 'api']);
 
         // ── Welfare ───────────────────────────────────────────────────
-        Route::apiResource('medical-supports', MedicalSupportApiController::class);
-        Route::apiResource('funeral-supports', FuneralSupportApiController::class);
-        Route::apiResource('education-supports', EmployeeChildrenEducationSupportApiController::class);
+        Route::apiResource('medical-supports', MedicalSupportApiController::class, ['as' => 'api']);
+        Route::apiResource('funeral-supports', FuneralSupportApiController::class, ['as' => 'api']);
+        Route::apiResource('education-supports', EmployeeChildrenEducationSupportApiController::class, ['as' => 'api']);
 
         // ── HR Actions ────────────────────────────────────────────────
-        Route::apiResource('departmental-cases', DepartmentalCaseApiController::class);
-        Route::apiResource('penalties', PenaltyApiController::class);
-        Route::apiResource('rewardings', RewardingApiController::class);
-        Route::apiResource('innovations', InnovationApiController::class);
-        Route::apiResource('notices', NoticeApiController::class);
+        Route::apiResource('departmental-cases', DepartmentalCaseApiController::class, ['as' => 'api']);
+        Route::apiResource('penalties', PenaltyApiController::class, ['as' => 'api']);
+        Route::apiResource('rewardings', RewardingApiController::class, ['as' => 'api']);
+        Route::apiResource('innovations', InnovationApiController::class, ['as' => 'api']);
+        Route::apiResource('notices', NoticeApiController::class, ['as' => 'api']);
 
         // ── Site Settings ─────────────────────────────────────────────
         Route::get('site-settings', [SiteSettingApiController::class, 'index']);

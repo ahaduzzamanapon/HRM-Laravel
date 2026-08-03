@@ -18,15 +18,12 @@
             <td>{{ $salaryGrade->starting_salary }}</td>
             <td>{{ $salaryGrade->end_salary }}</td>
             <td>{{ $salaryGrade->description }}</td>
-                <td>
-                    {!! Form::open(['route' => ['salaryGrades.destroy', $salaryGrade->id], 'method' => 'delete']) !!}
-                    <div class='btn-group'>
-                        <a href="{{ route('salaryGrades.show', [$salaryGrade->id]) }}" class='btn btn-outline-primary btn-xs'><i class="im im-icon-Eye" data-placement="top" title="View"></i></a>
-                        <a href="{{ route('salaryGrades.edit', [$salaryGrade->id]) }}" class='btn btn-outline-primary btn-xs'><i
-                                class="im im-icon-Pen"  data-toggle="tooltip" data-placement="top" title="Edit"></i></a>
-                        {!! Form::button('<i class="im im-icon-Remove" data-toggle="tooltip" data-placement="top" title="Delete"></i>', ['type' => 'submit', 'class' => 'btn btn-outline-danger btn-xs', 'onclick' => "return confirm('Are you sure?')"]) !!}
-                    </div>
-                    {!! Form::close() !!}
+                                <td>
+                    @include('layouts.partials.action_buttons', [
+                        'viewRoute' => route('salaryGrades.show', [$salaryGrade->id]),
+                        'editRoute' => route('salaryGrades.edit', [$salaryGrade->id]),
+                        'deleteRoute' => route('salaryGrades.destroy', [$salaryGrade->id]),
+                    ])
                 </td>
             </tr>
         @endforeach

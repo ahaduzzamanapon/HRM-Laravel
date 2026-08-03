@@ -21,8 +21,9 @@ class BranchController extends AppBaseController
      */
     public function index(Request $request)
     {
-        /** @var Branch $branches */
-        $branches = Branch::paginate(10);
+        $query = Branch::query();
+        applyBranchScope($query, 'id');
+        $branches = $query->paginate(10);
 
         return view('branches.index')
             ->with('branches', $branches);
@@ -35,6 +36,9 @@ class BranchController extends AppBaseController
      */
     public function create()
     {
+        if (!isSuperAdmin()) {
+            abort(403, 'Creating new branches is reserved for Super Admin.');
+        }
         return view('branches.create');
     }
 
@@ -47,6 +51,10 @@ class BranchController extends AppBaseController
      */
     public function store(CreateBranchRequest $request)
     {
+        if (!isSuperAdmin()) {
+            abort(403, 'Creating new branches is reserved for Super Admin.');
+        }
+
         $input = $request->all();
 
         /** @var Branch $branch */
@@ -75,6 +83,8 @@ class BranchController extends AppBaseController
             return redirect(route('branches.index'));
         }
 
+        checkBranchAccess($branch->id);
+
         return view('branches.show')->with('branch', $branch);
     }
 
@@ -95,6 +105,8 @@ class BranchController extends AppBaseController
 
             return redirect(route('branches.index'));
         }
+
+        checkBranchAccess($branch->id);
 
         return view('branches.edit')->with('branch', $branch);
     }
@@ -117,6 +129,8 @@ class BranchController extends AppBaseController
 
             return redirect(route('branches.index'));
         }
+
+        checkBranchAccess($branch->id);
 
         $branch->fill($request->all());
         $branch->save();
@@ -145,6 +159,8 @@ class BranchController extends AppBaseController
 
             return redirect(route('branches.index'));
         }
+
+        checkBranchAccess($branch->id);
 
         $branch->delete();
 

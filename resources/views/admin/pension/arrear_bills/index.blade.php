@@ -95,96 +95,203 @@ Arrear Bills Management @parent
                         <tr>
                             <th style="color: #495057 !important;">Sl.</th>
                             <th class="text-left pl-4" style="color: #495057 !important;">Employee</th>
-                            <th style="color: #495057 !important;">Billing Period</th>
-                            <th style="color: #495057 !important;">Base Amount</th>
-                            <th style="color: #495057 !important;">Arrear Rollover</th>
-                            <th style="color: #495057 !important;">Total Owed</th>
+                            <th style="color: #495057 !important;">Billing Cycles</th>
+                            <th style="color: #495057 !important;">Total Base Amount</th>
+                            <th style="color: #495057 !important;">Latest Arrear</th>
+                            <th style="color: #495057 !important;">Latest Total Owed</th>
                             <th style="color: #495057 !important;">Total Paid</th>
-                            <th style="color: #495057 !important;">Status</th>
+                            <th style="color: #495057 !important;">Overall Status</th>
                             <th style="color: #495057 !important;">Last Updated</th>
                             <th style="color: #495057 !important;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($bills as $bill)
-                        <tr>
-                            <td class="align-middle" style="color: #495057 !important;">{{ $loop->iteration + ($bills->currentPage() - 1) * $bills->perPage() }}</td>
-                            <td class="align-middle text-left pl-4">
-                                <strong style="color: #2b2d42 !important;">{{ $bill->user ? trim($bill->user->name . ' ' . $bill->user->last_name) : 'N/A' }}</strong><br>
-                                <small style="color: #6c757d !important;">{{ $bill->user->email ?? '' }}</small>
-                            </td>
-                            <td class="align-middle">
-                                <span class="badge px-3 py-2 font-weight-bold" style="background-color: #e9ecef; color: #495057; border: 1px solid #ced4da;">{{ $bill->billing_period }}</span>
-                            </td>
-                            <td class="align-middle font-weight-bold" style="color: #2b2d42 !important;">৳{{ number_format((float)$bill->base_amount, 2) }}</td>
-                            <td class="align-middle font-weight-bold" style="color: #dc3545 !important;">৳{{ number_format((float)$bill->arrear_amount, 2) }}</td>
-                            <td class="align-middle font-weight-bold" style="color: #0d6efd !important;">৳{{ number_format((float)$bill->total_amount, 2) }}</td>
-                            <td class="align-middle font-weight-bold" style="color: #198754 !important;">৳{{ number_format((float)$bill->paid_amount, 2) }}</td>
-                            <td class="align-middle">
-                                @php
-                                    $status = $bill->status;
-                                    $badgeStyle = 'background-color: #6c757d; color: #fff;';
-                                    if($status == 'paid') $badgeStyle = 'background-color: #198754; color: #fff;';
-                                    if($status == 'partially_paid') $badgeStyle = 'background-color: #ffc107; color: #000;';
-                                    if($status == 'unpaid') $badgeStyle = 'background-color: #dc3545; color: #fff;';
-                                @endphp
-                                <span class="badge px-3 py-2 rounded-pill font-weight-bold text-uppercase" style="{{ $badgeStyle }} font-size: 0.75rem;">
-                                    {{ str_replace('_', ' ', $status) }}
-                                </span>
-                            </td>
-                            <td class="align-middle" style="color: #6c757d !important; font-size: 0.85rem;">
-                                {{ $bill->updated_at->format('M d, Y h:i A') }}
-                            </td>
-                            <td class="align-middle">
-                                <div class="d-flex justify-content-center align-items-center">
-                                    @if($bill->status !== 'paid')
-                                        <button type="button" class="btn btn-success btn-xs px-2 py-1 btn-pay-now mr-1" 
-                                                data-toggle="modal" 
-                                                data-target="#allocatePaymentModal" 
-                                                data-user-id="{{ $bill->user_id }}"
-                                                data-user-name="{{ $bill->user ? trim($bill->user->name . ' ' . $bill->user->last_name) : 'N/A' }}"
-                                                data-amount="{{ number_format((float)($bill->base_amount - $bill->paid_amount), 2, '.', '') }}"
-                                                data-billing-period="{{ $bill->billing_period }}"
-                                                data-base-amount="{{ number_format((float)$bill->base_amount, 2) }}"
-                                                data-arrear-amount="{{ number_format((float)$bill->arrear_amount, 2) }}"
-                                                data-total-amount="{{ number_format((float)$bill->total_amount, 2) }}"
-                                                data-paid-amount="{{ number_format((float)$bill->paid_amount, 2) }}"
-                                                title="Allocate Payment">
-                                            <i class="fa fa-money mr-1"></i> Pay
-                                        </button>
-                                    @endif
-                                    
-                                    @if($bill->status !== 'paid')
-                                        <button type="button" class="btn btn-info btn-xs px-2 py-1 btn-edit-bill mr-1 text-white"
-                                                data-toggle="modal"
-                                                data-target="#editBillModal"
-                                                data-id="{{ $bill->id }}"
-                                                data-user-name="{{ $bill->user ? trim($bill->user->name . ' ' . $bill->user->last_name) : 'N/A' }}"
-                                                data-base-amount="{{ $bill->base_amount }}"
-                                                data-billing-period="{{ $bill->billing_period }}"
-                                                title="Edit Bill">
-                                            <i class="fa fa-edit mr-1"></i> Edit
-                                        </button>
-                                    @endif
+                        @php
+                            $groupedBills = $bills->groupBy('user_id');
+                        @endphp
+                        @forelse($groupedBills as $userId => $userBills)
+                            @php
+                                $firstBill = $userBills->first();
+                                $user = $firstBill->user;
+                                $sortedBills = $userBills->sortByDesc('billing_period');
+                                $latestBill = $sortedBills->first();
+                                
+                                $totalBase = $userBills->sum('base_amount');
+                                $totalPaid = $userBills->sum('paid_amount');
+                                
+                                // Calculate total remaining outstanding balance across all user's bills
+                                $totalDue = 0;
+                                foreach($userBills as $ub) {
+                                    $totalDue += ((float)$ub->base_amount - (float)$ub->paid_amount);
+                                }
+                                if ($totalDue < 0) {
+                                    $totalDue = 0;
+                                }
+                                
+                                $latestArrear = $latestBill->arrear_amount;
+                                $latestTotalOwed = $latestBill->total_amount;
+                                
+                                // Determine overall status based on all cycles:
+                                // If all are paid -> paid.
+                                // If all are unpaid -> unpaid.
+                                // If mixed -> partially paid.
+                                $paidCount = $userBills->where('status', 'paid')->count();
+                                $unpaidCount = $userBills->where('status', 'unpaid')->count();
+                                $totalCount = $userBills->count();
 
-                                    <form action="{{ route('admin.pension.arrear-bills.destroy', $bill->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this bill? This action cannot be undone.')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-xs px-2 py-1" title="Delete Bill">
-                                            <i class="fa fa-trash mr-1"></i> Delete
+                                if ($paidCount === $totalCount) {
+                                    $overallStatus = 'paid';
+                                } elseif ($unpaidCount === $totalCount) {
+                                    $overallStatus = 'unpaid';
+                                } else {
+                                    $overallStatus = 'partially_paid';
+                                }
+                                
+                                $badgeStyle = 'background-color: #6c757d; color: #fff;';
+                                if($overallStatus == 'paid') $badgeStyle = 'background-color: #198754; color: #fff;';
+                                if($overallStatus == 'partially_paid') $badgeStyle = 'background-color: #ffc107; color: #000;';
+                                if($overallStatus == 'unpaid') $badgeStyle = 'background-color: #dc3545; color: #fff;';
+                            @endphp
+                            <tr class="parent-row">
+                                <td class="align-middle" style="color: #495057 !important;">{{ $loop->iteration + ($bills->currentPage() - 1) * $bills->perPage() }}</td>
+                                <td class="align-middle text-left pl-4">
+                                    <strong style="color: #2b2d42 !important;">{{ $user ? trim($user->name . ' ' . $user->last_name) : 'N/A' }}</strong><br>
+                                    <small style="color: #6c757d !important;">{{ $user->email ?? '' }}</small>
+                                </td>
+                                <td class="align-middle">
+                                    <span class="badge px-3 py-2 font-weight-bold" style="background-color: #e9ecef; color: #495057; border: 1px solid #ced4da;">
+                                        {{ $userBills->count() }} Cycle(s)
+                                    </span>
+                                </td>
+                                <td class="align-middle font-weight-bold" style="color: #2b2d42 !important;">৳{{ number_format((float)$totalBase, 2) }}</td>
+                                <td class="align-middle font-weight-bold" style="color: #dc3545 !important;">৳{{ number_format((float)$latestArrear, 2) }}</td>
+                                <td class="align-middle font-weight-bold" style="color: #0d6efd !important;">৳{{ number_format((float)$latestTotalOwed, 2) }}</td>
+                                <td class="align-middle font-weight-bold" style="color: #198754 !important;">৳{{ number_format((float)$totalPaid, 2) }}</td>
+                                <td class="align-middle">
+                                    <span class="badge px-3 py-2 rounded-pill font-weight-bold text-uppercase" style="{{ $badgeStyle }} font-size: 0.75rem;">
+                                        {{ str_replace('_', ' ', $overallStatus) }}
+                                    </span>
+                                </td>
+                                <td class="align-middle" style="color: #6c757d !important; font-size: 0.85rem;">
+                                    {{ $latestBill->updated_at->format('M d, Y h:i A') }}
+                                </td>
+                                <td class="align-middle">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <button type="button" class="btn btn-info btn-xs px-2 py-1 mr-1 text-white font-weight-bold" 
+                                                data-toggle="collapse" 
+                                                data-target="#details-user-{{ $userId }}" 
+                                                title="Toggle Details">
+                                            <i class="fa fa-list mr-1"></i> Details
                                         </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <!-- Collapsible Row for Details -->
+                            <tr id="details-user-{{ $userId }}" class="collapse bg-light">
+                                <td colspan="10" class="p-3">
+                                    <div class="card card-outline card-info shadow-sm mb-0">
+                                        <div class="card-header py-2 bg-secondary text-white d-flex justify-content-between align-items-center" style="background-color: #0177bc !important;">
+                                            <h6 class="card-title mb-0 font-weight-bold" style="font-size: 0.9rem;color: white !important;">
+                                                <i class="fa fa-history mr-1"></i> Month-wise Bill Breakdown: {{ $user ? trim($user->name . ' ' . $user->last_name) : 'N/A' }}
+                                            </h6>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <table class="table table-sm table-bordered table-striped mb-0 text-center">
+                                                <thead>
+                                                    <tr class="bg-dark text-white" style="font-size: 0.85rem;">
+                                                        <th class="py-2">Period</th>
+                                                        <th class="py-2">Base Amount</th>
+                                                        <th class="py-2">Arrear Rollover</th>
+                                                        <th class="py-2">Total Owed</th>
+                                                        <th class="py-2">Total Paid</th>
+                                                        <th class="py-2">Status</th>
+                                                        <th class="py-2">Last Updated</th>
+                                                        <th class="py-2">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($sortedBills as $bill)
+                                                        @php
+                                                            $bStatus = $bill->status;
+                                                            $bBadgeStyle = 'background-color: #6c757d; color: #fff;';
+                                                            if($bStatus == 'paid') $bBadgeStyle = 'background-color: #198754; color: #fff;';
+                                                            if($bStatus == 'partially_paid') $bBadgeStyle = 'background-color: #ffc107; color: #000;';
+                                                            if($bStatus == 'unpaid') $bBadgeStyle = 'background-color: #dc3545; color: #fff;';
+                                                        @endphp
+                                                        <tr style="font-size: 0.9rem;">
+                                                            <td class="align-middle">
+                                                                <span class="badge px-3 py-1 font-weight-bold" style="background-color: #e9ecef; color: #495057; border: 1px solid #ced4da;">{{ $bill->billing_period }}</span>
+                                                            </td>
+                                                            <td class="align-middle font-weight-bold">৳{{ number_format((float)$bill->base_amount, 2) }}</td>
+                                                            <td class="align-middle font-weight-bold text-danger">৳{{ number_format((float)$bill->arrear_amount, 2) }}</td>
+                                                            <td class="align-middle font-weight-bold text-primary">৳{{ number_format((float)$bill->total_amount, 2) }}</td>
+                                                            <td class="align-middle font-weight-bold text-success">৳{{ number_format((float)$bill->paid_amount, 2) }}</td>
+                                                            <td class="align-middle">
+                                                                <span class="badge px-3 py-1 rounded-pill font-weight-bold text-uppercase" style="{{ $bBadgeStyle }} font-size: 0.7rem;">
+                                                                    {{ str_replace('_', ' ', $bStatus) }}
+                                                                </span>
+                                                            </td>
+                                                            <td class="align-middle text-muted" style="font-size: 0.8rem;">
+                                                                {{ $bill->updated_at->format('M d, Y h:i A') }}
+                                                            </td>
+                                                            <td class="align-middle">
+                                                                <div class="d-flex justify-content-center align-items-center">
+                                                                    @if($bill->status !== 'paid')
+                                                                        <button type="button" class="btn btn-success btn-xs px-2 py-1 btn-pay-now mr-1" 
+                                                                                data-toggle="modal" 
+                                                                                data-target="#allocatePaymentModal" 
+                                                                                data-user-id="{{ $bill->user_id }}"
+                                                                                data-user-name="{{ $bill->user ? trim($bill->user->name . ' ' . $bill->user->last_name) : 'N/A' }}"
+                                                                                data-amount="{{ number_format((float)($bill->base_amount - $bill->paid_amount), 2, '.', '') }}"
+                                                                                data-billing-period="{{ $bill->billing_period }}"
+                                                                                data-base-amount="{{ number_format((float)$bill->base_amount, 2) }}"
+                                                                                data-arrear-amount="{{ number_format((float)$bill->arrear_amount, 2) }}"
+                                                                                data-total-amount="{{ number_format((float)$bill->total_amount, 2) }}"
+                                                                                data-paid-amount="{{ number_format((float)$bill->paid_amount, 2) }}"
+                                                                                title="Allocate Payment">
+                                                                            <i class="fa fa-money mr-1"></i> Pay
+                                                                        </button>
+                                                                    @endif
+
+                                                                    @if($bill->status !== 'paid')
+                                                                        <button type="button" class="btn btn-info btn-xs px-2 py-1 btn-edit-bill mr-1 text-white"
+                                                                                data-toggle="modal"
+                                                                                data-target="#editBillModal"
+                                                                                data-id="{{ $bill->id }}"
+                                                                                data-user-name="{{ $bill->user ? trim($bill->user->name . ' ' . $bill->user->last_name) : 'N/A' }}"
+                                                                                data-base-amount="{{ $bill->base_amount }}"
+                                                                                data-billing-period="{{ $bill->billing_period }}"
+                                                                                title="Edit Bill">
+                                                                            <i class="fa fa-edit mr-1"></i> Edit
+                                                                        </button>
+                                                                    @endif
+
+                                                                    <form action="{{ route('admin.pension.arrear-bills.destroy', $bill->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this bill? This action cannot be undone.')">
+                                                                        @csrf
+                                                                        @method('DELETE')
+                                                                        <button type="submit" class="btn btn-danger btn-xs px-2 py-1" title="Delete Bill">
+                                                                            <i class="fa fa-trash mr-1"></i> Delete
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                         @empty
-                        <tr>
-                            <td colspan="9" class="text-center py-5 text-muted">
-                                <i class="fa fa-folder-open fa-3x mb-3 d-block text-secondary"></i>
-                                <span class="h6 font-weight-bold d-block mb-1">No Bill Records Found</span>
-                                <span class="small">Try adjusting your filters or generate a new bill above.</span>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td colspan="10" class="text-center py-5 text-muted">
+                                    <i class="fa fa-folder-open fa-3x mb-3 d-block text-secondary"></i>
+                                    <span class="h6 font-weight-bold d-block mb-1">No Bill Records Found</span>
+                                    <span class="small">Try adjusting your filters or generate a new bill above.</span>
+                                </td>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -370,6 +477,14 @@ Arrear Bills Management @parent
                 dropdownParent: $('#generateBillModal')
             });
         }
+
+        // Accordion behavior: Collapse other open details when one is clicked
+        $(document).on('click', '[data-toggle="collapse"]', function(e) {
+            var target = $(this).attr('data-target');
+            if (target && target.startsWith('#details-user-')) {
+                $('.collapse').not(target).collapse('hide');
+            }
+        });
 
         // Handle clicking direct Pay button on bill rows
         $(document).on('click', '.btn-pay-now', function() {

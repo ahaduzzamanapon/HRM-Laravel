@@ -17,7 +17,17 @@ class LoanRepaymentController extends Controller
      */
     public function index()
     {
-        $loanRepayments = LoanRepayment::with('loan')->paginate(10);
+        $query = LoanRepayment::with(['loan.employee']);
+        // Filter repayments where the loan's employee belongs to user's branch
+        if (!isSuperAdmin()) {
+            $branchId = userBranchId();
+            if ($branchId) {
+                $query->whereHas('loan.employee', function ($q) use ($branchId) {
+                    $q->where('branch_id', $branchId);
+                });
+            }
+        }
+        $loanRepayments = $query->paginate(10);
         return view('loan_repayments.index', compact('loanRepayments'));
     }
 
@@ -28,7 +38,17 @@ class LoanRepaymentController extends Controller
      */
     public function create()
     {
-        $loans = Loan::all();
+        // Only show loans belonging to the user's branch
+        $loanQuery = Loan::with('employee');
+        if (!isSuperAdmin()) {
+            $branchId = userBranchId();
+            if ($branchId) {
+                $loanQuery->whereHas('employee', function ($q) use ($branchId) {
+                    $q->where('branch_id', $branchId);
+                });
+            }
+        }
+        $loans = $loanQuery->get();
         return view('loan_repayments.create', compact('loans'));
     }
 

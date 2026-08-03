@@ -6,22 +6,71 @@ use App\Http\Controllers\AppBaseController;
 use App\Models\User;
 use App\Models\AllowanceSetting;
 use App\Models\UserAllowance;
+use App\Models\LeaveApplication;
 use App\Services\SalaryCalculator; // Import SalaryCalculator
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 use Flash;
 use Response;
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:add_employee')->only(['create', 'store', 'import', 'downloadSample']);
+        $this->middleware('permission:edit_employee')->only(['edit', 'update', 'updateSalary']);
+        $this->middleware('permission:delete_employee')->only(['destroy']);
+    }
+
+    /**
+     * Show the authenticated user's own profile with short details.
+     */
+    public function profile()
+    {
+        $user = Auth::user();
+
+        $user->load([
+            'designation',
+            'department',
+            'branch',
+            'shift',
+            'role',
+            'trainingDetails',
+            'promotionDetails',
+            'transferDetails',
+        ]);
+
+        // Recent leave applications (last 5)
+        $recentLeaves = LeaveApplication::with('leaveType')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        // Leave taken this year (approved only)
+        $leaveBalance = LeaveApplication::where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->whereYear('start_date', now()->year)
+            ->sum('requested_days');
+
+        return view('users.profile', compact('user', 'recentLeaves', 'leaveBalance'));
+    }
+
     public function index(Request $request)
     {
         /** @var User $users */
-                $users = User::select('users.*', 'roles.name as role', 'designations.desi_name as designation', 'shifts.shift_name as shift')
+        $usersQuery = User::select('users.*', 'roles.name as role', 'designations.desi_name as designation', 'shifts.shift_name as shift')
             ->leftjoin('roles', 'users.group_id', '=', 'roles.id')
             ->leftjoin('designations', 'users.designation_id', '=', 'designations.id')
             ->leftjoin('shifts', 'users.shift_id', '=', 'shifts.id')
-            ->where('users.status', '!=', 'admin')->get();
+            ->where('users.status', '!=', 'admin');
 
-        $branches = \App\Models\Branch::pluck('branch_name', 'id'); // Get branches for dropdown
+        applyBranchScope($usersQuery, 'users.branch_id');
+        $users = $usersQuery->get();
+
+        $branchesQuery = \App\Models\Branch::query();
+        applyBranchScope($branchesQuery, 'id');
+        $branches = $branchesQuery->pluck('branch_name', 'id'); // Get branches for dropdown
 
         return view('users.index')
             ->with('users', $users)
@@ -36,11 +85,24 @@ class UserController extends Controller
     public function create()
     {
         $banks = \App\Models\BankSetup::pluck('bank_name', 'id');
-        $designations = \App\Models\Designation::pluck('desi_name', 'id');
-        $branches = \App\Models\Branch::pluck('branch_name', 'id');
-        $departments = \App\Models\Department::pluck('name', 'id');
+        $designations = \App\Models\Designation::where('desi_status', 'Active')->pluck('desi_name', 'id');
+        
+        $branchesQuery = \App\Models\Branch::query();
+        applyBranchScope($branchesQuery, 'id');
+        $branches = $branchesQuery->pluck('branch_name', 'id');
+
+        $departments = \App\Models\Department::where('status', 'Active')->pluck('name', 'id');
         $shifts = \App\Models\Shift::pluck('shift_name', 'id');
-        $roles = \App\Models\RoleAndPermission::pluck('name', 'id');
+        $rolesQuery = \App\Models\RoleAndPermission::query();
+        if (!isSuperAdmin()) {
+            $branchId = userBranchId();
+            if ($branchId) {
+                $rolesQuery->where(function($q) use ($branchId) {
+                    $q->where('branch_id', $branchId)->orWhereNull('branch_id');
+                });
+            }
+        }
+        $roles = $rolesQuery->pluck('name', 'id');
         return view('users.create')
             ->with('banks', $banks)
             ->with('designations', $designations)
@@ -54,7 +116,11 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $input = $request->all();
+        $input['is_pf_member'] = $request->has('is_pf_member') ? 1 : 0;
 
+        if (!isSuperAdmin()) {
+            $input['branch_id'] = userBranchId();
+        }
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
@@ -70,8 +136,6 @@ class UserController extends Controller
         }else{
             $input['password'] = bcrypt('12345678');
         }
-
-
 
         /** @var User $users */
         $users = User::create($input);
@@ -151,7 +215,7 @@ class UserController extends Controller
     public function show($id)
     {
         $authUser = \Illuminate\Support\Facades\Auth::user();
-        if ($authUser->role->name == 'Employee' && $authUser->id != $id) {
+        if ($authUser->role && $authUser->role->name == 'Employee' && $authUser->id != $id) {
             Flash::error('You are not authorized to view this page.');
             return redirect(route('users.index'));
         }
@@ -171,9 +235,10 @@ class UserController extends Controller
 
         if (empty($users)) {
             Flash::error('User not found');
-
             return redirect(route('users.index'));
         }
+
+        checkBranchAccess($users->branch_id);
 
         return view('users.show')->with('users', $users);
     }
@@ -182,7 +247,7 @@ class UserController extends Controller
     public function edit($id)
     {
         $authUser = \Illuminate\Support\Facades\Auth::user();
-        if ($authUser->role->name == 'Employee' && $authUser->id != $id) {
+        if ($authUser->role && $authUser->role->name == 'Employee' && $authUser->id != $id) {
             Flash::error('You are not authorized to view this page.');
             return redirect(route('users.index'));
         }
@@ -197,26 +262,81 @@ class UserController extends Controller
             'salaryIncrements',
             'transferDetails',
             'personalDocuments',
-            'userAllowances', // Add this line
+            'userAllowances',
             'departures'
         ])->find($id);
 
         if (empty($users)) {
             Flash::error('User not found');
-
             return redirect(route('users.index'));
         }
+
+        checkBranchAccess($users->branch_id);
 
         $allowanceSettings = AllowanceSetting::all();
         $banks = \App\Models\BankSetup::pluck('bank_name', 'id');
         $salaryGrades = \App\Models\SalaryGrade::all();
-        $designations = \App\Models\Designation::pluck('desi_name', 'id');
+        $designations = \App\Models\Designation::where('desi_status', 'Active')->pluck('desi_name', 'id');
+        $departments = \App\Models\Department::where('status', 'Active')->pluck('name', 'id');
+        $userGender = $users->gender ? strtolower(trim($users->gender)) : null;
+        $leaveTypesQuery = \App\Models\LeaveType::query();
+        if ($userGender) {
+            $leaveTypesQuery->where(function($q) use ($userGender) {
+                $q->whereNull('gender_criteria')
+                  ->orWhere('gender_criteria', '')
+                  ->orWhereRaw('LOWER(gender_criteria) = ?', ['all'])
+                  ->orWhereRaw('LOWER(gender_criteria) = ?', [$userGender]);
+            });
+        }
+        $leaveTypes = $leaveTypesQuery->get();
+        $userLeaveAssignments = \App\Models\UserLeaveAssignment::where('user_id', $id)->pluck('allowed_days', 'leave_type_id')->toArray();
+        $assignedLeaveTypeIds = \App\Models\UserLeaveAssignment::where('user_id', $id)->pluck('leave_type_id')->toArray();
+
         return view('users.edit')
             ->with('users', $users)
             ->with('allowanceSettings', $allowanceSettings)
             ->with('banks', $banks)
             ->with('salaryGrades', $salaryGrades)
-            ->with('designations', $designations);
+            ->with('designations', $designations)
+            ->with('departments', $departments)
+            ->with('leaveTypes', $leaveTypes)
+            ->with('userLeaveAssignments', $userLeaveAssignments)
+            ->with('assignedLeaveTypeIds', $assignedLeaveTypeIds);
+    }
+
+    public function saveLeaveAssignments(Request $request, $id)
+    {
+        $user = User::find($id);
+        if (empty($user)) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'User not found'], 404);
+            }
+            Flash::error('User not found');
+            return redirect(route('users.index'));
+        }
+
+        checkBranchAccess($user->branch_id);
+
+        $assignedTypes = $request->input('leave_types', []);
+        $days = $request->input('allowed_days', []);
+
+        \App\Models\UserLeaveAssignment::where('user_id', $id)->delete();
+
+        foreach ($assignedTypes as $typeId => $val) {
+            $allowedDays = isset($days[$typeId]) && is_numeric($days[$typeId]) && $days[$typeId] !== '' ? (int)$days[$typeId] : null;
+            \App\Models\UserLeaveAssignment::create([
+                'user_id' => $id,
+                'leave_type_id' => $typeId,
+                'allowed_days' => $allowedDays,
+            ]);
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Leave assignments updated successfully.']);
+        }
+
+        Flash::success('Employee leave assignments updated successfully.');
+        return redirect()->back();
     }
 
 
@@ -227,11 +347,17 @@ class UserController extends Controller
 
         if (empty($users)) {
             Flash::error('User not found');
-
             return redirect(route('users.index'));
         }
 
+        checkBranchAccess($users->branch_id);
+
         $input = $request->all();
+        $input['is_pf_member'] = $request->has('is_pf_member') ? 1 : 0;
+
+        if (!isSuperAdmin()) {
+            $input['branch_id'] = userBranchId();
+        }
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
@@ -454,6 +580,8 @@ class UserController extends Controller
             return redirect(route('users.index'));
         }
 
+        checkBranchAccess($user->branch_id);
+
         $user->salary_grade_id = $request->input('salary_grade_id');
         $user->basic_salary = $request->input('basic_salary', 0);
 
@@ -532,6 +660,9 @@ class UserController extends Controller
             Flash::error('User not found');
             return redirect(route('users.index'));
         }
+
+        checkBranchAccess($users->branch_id);
+
         $users->delete();
         Flash::success('User deleted successfully.');
         return redirect(route('users.index'));

@@ -17,7 +17,9 @@ class ShiftController extends Controller
      */
     public function index()
     {
-        $shifts = Shift::paginate(10);
+        $query = Shift::query();
+        applyBranchScope($query, 'branch_id');
+        $shifts = $query->paginate(10);
         return view('shifts.index')->with('shifts', $shifts);
     }
 
@@ -28,7 +30,9 @@ class ShiftController extends Controller
      */
     public function create()
     {
-        $branches = Branch::pluck('branch_name', 'id'); // Get branches for dropdown
+        $branchesQuery = Branch::query();
+        applyBranchScope($branchesQuery, 'id');
+        $branches = $branchesQuery->pluck('branch_name', 'id');
         return view('shifts.create')->with('branches', $branches);
     }
 
@@ -41,6 +45,9 @@ class ShiftController extends Controller
     public function store(Request $request)
     {
         $input = $request->all();
+        if (!isSuperAdmin()) {
+            $input['branch_id'] = userBranchId();
+        }
 
         $shift = Shift::create([
             'shift_name' => $input['shift_name'],
@@ -80,6 +87,8 @@ class ShiftController extends Controller
             return redirect(route('shifts.index'));
         }
 
+        checkBranchAccess($shift->branch_id);
+
         return view('shifts.show')->with('shift', $shift);
     }
 
@@ -92,12 +101,17 @@ class ShiftController extends Controller
     public function edit($id)
     {
         $shift = Shift::find($id);
-        $branches = Branch::pluck('branch_name', 'id'); // Get branches for dropdown
 
         if (empty($shift)) {
             Flash::error('Shift not found');
             return redirect(route('shifts.index'));
         }
+
+        checkBranchAccess($shift->branch_id);
+
+        $branchesQuery = Branch::query();
+        applyBranchScope($branchesQuery, 'id');
+        $branches = $branchesQuery->pluck('branch_name', 'id');
 
         return view('shifts.edit')->with(['shift' => $shift, 'branches' => $branches]);
     }
@@ -118,7 +132,12 @@ class ShiftController extends Controller
             return redirect(route('shifts.index'));
         }
 
+        checkBranchAccess($shift->branch_id);
+
         $input = $request->all();
+        if (!isSuperAdmin()) {
+            $input['branch_id'] = userBranchId();
+        }
 
         $shift->update([
             'shift_name' => $input['shift_name'],
@@ -170,6 +189,8 @@ class ShiftController extends Controller
             Flash::error('Shift not found');
             return redirect(route('shifts.index'));
         }
+
+        checkBranchAccess($shift->branch_id);
 
         $shift->delete();
 

@@ -61,7 +61,7 @@
     </div>
 </div>
 @php
-    $designations = \App\Models\Designation::all()->pluck('desi_name','id')->prepend('Select Designation', '')->toArray();
+    $designations = \App\Models\Designation::where('desi_status', 'Active')->pluck('desi_name','id')->prepend('Select Designation', '')->toArray();
 @endphp
 <!-- Gender Field -->
 <div class="col-md-3">
@@ -72,18 +72,29 @@
 </div>
 
 @php
-    $branches = \App\Models\Branch::all()->pluck('branch_name','id')->prepend('Select Branch', '')->toArray();
+    $branchesQuery = \App\Models\Branch::query();
+    applyBranchScope($branchesQuery, 'id');
+    $branches = $branchesQuery->pluck('branch_name','id')->prepend('Select Branch', '')->toArray();
 @endphp
 <!-- Branch Id Field -->
 <div class="col-md-3">
     <div class="form-group">
         {!! Form::label('branch_id', 'Branch:',['class'=>'control-label']) !!}
-        {!! Form::select('branch_id',$branches, null, ['class' => 'form-control','required']) !!}
+        @if(isSuperAdmin())
+            {!! Form::select('branch_id',$branches, null, ['class' => 'form-control','required']) !!}
+        @else
+            @php
+                $userBranchId = userBranchId();
+                $userBranchName = auth()->user()->branch ? auth()->user()->branch->branch_name : (isset($branches[$userBranchId]) ? $branches[$userBranchId] : 'My Branch');
+            @endphp
+            <input type="text" class="form-control bg-light" value="{{ $userBranchName }}" readonly>
+            <input type="hidden" name="branch_id" value="{{ $userBranchId }}">
+        @endif
     </div>
 </div>
 
 @php
-    $departments = \App\Models\Department::all()->pluck('name','id')->prepend('Select Department', '')->toArray();
+    $departments = \App\Models\Department::where('status', 'Active')->pluck('name','id')->prepend('Select Department', '')->toArray();
 @endphp
 <!-- Department Id Field -->
 <div class="col-md-3">
@@ -105,13 +116,20 @@
 </div>
 
 @php
-    $roles = \App\Models\RoleAndPermission::all()->pluck('name','id')->toArray();
+    $rolesQuery = \App\Models\RoleAndPermission::query();
+    if (!isSuperAdmin()) {
+        $branchId = userBranchId();
+        if ($branchId) {
+            $rolesQuery->where('branch_id', $branchId);
+        }
+    }
+    $roles = $rolesQuery->pluck('name','id')->toArray();
 @endphp
 <!-- Group Id Field -->
 <div class="col-md-3">
     <div class="form-group">
-        {!! Form::label('group_id', 'Roll:',['class'=>'control-label']) !!}
-        {!! Form::select('group_id',$roles, null, ['class' => 'form-control']) !!}
+        {!! Form::label('group_id', 'Role:',['class'=>'control-label']) !!}
+        {!! Form::select('group_id',$roles, null, ['class' => 'form-control', 'required']) !!}
     </div>
 </div>
 
@@ -213,8 +231,12 @@
 <!-- Is PF Member Field -->
 <div class="col-md-3">
     <div class="form-group">
-        {!! Form::label('is_pf_member', 'Is PF Member:',['class'=>'control-label']) !!}
-        {!! Form::checkbox('is_pf_member', 1, null) !!}
+        {!! Form::label('is_pf_member', 'Is PF Member:',['class'=>'control-label d-block']) !!}
+        <div class="form-check form-switch mt-1">
+            {!! Form::hidden('is_pf_member', 0) !!}
+            {!! Form::checkbox('is_pf_member', 1, null, ['class' => 'form-check-input', 'id' => 'is_pf_member', 'style' => 'cursor: pointer;']) !!}
+            <label class="form-check-label" for="is_pf_member" style="cursor: pointer;">Yes, Enrolled in PF</label>
+        </div>
     </div>
 </div>
 

@@ -42,7 +42,7 @@ Movements @parent
                     <tbody>
                         @foreach($movements as $movement)
                             <tr>
-                                <td>{{ $movement->user->name ?? 'N/A' }}</td>
+                                <td>{{ $movement->user->name ?? 'N/A' }} {{ $movement->user->last_name ?? '' }}</td>
                                 <td>{{ $movement->from_location }}</td>
                                 <td>{{ $movement->to_location }}</td>
                                 <td>{{ $movement->distance }}</td>

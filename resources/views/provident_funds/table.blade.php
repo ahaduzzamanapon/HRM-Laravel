@@ -13,7 +13,11 @@
                 <td>{{ $user->name }}</td>
                 <td>{{ $user->provident_fund_balance }}</td>
                 <td>
-                    <a href="{{ route('providentFunds.show', [$user->id]) }}" class='btn btn-outline-primary btn-xs'><i class="im im-icon-Eye" data-placement="top" title="View Statement"></i></a>
+                    @include('layouts.partials.action_buttons', [
+                        'showEdit' => false,
+                        'showDelete' => false,
+                        'viewRoute' => route('providentFunds.show', [$user->id])
+                    ])
                 </td>
             </tr>
         @endforeach

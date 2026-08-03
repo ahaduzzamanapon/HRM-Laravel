@@ -51,7 +51,8 @@ class Holyday extends Model
      * @var array
      */
     public static $rules = [
-        
+        'title' => 'required|string|max:255',
+        'date'  => 'required|date',
     ];
 
     public function branch()

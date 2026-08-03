@@ -6,7 +6,7 @@ Provident Fund Statement @parent
 
 @section('content')
     <section class="content-header">
-        <h1>Provident Fund Statement for {{ $user->name }}</h1>
+        <h1>Provident Fund Statement for {{ $user->name }} {{ $user->last_name ?? '' }}</h1>
     </section>
     <div class="content">
         <div class="card">

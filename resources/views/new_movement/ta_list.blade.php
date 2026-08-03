@@ -58,7 +58,16 @@
         <table class="data-table table mb-0">
             <thead>
                 <tr>
-                    <th>#</th><th>Employee</th><th>Start Location</th><th>Date</th><th>TA Status</th><th>Applied (৳)</th><th>Approved (৳)</th><th class="text-center">View</th>
+                    <th>#</th>
+                    <th>Employee</th>
+                    <th>Branch</th>
+                    <th>Start Location</th>
+                    <th>Date</th>
+                    <th>TA Status</th>
+                    <th>Applied (৳)</th>
+                    <th>Approved (৳)</th>
+                    <th>Processed By</th>
+                    <th class="text-center">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -70,20 +79,44 @@
                             <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">
                                 {{ strtoupper(substr($m->user->name ?? 'U', 0, 1)) }}
                             </div>
-                            {{ $m->user->name ?? '—' }} {{ $m->user->last_name ?? '' }}
+                            <div>
+                                <strong>{{ $m->user->name ?? '—' }} {{ $m->user->last_name ?? '' }}</strong>
+                            </div>
                         </div>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-secondary border">{{ $m->user->branch->name ?? 'Head Office' }}</span>
                     </td>
                     <td><i class="fa fa-map-marker text-primary me-1"></i>{{ $m->start_location }}</td>
                     <td class="text-muted" style="font-size:12px;">{{ $m->start_time ? \Carbon\Carbon::parse($m->start_time)->format('d M Y') : '—' }}</td>
                     <td><span class="sm-badge {{ $m->ta_status }}">{{ str_replace('_',' ',ucfirst($m->ta_status)) }}</span></td>
-                    <td class="fw-semibold">৳{{ number_format($m->ta_amount, 2) }}</td>
-                    <td class="fw-semibold text-success">৳{{ number_format($m->ta_app_amt, 2) }}</td>
+                    <td class="fw-bold text-primary">৳{{ number_format($m->ta_amount, 2) }}</td>
+                    <td class="fw-bold text-success">৳{{ number_format($m->ta_app_amt, 2) }}</td>
+                    <td>
+                        @if($m->updater)
+                            <div style="font-size:12px;" class="fw-semibold text-dark">
+                                {{ $m->updater->name }} {{ $m->updater->last_name }}
+                            </div>
+                            <small class="text-muted">{{ $m->updater->branch->name ?? 'Head Office' }}</small>
+                        @else
+                            <span class="text-muted">—</span>
+                        @endif
+                    </td>
                     <td class="text-center">
-                        <a href="{{ route('new-movement.details', $m->id) }}" class="btn btn-sm" style="background:#e8f0ff;color:#0177bc;border-radius:8px;"><i class="fa fa-eye"></i></a>
+                        <div class="action-buttons-group justify-content-center">
+                            @include('layouts.partials.action_buttons', [
+                                'showEdit' => false,
+                                'showDelete' => false,
+                                'viewRoute' => route('new-movement.details', $m->id)
+                            ])
+                            <a href="{{ route('new-movement.details', $m->id) }}#apply-ta" class="btn-action btn-action-approve" title="Approve / Review" data-bs-toggle="tooltip">
+                                <i class="fa fa-pencil-square-o"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="8" class="text-center py-5 text-muted"><i class="fa fa-list" style="font-size:36px;opacity:.2;"></i><p class="mt-2 mb-0">No TA records found.</p></td></tr>
+                <tr><td colspan="10" class="text-center py-5 text-muted"><i class="fa fa-list" style="font-size:36px;opacity:.2;"></i><p class="mt-2 mb-0">No TA records found.</p></td></tr>
                 @endforelse
             </tbody>
         </table>

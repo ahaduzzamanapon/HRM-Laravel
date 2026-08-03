@@ -3,7 +3,7 @@
     <div class="form-group">
         {!! Form::label('branch_id', 'Branch:',['class'=>'control-label']) !!}
         @php
-            $branches = \App\Models\Branch::all()->pluck('branch_name','id')->prepend('Select Branch', '')->toArray();
+            $branches = \App\Models\Branch::all()->pluck('branch_name','id')->prepend('All Branches', '')->toArray();
         @endphp
         {!! Form::select('branch_id', $branches, null, ['class' => 'form-control']) !!}
     </div>
@@ -32,7 +32,7 @@
 <div class="col-md-3">
     <div class="form-group">
         {!! Form::label('date', 'Date:',['class'=>'control-label']) !!}
-        {!! Form::date('date', null, ['class' => 'form-control','id'=>'date']) !!}
+        {!! Form::date('date', isset($holyday) && $holyday->date ? \Carbon\Carbon::parse($holyday->date)->format('Y-m-d') : null, ['class' => 'form-control', 'id' => 'date', 'required']) !!}
     </div>
 </div>
 

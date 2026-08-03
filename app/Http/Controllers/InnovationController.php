@@ -3,49 +3,33 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\Models\Innovation;
 use App\Models\User;
 use Flash;
 
 class InnovationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
-        $innovations = Innovation::with(['employee', 'verifier'])->paginate(10);
+        $query = Innovation::with(['employee', 'verifier']);
+        applyUserBranchScope($query, 'employee');
+        $innovations = $query->paginate(10);
         return view('innovations.index', compact('innovations'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        $users = User::all();
+        $empQuery = User::where('status', 'active');
+        applyBranchScope($empQuery, 'branch_id');
+        $users = $empQuery->get();
         return view('innovations.create', compact('users'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $input = $request->all();
         if ($request->hasFile('document')) {
-            $file = $request->file('document');
-            $folder = 'documents/innovations';
-            $customName = 'documents-' . time();
-            $input['document'] = uploadFile($file, $folder, $customName);
+            $input['document'] = uploadFile($request->file('document'), 'documents/innovations', 'documents-' . time());
         } else {
             $input['document'] = null;
         }
@@ -54,12 +38,6 @@ class InnovationController extends Controller
         return redirect(route('innovations.index'));
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
         $innovation = Innovation::with(['employee', 'verifier'])->find($id);
@@ -67,43 +45,37 @@ class InnovationController extends Controller
             Flash::error('Innovation not found');
             return redirect(route('innovations.index'));
         }
+        enforceBranchOwnership($innovation->employee ?? null, 'branch_id');
         return view('innovations.show')->with('innovation', $innovation);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
-        $innovation = Innovation::find($id);
+        $innovation = Innovation::with('employee')->find($id);
         if (empty($innovation)) {
             Flash::error('Innovation not found');
             return redirect(route('innovations.index'));
         }
-        $users = User::all();
+        enforceBranchOwnership($innovation->employee ?? null, 'branch_id');
+
+        $empQuery = User::where('status', 'active');
+        applyBranchScope($empQuery, 'branch_id');
+        $users = $empQuery->get();
         return view('innovations.edit', compact('innovation', 'users'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
-        $innovation = Innovation::find($id);
+        $innovation = Innovation::with('employee')->find($id);
         if (empty($innovation)) {
             Flash::error('Innovation not found');
             return redirect(route('innovations.index'));
         }
+        enforceBranchOwnership($innovation->employee ?? null, 'branch_id');
+
         $input = $request->all();
         if ($request->hasFile('document')) {
-            $input['document'] = uploadFile($request->file('document'), 'documents');
+            $input['document'] = uploadFile($request->file('document'), 'documents/innovations', 'documents-' . time());
         }
         $innovation->fill($input);
         $innovation->save();
@@ -111,19 +83,14 @@ class InnovationController extends Controller
         return redirect(route('innovations.index'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
-        $innovation = Innovation::find($id);
+        $innovation = Innovation::with('employee')->find($id);
         if (empty($innovation)) {
             Flash::error('Innovation not found');
             return redirect(route('innovations.index'));
         }
+        enforceBranchOwnership($innovation->employee ?? null, 'branch_id');
         $innovation->delete();
         Flash::success('Innovation deleted successfully.');
         return redirect(route('innovations.index'));

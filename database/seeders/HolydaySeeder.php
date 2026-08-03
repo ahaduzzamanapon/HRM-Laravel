@@ -20,7 +20,7 @@ class HolydaySeeder extends Seeder
 
         if (!$branch) {
             $branch = Branch::create([
-                'branch_name' => 'Default Branch',
+                'branch_name' => 'Head Office',
                 'Address' => 'Default Address',
                 'status' => 'Active',
                 'description' => 'Default branch for seeding.',

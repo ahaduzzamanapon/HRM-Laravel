@@ -22,7 +22,9 @@ class NoticeController extends AppBaseController
     public function index(Request $request)
     {
         /** @var Notice $notices */
-        $notices = Notice::paginate(10);
+        $query = Notice::query();
+        applyBranchScopeWithGlobal($query, 'branch_id');
+        $notices = $query->paginate(10);
 
         return view('notices.index')
             ->with('notices', $notices);
@@ -56,6 +58,12 @@ class NoticeController extends AppBaseController
         } else {
             $input['documents'] = null;
         }
+        // Branch auto-assign
+        if (!isSuperAdmin()) {
+            $input['branch_id'] = userBranchId();
+        } elseif (empty($input['branch_id'])) {
+            $input['branch_id'] = null;
+        }
         /** @var Notice $notice */
         $notice = Notice::create($input);
 
@@ -82,6 +90,8 @@ class NoticeController extends AppBaseController
             return redirect(route('notices.index'));
         }
 
+        enforceBranchOwnership($notice);
+
         return view('notices.show')->with('notice', $notice);
     }
 
@@ -102,6 +112,8 @@ class NoticeController extends AppBaseController
 
             return redirect(route('notices.index'));
         }
+
+        enforceBranchOwnership($notice);
 
         return view('notices.edit')->with('notice', $notice);
     }
@@ -124,6 +136,8 @@ class NoticeController extends AppBaseController
 
             return redirect(route('notices.index'));
         }
+
+        enforceBranchOwnership($notice);
 
         $notice->fill($request->all());
         $notice->save();
@@ -152,6 +166,8 @@ class NoticeController extends AppBaseController
 
             return redirect(route('notices.index'));
         }
+
+        enforceBranchOwnership($notice);
 
         $notice->delete();
 

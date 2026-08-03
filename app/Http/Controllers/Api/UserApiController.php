@@ -11,7 +11,7 @@ class UserApiController extends BaseApiController
 {
     public function index(Request $request)
     {
-        $users = User::with(['designation', 'department', 'branch', 'role', 'shift'])
+        $usersQuery = User::with(['designation', 'department', 'branch', 'role', 'shift'])
             ->when($request->search, fn($q) => $q->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
                     ->orWhere('emp_id', 'like', '%' . $request->search . '%')
@@ -19,8 +19,10 @@ class UserApiController extends BaseApiController
             }))
             ->when($request->department_id, fn($q) => $q->where('department_id', $request->department_id))
             ->when($request->branch_id, fn($q) => $q->where('branch_id', $request->branch_id))
-            ->when($request->status, fn($q) => $q->where('status', $request->status))
-            ->paginate($request->per_page ?? 15);
+            ->when($request->status, fn($q) => $q->where('status', $request->status));
+
+        applyBranchScope($usersQuery, 'branch_id');
+        $users = $usersQuery->paginate($request->per_page ?? 15);
 
         return $this->paginatedResponse($users);
     }
@@ -90,6 +92,11 @@ class UserApiController extends BaseApiController
 
         if (!$user)
             return $this->errorResponse('Employee not found', 404);
+
+        if (!canManageBranch($user->branch_id)) {
+            return $this->errorResponse('Unauthorized access to employee from another branch', 403);
+        }
+
         return $this->successResponse($user);
     }
 
@@ -99,7 +106,15 @@ class UserApiController extends BaseApiController
         if (!$user)
             return $this->errorResponse('Employee not found', 404);
 
+        if (!canManageBranch($user->branch_id)) {
+            return $this->errorResponse('Unauthorized access to employee from another branch', 403);
+        }
+
         $validated = $request->except(['password', 'email', '_method']);
+
+        if (!isSuperAdmin()) {
+            unset($validated['branch_id']); // Lock branch_id for non-superadmin
+        }
 
         if ($request->filled('password')) {
             $validated['password'] = Hash::make($request->password);
@@ -120,6 +135,11 @@ class UserApiController extends BaseApiController
         $user = User::find($id);
         if (!$user)
             return $this->errorResponse('Employee not found', 404);
+
+        if (!canManageBranch($user->branch_id)) {
+            return $this->errorResponse('Unauthorized access to employee from another branch', 403);
+        }
+
         $user->delete();
         return $this->successResponse(null, 'Employee deleted successfully');
     }
@@ -129,6 +149,10 @@ class UserApiController extends BaseApiController
         $user = User::find($id);
         if (!$user)
             return $this->errorResponse('Employee not found', 404);
+
+        if (!canManageBranch($user->branch_id)) {
+            return $this->errorResponse('Unauthorized access to employee from another branch', 403);
+        }
 
         $validated = $request->validate([
             'basic_salary' => 'required|numeric|min:0',
