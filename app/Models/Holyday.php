@@ -28,6 +28,7 @@ class Holyday extends Model
         'title',
         'status',
         'date',
+        'end_date',
         'descreption'
     ];
 
@@ -42,6 +43,7 @@ class Holyday extends Model
         'title' => 'string',
         'status' => 'string',
         'date' => 'date',
+        'end_date' => 'date',
         'descreption' => 'string'
     ];
 
@@ -51,8 +53,10 @@ class Holyday extends Model
      * @var array
      */
     public static $rules = [
-        'title' => 'required|string|max:255',
-        'date'  => 'required|date',
+        'branch_id' => 'nullable',
+        'title'    => 'required|string|max:255',
+        'date'     => 'required|date',
+        'end_date' => 'nullable|date|after_or_equal:date',
     ];
 
     public function branch()

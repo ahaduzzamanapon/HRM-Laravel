@@ -58,11 +58,21 @@
                                             class="sign_validator">
                                             @csrf
                                             <div class="form-group">
-                                                <label for="email"> {{ __('E-Mail Address') }}</label>
-                                                <input type="email"
-                                                    class="form-control form-control-lg @error('email') is-invalid @enderror"
-                                                    id="email" name="email" placeholder="E-mail"
-                                                    value="{{ old('email') }}" required />
+                                                <label for="login">{{ __('Email / Employee ID') }}</label>
+                                                <input type="text"
+                                                    class="form-control form-control-lg @error('login') is-invalid @enderror @error('emp_id') is-invalid @enderror @error('email') is-invalid @enderror"
+                                                    id="login" name="login" placeholder="Email or Employee ID"
+                                                    value="{{ old('login') ?? old('emp_id') ?? old('email') }}" required autofocus />
+                                                @error('login')
+                                                <span class="invalid-feedback" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                                @enderror
+                                                @error('emp_id')
+                                                <span class="invalid-feedback" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                                @enderror
                                                 @error('email')
                                                 <span class="invalid-feedback" role="alert">
                                                     <strong>{{ $message }}</strong>

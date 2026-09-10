@@ -37,6 +37,13 @@ include 'bulder_route.php';
 
 Auth::routes(['reset' => false]);
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/my-payroll', [App\Http\Controllers\EmployeePayrollController::class, 'index'])->name('my-payroll.index');
+    Route::post('my-payroll/payslip', [App\Http\Controllers\EmployeePayrollController::class, 'myPayslip'])->name('my-payroll.payslip');
+    Route::post('my-payroll/salary-sheet', [App\Http\Controllers\EmployeePayrollController::class, 'mySalarySheet'])->name('my-payroll.salarySheet');
+    Route::post('my-payroll/tax', [App\Http\Controllers\EmployeePayrollController::class, 'myTax'])->name('my-payroll.tax');
+});
+
 Route::middleware(['auth', 'permission:payroll_process'])->group(function () {
     Route::get('/payroll', [App\Http\Controllers\PayrollController::class, 'index'])->name('payroll.index');
     Route::post('payroll/process', [App\Http\Controllers\PayrollController::class, 'process'])->name('payroll.process');
@@ -44,6 +51,7 @@ Route::middleware(['auth', 'permission:payroll_process'])->group(function () {
     Route::post('payroll/payslip', [App\Http\Controllers\PayrollController::class, 'payslip'])->name('payroll.payslip');
     Route::post('payroll/tax', [App\Http\Controllers\PayrollController::class, 'tax'])->name('payroll.tax');
 });
+
 
 Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
@@ -62,17 +70,20 @@ Route::middleware(['auth', 'permission:view_employees'])->group(function () {
     Route::patch('users/update-salary/{id}', [App\Http\Controllers\UserController::class, 'updateSalary'])->name('users.updateSalary');
 });
 
-Route::middleware(['auth', 'permission:process_attendance'])->group(function () {
+Route::middleware(['auth', 'permission:process_attendance|view_my_attendance|my_attendance'])->group(function () {
     Route::get('attendance/process', [App\Http\Controllers\AttendanceProcessController::class, 'index'])->name('attendance.process.index');
     Route::post('attendance/process', [App\Http\Controllers\AttendanceProcessController::class, 'process'])->name('attendance.process.store');
     Route::get('attendance/filter', [App\Http\Controllers\AttendanceProcessController::class, 'filterUsers'])->name('attendance.filter');
-    Route::post('attendance/report', [App\Http\Controllers\AttendanceProcessController::class, 'getReportData'])->name('attendance.report');
+    Route::match(['get', 'post'], 'attendance/report', [App\Http\Controllers\AttendanceProcessController::class, 'getReportData'])->name('attendance.report');
     Route::post('attendance/manual', [App\Http\Controllers\AttendanceProcessController::class, 'storeManualAttendance'])->name('attendance.manual.store');
-    // dashboard report data
-    Route::post('attendance/daily-report', [App\Http\Controllers\AttendanceProcessController::class, 'getDailyReportData'])->name('attendance.daily-report');
 });
 
-Route::get('my-attendance', [App\Http\Controllers\AttendanceProcessController::class, 'myAttendance'])->name('attendance.my');
+// Dashboard attendance summary widget data endpoint
+Route::post('attendance/daily-report', [App\Http\Controllers\AttendanceProcessController::class, 'getDailyReportData'])
+    ->middleware(['auth', 'permission:dashboard|dashboard_daily_attendance|dashboard_monthly_attendance|process_attendance|view_my_attendance|my_attendance'])
+    ->name('attendance.daily-report');
+
+Route::get('my-attendance', [App\Http\Controllers\AttendanceProcessController::class, 'myAttendance'])->middleware(['auth', 'permission:process_attendance|view_my_attendance|my_attendance'])->name('attendance.my');
 
 
 
@@ -81,6 +92,12 @@ Route::middleware(['auth', 'permission:approve_leave'])->group(function () {
     Route::post('leave-applications/{id}/first-approve', [App\Http\Controllers\LeaveApplicationController::class, 'firstLevelApprove'])->name('leaveApplications.first.approve');
     Route::post('leave-applications/{id}/final-approve', [App\Http\Controllers\LeaveApplicationController::class, 'finalApprove'])->name('leaveApplications.final.approve');
     Route::post('leave-applications/{id}/reject', [App\Http\Controllers\LeaveApplicationController::class, 'reject'])->name('leaveApplications.reject');
+});
+
+// Notification Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'readAndRedirect'])->name('notifications.read');
+    Route::post('notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
 });
 
 
@@ -117,40 +134,40 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('loans/{id}', [\App\Http\Controllers\EmployeeLoanController::class, 'destroy'])->name('loans.destroy');
 });
 
-Route::get('/', [App\Http\Controllers\DashboardController::class, 'index'])->middleware('auth');
+Route::get('/', [App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'permission:dashboard']);
 
-// User's own profile (accessible to all authenticated users)
-Route::get('/my-profile', [App\Http\Controllers\UserController::class, 'profile'])->middleware('auth')->name('profile');
+// User's own profile
+Route::get('/my-profile', [App\Http\Controllers\UserController::class, 'profile'])->middleware(['auth', 'permission:my_profile'])->name('profile');
 
 
 
-Route::resource('trainingDetails', App\Http\Controllers\TrainingDetailController::class);
 Route::get('trainingDetails/list/{user_id}', [App\Http\Controllers\TrainingDetailController::class, 'list'])->name('trainingDetails.list');
+Route::resource('trainingDetails', App\Http\Controllers\TrainingDetailController::class);
 
-Route::resource('jobExperiences', App\Http\Controllers\JobExperienceController::class);
 Route::get('jobExperiences/list/{user_id}', [App\Http\Controllers\JobExperienceController::class, 'list'])->name('jobExperiences.list');
+Route::resource('jobExperiences', App\Http\Controllers\JobExperienceController::class);
 
-Route::resource('educationalQualifications', App\Http\Controllers\EducationalQualificationController::class);
 Route::get('educationalQualifications/list/{user_id}', [App\Http\Controllers\EducationalQualificationController::class, 'list'])->name('educationalQualifications.list');
+Route::resource('educationalQualifications', App\Http\Controllers\EducationalQualificationController::class);
 
-Route::resource('nomineeInformation', App\Http\Controllers\NomineeInformationController::class);
 Route::get('nomineeInformation/list/{user_id}', [App\Http\Controllers\NomineeInformationController::class, 'list'])->name('nomineeInformation.list');
+Route::resource('nomineeInformation', App\Http\Controllers\NomineeInformationController::class);
 
-Route::resource('promotionDetails', App\Http\Controllers\PromotionDetailController::class);
 Route::get('promotionDetails/list/{user_id}', [App\Http\Controllers\PromotionDetailController::class, 'list'])->name('promotionDetails.list');
+Route::resource('promotionDetails', App\Http\Controllers\PromotionDetailController::class);
 
-Route::resource('salaryIncrements', App\Http\Controllers\SalaryIncrementController::class);
 Route::get('salaryIncrements/list/{user_id}', [App\Http\Controllers\SalaryIncrementController::class, 'list'])->name('salaryIncrements.list');
+Route::resource('salaryIncrements', App\Http\Controllers\SalaryIncrementController::class);
 
-Route::resource('transferDetails', App\Http\Controllers\TransferDetailController::class);
 Route::get('transferDetails/list/{user_id}', [App\Http\Controllers\TransferDetailController::class, 'list'])->name('transferDetails.list');
+Route::resource('transferDetails', App\Http\Controllers\TransferDetailController::class);
 
-Route::resource('personalDocuments', App\Http\Controllers\PersonalDocumentController::class);
 Route::get('personalDocuments/list/{user_id}', [App\Http\Controllers\PersonalDocumentController::class, 'list'])->name('personalDocuments.list');
+Route::resource('personalDocuments', App\Http\Controllers\PersonalDocumentController::class);
 
 Route::middleware(['auth', 'permission:manage_allowance_settings'])->group(function () {
-    Route::resource('allowanceSettings', App\Http\Controllers\AllowanceSettingController::class);
     Route::get('allowanceSettings/list/{user_id}', [App\Http\Controllers\AllowanceSettingController::class, 'list'])->name('allowanceSettings.list');
+    Route::resource('allowanceSettings', App\Http\Controllers\AllowanceSettingController::class);
 });
 
 Route::get('/cron/refresh-database', [App\Http\Controllers\CronController::class, 'refreshDatabase']);
@@ -278,6 +295,8 @@ Route::middleware(['auth'])->prefix('pf')->name('pf.')->group(function () {
     Route::get('loans', [\App\Http\Controllers\PfLoanController::class, 'index'])->name('loans.index');
     Route::get('loans/create', [\App\Http\Controllers\PfLoanController::class, 'create'])->name('loans.create');
     Route::post('loans', [\App\Http\Controllers\PfLoanController::class, 'store'])->name('loans.store');
+    Route::put('loans/{loan}', [\App\Http\Controllers\PfLoanController::class, 'update'])->name('loans.update');
+    Route::delete('loans/{loan}', [\App\Http\Controllers\PfLoanController::class, 'destroy'])->name('loans.destroy');
     Route::post('loans/{loan}/approve', [\App\Http\Controllers\PfLoanController::class, 'approve'])->name('loans.approve');
     Route::post('loans/{loan}/disburse', [\App\Http\Controllers\PfLoanController::class, 'disburse'])->name('loans.disburse');
     
@@ -288,9 +307,20 @@ Route::middleware(['auth'])->prefix('pf')->name('pf.')->group(function () {
     Route::post('withdrawals/{withdrawal}/approve', [\App\Http\Controllers\PfWithdrawalController::class, 'approve'])->name('withdrawals.approve');
     Route::post('withdrawals/{withdrawal}/disburse', [\App\Http\Controllers\PfWithdrawalController::class, 'disburse'])->name('withdrawals.disburse');
     
+    // PF Settlements
+    Route::get('settlements', [\App\Http\Controllers\PfSettlementController::class, 'index'])->name('settlements.index');
+    Route::get('settlements/create', [\App\Http\Controllers\PfSettlementController::class, 'create'])->name('settlements.create');
+    Route::post('settlements', [\App\Http\Controllers\PfSettlementController::class, 'store'])->name('settlements.store');
+    Route::post('settlements/{settlement}/process', [\App\Http\Controllers\PfSettlementController::class, 'process'])->name('settlements.process');
+
     // PF Reports & Analytics
     Route::get('reports/yearly', [\App\Http\Controllers\PfReportController::class, 'yearly'])->name('reports.yearly');
     Route::post('reports/yearly/calculate', [\App\Http\Controllers\PfReportController::class, 'calculateInterest'])->name('reports.calculate_interest');
     Route::get('reports/analytics', [\App\Http\Controllers\PfReportController::class, 'analytics'])->name('reports.analytics');
     Route::get('reports/statement', [\App\Http\Controllers\PfReportController::class, 'statement'])->name('reports.statement');
+    Route::get('reports/ledger', [\App\Http\Controllers\PfReportController::class, 'ledger'])->name('reports.ledger');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('get-departments-by-branch/{branchId}', [\App\Http\Controllers\DesignationController::class, 'getDepartmentsByBranch'])->name('getDepartmentsByBranch');
 });

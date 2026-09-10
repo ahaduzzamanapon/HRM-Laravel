@@ -3,71 +3,87 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\Models\MedicalSupport;
 use App\Models\User;
+use App\Services\AuthorizationEngine;
+use Illuminate\Support\Facades\Auth;
 use Flash;
 
 class MedicalSupportController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    protected function canManageApplications($user = null): bool
+    {
+        $user = $user ?: Auth::user();
+        if (!$user) {
+            return false;
+        }
+
+        $isEmployee = AuthorizationEngine::isEmployeeRole($user);
+        return !$isEmployee && (AuthorizationEngine::isSuperAdmin($user) || AuthorizationEngine::isHRRole($user) || can('manage_medical_supports', $user));
+    }
+
     public function index()
     {
-        $medicalSupports = MedicalSupport::with('employee')->paginate(10);
+        $query = MedicalSupport::with(['employee', 'approver']);
+
+        if (!$this->canManageApplications()) {
+            $query->where('employee_id', Auth::id());
+        }
+
+        $medicalSupports = $query->latest()->paginate(10);
         return view('medical_supports.index', compact('medicalSupports'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        $users = User::all();
-        return view('medical_supports.create', compact('users'));
+        $canManage = $this->canManageApplications();
+        $users = $canManage ? User::orderBy('name')->get() : collect();
+        return view('medical_supports.create', compact('users', 'canManage'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $input = $request->all();
+        $canManage = $this->canManageApplications();
+
+        if (!$canManage) {
+            $input['employee_id'] = Auth::id();
+            $input['status'] = 'Pending';
+        } else {
+            $input['employee_id'] = $request->input('employee_id', Auth::id());
+            $input['status'] = $request->input('status', 'Approved');
+        }
+
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $fileName = time() . '_medical_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/welfare'), $fileName);
+            $input['attachment'] = 'uploads/welfare/' . $fileName;
+        }
+
         MedicalSupport::create($input);
-        Flash::success('Medical Support saved successfully.');
+        Flash::success('Medical Support application submitted successfully.');
         return redirect(route('medicalSupports.index'));
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        $medicalSupport = MedicalSupport::with('employee')->find($id);
+        $medicalSupport = MedicalSupport::with(['employee', 'approver'])->find($id);
         if (empty($medicalSupport)) {
             Flash::error('Medical Support not found');
             return redirect(route('medicalSupports.index'));
         }
+
+        if (!$this->canManageApplications()) {
+            if ($medicalSupport->employee_id != Auth::id()) {
+                Flash::error('Unauthorized access to this application.');
+                return redirect(route('medicalSupports.index'));
+            }
+        }
+
         return view('medical_supports.show')->with('medicalSupport', $medicalSupport);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
         $medicalSupport = MedicalSupport::find($id);
@@ -75,17 +91,19 @@ class MedicalSupportController extends Controller
             Flash::error('Medical Support not found');
             return redirect(route('medicalSupports.index'));
         }
-        $users = User::all();
-        return view('medical_supports.edit', compact('medicalSupport', 'users'));
+
+        $canManage = $this->canManageApplications();
+        if (!$canManage) {
+            if ($medicalSupport->employee_id != Auth::id()) {
+                Flash::error('Unauthorized access to this application.');
+                return redirect(route('medicalSupports.index'));
+            }
+        }
+
+        $users = $canManage ? User::orderBy('name')->get() : collect();
+        return view('medical_supports.edit', compact('medicalSupport', 'users', 'canManage'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         $medicalSupport = MedicalSupport::find($id);
@@ -93,18 +111,31 @@ class MedicalSupportController extends Controller
             Flash::error('Medical Support not found');
             return redirect(route('medicalSupports.index'));
         }
-        $medicalSupport->fill($request->all());
+
+        $canManage = $this->canManageApplications();
+        if (!$canManage && $medicalSupport->employee_id != Auth::id()) {
+            Flash::error('Unauthorized access to this application.');
+            return redirect(route('medicalSupports.index'));
+        }
+
+        $input = $request->all();
+        if (!$canManage) {
+            unset($input['employee_id'], $input['status']);
+        }
+
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $fileName = time() . '_medical_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/welfare'), $fileName);
+            $input['attachment'] = 'uploads/welfare/' . $fileName;
+        }
+
+        $medicalSupport->fill($input);
         $medicalSupport->save();
         Flash::success('Medical Support updated successfully.');
         return redirect(route('medicalSupports.index'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
         $medicalSupport = MedicalSupport::find($id);
@@ -112,6 +143,12 @@ class MedicalSupportController extends Controller
             Flash::error('Medical Support not found');
             return redirect(route('medicalSupports.index'));
         }
+
+        if (!$this->canManageApplications() && $medicalSupport->employee_id != Auth::id()) {
+            Flash::error('Unauthorized access.');
+            return redirect(route('medicalSupports.index'));
+        }
+
         $medicalSupport->delete();
         Flash::success('Medical Support deleted successfully.');
         return redirect(route('medicalSupports.index'));

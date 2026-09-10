@@ -146,12 +146,8 @@
 
 <div class="attn-page">
 
-    <div class="attn-header">
-        <div>
-            <h4><i class="fa fa-calendar-check-o mr-2"></i>Attendance Process</h4>
-            <p>Process and manage employee attendance records</p>
-        </div>
-        <i class="fa fa-cogs fa-2x" style="opacity:0.4;"></i>
+    <div class="mb-3">
+        <h4 style="font-weight: 700; color: #1e3a5f; margin: 0;">Attendance Process</h4>
     </div>
 
     <div class="row">
@@ -161,37 +157,49 @@
             {{-- Filters --}}
             <div class="ap-card">
                 <div class="ap-card-body">
-                    <div class="row">
-                        <div class="col-sm-3">
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
                             <label class="ap-label">From Date</label>
                             <input type="date" id="from_date" class="ap-input" value="{{ date('Y-m-d') }}">
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
                             <label class="ap-label">To Date <small style="color:#90a4ae">(range)</small></label>
                             <input type="date" id="to_date" class="ap-input">
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-4">
+                            <label class="ap-label">Status</label>
+                            <select id="status" class="ap-input">
+                                <option value="regular" selected>Regular</option>
+                                <option value="left">Left</option>
+                                <option value="resign">Resign</option>
+                                <option value="retired">Retired</option>
+                                <option value="terminate">Terminate</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
                             <label class="ap-label">Branch</label>
                             <select id="branch_id" class="ap-input">
-                                <option value="">All</option>
+                                <option value="">Select...</option>
                                 @foreach($branches as $id => $name)
                                     <option value="{{ $id }}">{{ $name }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-4">
                             <label class="ap-label">Department</label>
                             <select id="department_id" class="ap-input">
-                                <option value="">All</option>
+                                <option value="">Select...</option>
                                 @foreach($departments as $id => $name)
                                     <option value="{{ $id }}">{{ $name }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-4">
                             <label class="ap-label">Designation</label>
                             <select id="designation_id" class="ap-input">
-                                <option value="">All</option>
+                                <option value="">Select...</option>
                                 @foreach($designations as $id => $name)
                                     <option value="{{ $id }}">{{ $name }}</option>
                                 @endforeach
@@ -283,17 +291,12 @@
                 <div class="emp-list" id="emp-list">
                     @foreach($users as $user)
                     @php
-                        $fn = $user->name ?? '';
-                        $ln = $user->last_name ?? '';
-                        $init = strtoupper(substr($fn,0,1)) . strtoupper(substr($ln,0,1));
+                        $fn = trim(($user->name ?? '') . ' ' . ($user->last_name ?? ''));
+                        $empIdStr = $user->emp_id ? " ({$user->emp_id})" : '';
                     @endphp
-                    <div class="emp-item" data-id="{{ $user->id }}" data-name="{{ strtolower($fn.' '.$ln) }}">
+                    <div class="emp-item" data-id="{{ $user->id }}" data-name="{{ strtolower($fn . ' ' . ($user->emp_id ?? '')) }}">
                         <input type="checkbox" class="emp-cb user-checkbox" value="{{ $user->id }}">
-                        <div class="emp-avatar">{{ $init ?: '?' }}</div>
-                        <div>
-                            <div class="emp-info-name">{{ $fn }} {{ $ln }}</div>
-                            <div class="emp-info-id">{{ $user->emp_id ?? 'N/A' }}</div>
-                        </div>
+                        <div class="emp-info-name">{{ $fn }} <span class="text-muted ms-1" style="font-size: 0.75rem; font-weight: normal;">{{ $empIdStr }}</span></div>
                     </div>
                     @endforeach
                 </div>
@@ -341,17 +344,22 @@ $(function() {
     $('#emp-search').on('input', function() {
         var q = $(this).val().toLowerCase();
         $('#emp-list .emp-item').each(function() {
-            var match = $(this).data('name').includes(q) || ($(this).find('.emp-info-id').text().toLowerCase().includes(q));
+            var match = $(this).data('name').includes(q);
             $(this).toggle(match);
         });
     });
 
     /* ---- Filter dropdowns ---- */
-    $('#branch_id, #department_id, #designation_id').on('change', function() {
+    $('#branch_id, #department_id, #designation_id, #status').on('change', function() {
         $.ajax({
             type: 'GET',
             url: '{{ route("attendance.filter") }}',
-            data: { branch_id: $('#branch_id').val(), department_id: $('#department_id').val(), designation_id: $('#designation_id').val() },
+            data: {
+                branch_id: $('#branch_id').val(),
+                department_id: $('#department_id').val(),
+                designation_id: $('#designation_id').val(),
+                status: $('#status').val()
+            },
             success: function(users) {
                 var list = $('#emp-list');
                 list.empty();
@@ -360,13 +368,12 @@ $(function() {
                     $('#emp-count').text(0); return;
                 }
                 users.forEach(function(u) {
-                    var fn = u.name || '', ln = u.last_name || '';
-                    var init = (fn[0]||'').toUpperCase() + (ln[0]||'').toUpperCase();
+                    var fn = $.trim((u.name || '') + ' ' + (u.last_name || ''));
+                    var empIdStr = u.emp_id ? ' (' + u.emp_id + ')' : '';
                     list.append(
-                        '<div class="emp-item" data-id="'+u.id+'" data-name="'+(fn+' '+ln).toLowerCase()+'">' +
+                        '<div class="emp-item" data-id="'+u.id+'" data-name="'+(fn + ' ' + (u.emp_id || '')).toLowerCase()+'">' +
                         '<input type="checkbox" class="emp-cb user-checkbox" value="'+u.id+'">' +
-                        '<div class="emp-avatar">'+(init||'?')+'</div>' +
-                        '<div><div class="emp-info-name">'+fn+' '+ln+'</div><div class="emp-info-id">'+(u.emp_id||'N/A')+'</div></div>' +
+                        '<div class="emp-info-name">'+fn+' <span class="text-muted ms-1" style="font-size: 0.75rem; font-weight: normal;">'+empIdStr+'</span></div>' +
                         '</div>'
                     );
                 });
@@ -440,16 +447,26 @@ $(function() {
         var tabId    = pane === 'tab-daily' ? 'daily' : 'other';
         var ids      = getIds();
         if (!ids.length) { Swal.fire('Warning','Please select at least one employee.','warning'); return; }
-        $.ajax({
-            url: '{{ route("attendance.report") }}',
-            type: 'POST',
-            data: { report_type: tabId, filter_type: $(this).data('filter'), from_date: $('#from_date').val(), to_date: $('#to_date').val(), user_ids: ids, _token: '{{ csrf_token() }}' },
-            success: function(html) {
-                var w = window.open('','_blank','width=1200,height=700');
-                w.document.write(html); w.focus();
-            },
-            error: function(){ Swal.fire('Error','Could not load report.','error'); }
+
+        let form = $('<form>', {
+            action: "{{ route('attendance.report') }}",
+            method: 'POST',
+            target: '_blank'
         });
+
+        form.append($('<input>', { type: 'hidden', name: '_token', value: '{{ csrf_token() }}' }));
+        form.append($('<input>', { type: 'hidden', name: 'report_type', value: tabId }));
+        form.append($('<input>', { type: 'hidden', name: 'filter_type', value: $(this).data('filter') }));
+        form.append($('<input>', { type: 'hidden', name: 'from_date', value: $('#from_date').val() }));
+        form.append($('<input>', { type: 'hidden', name: 'to_date', value: $('#to_date').val() }));
+
+        ids.forEach(function(id) {
+            form.append($('<input>', { type: 'hidden', name: 'user_ids[]', value: id }));
+        });
+
+        $('body').append(form);
+        form.submit();
+        form.remove();
     });
 });
 </script>

@@ -9,11 +9,12 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\SalaryService;
 use App\Models\Payroll;
-
+use App\Models\SiteSetting;
 
 class PayrollController extends Controller
 {
     protected $salaryService;
+
     public function __construct(SalaryService $salaryService)
     {
         $this->salaryService = $salaryService;
@@ -21,6 +22,11 @@ class PayrollController extends Controller
 
     public function index(Request $request)
     {
+        $authUser = \Illuminate\Support\Facades\Auth::user();
+        if (\App\Services\AuthorizationEngine::isEmployeeRole($authUser)) {
+            return redirect()->route('my-payroll.index');
+        }
+
         $branchesQuery = Branch::query();
         applyBranchScope($branchesQuery, 'id');
         $branches = $branchesQuery->pluck('branch_name', 'id');
@@ -73,9 +79,9 @@ class PayrollController extends Controller
 
     public function salaryReport(Request $request)
     {
-        $query = Payroll::select('payrolls.*', 'users.name', 'users.last_name', 'users.basic_salary', 'users.account_no', 'users.emp_type', 'designations.desi_name', 'salary_grades.*', 'banksetups.*')
+        $query = Payroll::select('payrolls.*', 'users.emp_id as emp_id', 'users.name', 'users.last_name', 'users.basic_salary', 'users.account_no', 'users.emp_type', 'designations.desi_name', 'salary_grades.*', 'banksetups.*')
             ->join('users', 'payrolls.user_id', '=', 'users.id', 'LEFT')
-            ->join('designations', 'payrolls.user_id', '=', 'designations.id', 'LEFT')
+            ->join('designations', 'users.designation_id', '=', 'designations.id', 'LEFT')
             ->join('salary_grades', 'users.salary_grade_id', '=', 'salary_grades.id', 'LEFT')
             ->join('banksetups', 'users.bank_id', '=', 'banksetups.id', 'LEFT')
             ->whereIn('payrolls.user_id', (array)$request->user_ids)
@@ -85,13 +91,15 @@ class PayrollController extends Controller
         $salary_reports = $query->get();
 
         $salary_month = $request->salary_month;
-        return view('payroll.salary_report', compact('salary_reports', 'salary_month'));
+        $siteSetting = SiteSetting::first();
+        return view('payroll.salary_report', compact('salary_reports', 'salary_month', 'siteSetting'));
     }
+
     public function payslip(Request $request)
     {
-        $query = Payroll::select('payrolls.*', 'users.name', 'users.last_name', 'users.basic_salary', 'users.account_no', 'users.emp_type', 'designations.desi_name', 'salary_grades.*', 'banksetups.*')
+        $query = Payroll::select('payrolls.*', 'users.emp_id as emp_id', 'users.name', 'users.last_name', 'users.basic_salary', 'users.account_no', 'users.emp_type', 'designations.desi_name', 'salary_grades.*', 'banksetups.*')
             ->join('users', 'payrolls.user_id', '=', 'users.id', 'LEFT')
-            ->join('designations', 'payrolls.user_id', '=', 'designations.id', 'LEFT')
+            ->join('designations', 'users.designation_id', '=', 'designations.id', 'LEFT')
             ->join('salary_grades', 'users.salary_grade_id', '=', 'salary_grades.id', 'LEFT')
             ->join('banksetups', 'users.bank_id', '=', 'banksetups.id', 'LEFT')
             ->whereIn('payrolls.user_id', (array)$request->user_ids)
@@ -101,14 +109,17 @@ class PayrollController extends Controller
         $salary_reports = $query->get();
 
         $salary_month = $request->salary_month;
-        return view('payroll.payslip', compact('salary_reports', 'salary_month'));
+        $siteSetting = SiteSetting::first();
+        return view('payroll.payslip', compact('salary_reports', 'salary_month', 'siteSetting'));
     }
+
     public function tax(Request $request)
     {
         $selectedMonth = date('Y-m-01', strtotime($request->salary_month));
         $startDate = date('Y-m-01', strtotime('-11 months', strtotime($selectedMonth)));
         $query = Payroll::select(
             'payrolls.*',
+            'users.emp_id as emp_id',
             'users.name',
             'users.last_name',
             'users.basic_salary',
@@ -133,7 +144,7 @@ class PayrollController extends Controller
         $salary_reports = $query->get();
 
         $salary_month = $request->salary_month;
-        return view('payroll.tax', compact('salary_reports', 'salary_month'));
+        $siteSetting = SiteSetting::first();
+        return view('payroll.tax', compact('salary_reports', 'salary_month', 'siteSetting'));
     }
-
 }

@@ -31,7 +31,7 @@
                     <form action="{{ route('leaveApplications.store') }}" method="POST">
                         @csrf
 
-                        @if($canManageLeaves && !empty($employees))
+                        @if(!empty($canSelectEmployee) && $canSelectEmployee && !empty($employees))
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Select Employee <span class="text-danger">*</span></label>
                                 <select name="user_id" class="form-select @error('user_id') is-invalid @enderror" required>
@@ -44,6 +44,8 @@
                                 </select>
                                 @error('user_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
+                        @else
+                            <input type="hidden" name="user_id" value="{{ auth()->id() }}">
                         @endif
 
                         <div class="row g-3 mb-3">
@@ -71,9 +73,9 @@
                             </div>
                         </div>
 
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" name="is_half_day" id="is_half_day" value="1" {{ old('is_half_day') ? 'checked' : '' }}>
-                            <label class="form-check-label fw-bold" for="is_half_day">
+                        <div class="form-check mb-3 d-flex align-items-center" style="padding-left: 1.5rem;">
+                            <input class="form-check-input" type="checkbox" name="is_half_day" id="is_half_day" value="1" style="width: 18px; height: 18px; cursor: pointer; margin-right: 10px;" {{ old('is_half_day') ? 'checked' : '' }}>
+                            <label class="form-check-label fw-bold mb-0" for="is_half_day" style="cursor: pointer; padding-left: 4px;">
                                 Apply as Half Day (0.5 Day)
                             </label>
                         </div>

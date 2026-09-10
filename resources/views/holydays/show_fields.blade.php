@@ -4,11 +4,6 @@
 </tr>
 
 <tr>
-    <th scope="row">{!! Form::label('branch_id', 'Branch:') !!}</th>
-    <td>{{ $holyday->branch ? $holyday->branch->branch_name : 'All Branches' }}</td>
-</tr>
-
-<tr>
     <th scope="row">{!! Form::label('title', 'Title:') !!}</th>
     <td>{{ $holyday->title }}</td>
 </tr>
@@ -24,7 +19,17 @@
 
 <tr>
     <th scope="row">{!! Form::label('date', 'Date:') !!}</th>
-    <td>{{ $holyday->date ? \Carbon\Carbon::parse($holyday->date)->format('d M, Y') : 'N/A' }}</td>
+    <td>
+        @if($holyday->date)
+            @if($holyday->end_date && \Carbon\Carbon::parse($holyday->end_date)->format('Y-m-d') != \Carbon\Carbon::parse($holyday->date)->format('Y-m-d'))
+                {{ \Carbon\Carbon::parse($holyday->date)->format('d M, Y') }} - {{ \Carbon\Carbon::parse($holyday->end_date)->format('d M, Y') }}
+            @else
+                {{ \Carbon\Carbon::parse($holyday->date)->format('d M, Y') }}
+            @endif
+        @else
+            N/A
+        @endif
+    </td>
 </tr>
 
 <tr>

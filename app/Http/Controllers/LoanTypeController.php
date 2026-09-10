@@ -17,11 +17,6 @@ class LoanTypeController extends Controller
     public function index()
     {
         $loanTypes = LoanType::paginate(10);
-        foreach ($loanTypes as $loanType) {
-            if (is_string($loanType->loan_ceilings)) {
-                $loanType->loan_ceilings = json_decode($loanType->loan_ceilings, true);
-            }
-        }
         return view('loan_types.index', compact('loanTypes'));
     }
 
@@ -60,7 +55,7 @@ class LoanTypeController extends Controller
                 }
             }
         }
-        $input['loan_ceilings'] = json_encode($loanCeilings);
+        $input['loan_ceilings'] = $loanCeilings;
 
         LoanType::create($input);
         Flash::success('Loan Type saved successfully.');
@@ -95,11 +90,6 @@ class LoanTypeController extends Controller
         if (empty($loanType)) {
             Flash::error('Loan Type not found');
             return redirect(route('loanTypes.index'));
-        }
-
-        // Ensure loan_ceilings is an array for the view
-        if (is_string($loanType->loan_ceilings)) {
-            $loanType->loan_ceilings = json_decode($loanType->loan_ceilings, true);
         }
 
         return view('loan_types.edit')->with('loanType', $loanType);
@@ -137,7 +127,7 @@ class LoanTypeController extends Controller
                 }
             }
         }
-        $input['loan_ceilings'] = json_encode($loanCeilings);
+        $input['loan_ceilings'] = $loanCeilings;
 
         $loanType->fill($input);
         $loanType->save();

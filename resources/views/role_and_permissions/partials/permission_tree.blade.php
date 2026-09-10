@@ -1,75 +1,100 @@
-@foreach ($permissions as $permission)
+@foreach ($permissionTree as $module)
     @php
-        $childCount = $permission->children->count();
-        $selectedChildren = $permission->children->filter(function($child) use ($permission_have) {
-            return in_array($child->id, $permission_have);
-        })->count();
-    @endphp
-    <div class="card mb-3 border border-light-subtle shadow-sm rounded-3 overflow-hidden permission-module-card" data-module-id="{{ $permission->id }}">
-        <div class="card-header bg-white py-2 px-3 d-flex align-items-center justify-content-between border-bottom">
-            <div class="d-flex align-items-center flex-grow-1 cursor-pointer" data-bs-toggle="collapse" data-bs-target="#collapse{{ $permission->id }}" aria-expanded="true">
-                <div class="form-check me-2" onclick="event.stopPropagation();">
-                    <input type="checkbox" 
-                           name="permission[]" 
-                           value="{{ $permission->id }}" 
-                           id="permission-{{ $permission->id }}" 
-                           class="form-check-input parent-permission-checkbox cursor-pointer" 
-                           {{ in_array($permission->id, $permission_have) ? 'checked' : '' }}>
-                </div>
-                <label class="form-check-label fw-bold text-dark cursor-pointer mb-0 fs-6 ms-2" for="permission-{{ $permission->id }}">
-                    <i class="im im-icon-Folder me-2 text-primary"></i> {{ $permission->name }}
-                </label>
-                <span class="badge bg-light text-dark border ms-2 py-1 px-2 module-selection-badge" id="badge-module-{{ $permission->id }}">
-                    <span class="selected-count">{{ $selectedChildren }}</span> / {{ $childCount }} selected
-                </span>
-            </div>
+        $moduleChildren = $module->children ?? collect();
+        $totalModulePerms = 1; // root module permission itself
+        $selectedModulePerms = in_array($module->id, $permission_have) ? 1 : 0;
+
+        foreach($moduleChildren as $menu) {
+            $totalModulePerms++;
+            if (in_array($menu->id, $permission_have)) { $selectedModulePerms++; }
             
-            <div class="d-flex align-items-center gap-2">
-                @if ($childCount > 0)
-                <button type="button" 
-                        class="btn btn-sm btn-outline-secondary py-0 px-2 btn-toggle-module" 
-                        data-parent="{{ $permission->id }}" 
-                        onclick="event.stopPropagation();">
-                    Toggle Module
-                </button>
-                @endif
-                <button type="button" 
-                        class="btn btn-sm btn-link text-decoration-none text-secondary p-0" 
-                        data-bs-toggle="collapse" 
-                        data-bs-target="#collapse{{ $permission->id }}" 
-                        aria-expanded="true">
-                    <i class="im im-icon-Arrow-Down"></i>
-                </button>
+            if ($menu->children) {
+                foreach($menu->children as $action) {
+                    $totalModulePerms++;
+                    if (in_array($action->id, $permission_have)) { $selectedModulePerms++; }
+                }
+            }
+        }
+    @endphp
+    <div class="permission-module-card mb-4 pb-3 border-bottom" data-module-id="{{ $module->id }}">
+        <!-- Module Header Row -->
+        <div class="d-flex align-items-center mb-2">
+            <div class="form-check me-3 mb-0">
+                <input type="checkbox" 
+                       name="permission[]" 
+                       value="{{ $module->id }}" 
+                       id="permission-{{ $module->id }}" 
+                       class="form-check-input parent-permission-checkbox cursor-pointer" 
+                       {{ in_array($module->id, $permission_have) ? 'checked' : '' }}>
             </div>
+            <label class="form-check-label fw-bold text-dark fs-5 cursor-pointer mb-0 me-2 module-title-label" for="permission-{{ $module->id }}">
+                {{ $module->name }}
+            </label>
+            <span class="badge bg-light text-secondary border py-1 px-2 module-selection-badge" id="badge-module-{{ $module->id }}">
+                <span class="selected-count">{{ $selectedModulePerms }}</span> / {{ $totalModulePerms }} selected
+            </span>
         </div>
 
-        <div id="collapse{{ $permission->id }}" class="collapse show" data-bs-parent="#permissionsAccordion">
-            <div class="card-body bg-light-subtle p-3">
-                @if ($childCount > 0)
-                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-2">
-                        @foreach ($permission->children as $childPermission)
-                            <div class="col">
-                                <div class="p-2 bg-white rounded border d-flex align-items-center h-100 shadow-sm-hover permission-child-item">
-                                    <div class="form-check mb-0 d-flex align-items-center">
+        <!-- Module Items (Flat Tree View) -->
+        <div class="ps-3 pt-1">
+            @if ($moduleChildren->count() > 0)
+                <div class="row g-3">
+                    @foreach ($moduleChildren as $menu)
+                        @php
+                            $hasSubActions = $menu->children && $menu->children->count() > 0;
+                        @endphp
+                        <div class="{{ $hasSubActions ? 'col-12' : 'col-md-6 col-lg-4' }} menu-block-col" data-parent-module="{{ $module->id }}">
+                            <div class="permission-menu-box py-1">
+                                <div class="d-flex align-items-center {{ $hasSubActions ? 'mb-2 pb-1 border-bottom border-light' : '' }}">
+                                    <div class="form-check me-3 mb-0">
                                         <input type="checkbox" 
                                                name="permission[]" 
-                                               value="{{ $childPermission->id }}" 
-                                               id="permission-{{ $childPermission->id }}" 
-                                               data-parent="{{ $permission->id }}" 
-                                               class="form-check-input child-permission-checkbox cursor-pointer mt-0 me-3" 
-                                               {{ in_array($childPermission->id, $permission_have) ? 'checked' : '' }}>
-                                        <label class="form-check-label text-secondary fw-semibold cursor-pointer mb-0 ps-2" for="permission-{{ $childPermission->id }}">
-                                            {{ $childPermission->name }}
-                                        </label>
+                                               value="{{ $menu->id }}" 
+                                               id="permission-{{ $menu->id }}" 
+                                               data-parent="{{ $module->id }}" 
+                                               class="form-check-input menu-permission-checkbox cursor-pointer" 
+                                               {{ in_array($menu->id, $permission_have) ? 'checked' : '' }}>
                                     </div>
+                                    <label class="form-check-label text-dark fw-bold cursor-pointer mb-0 permission-item-label" for="permission-{{ $menu->id }}">
+                                        {{ $menu->name }}
+                                    </label>
+                                    @if($hasSubActions)
+                                        <span class="badge bg-light text-secondary border small ms-2">
+                                            Actions: {{ $menu->children->count() }}
+                                        </span>
+                                    @endif
                                 </div>
+
+                                @if($hasSubActions)
+                                    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2 ps-4 pt-1">
+                                        @foreach ($menu->children as $action)
+                                            <div class="col action-col">
+                                                <div class="d-flex align-items-center py-1 permission-child-item">
+                                                    <div class="form-check me-3 mb-0">
+                                                        <input type="checkbox" 
+                                                               name="permission[]" 
+                                                               value="{{ $action->id }}" 
+                                                               id="permission-{{ $action->id }}" 
+                                                               data-parent="{{ $menu->id }}" 
+                                                               data-root="{{ $module->id }}" 
+                                                               class="form-check-input action-permission-checkbox cursor-pointer" 
+                                                               {{ in_array($action->id, $permission_have) ? 'checked' : '' }}>
+                                                    </div>
+                                                    <label class="form-check-label text-secondary fw-semibold cursor-pointer mb-0 small permission-item-label" for="permission-{{ $action->id }}">
+                                                        {{ $action->name }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
-                        @endforeach
-                    </div>
-                @else
-                    <p class="text-muted small mb-0"><i class="im im-icon-Information me-1"></i> Root module permission only (no sub-permissions).</p>
-                @endif
-            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-muted small mb-0 py-1"><i class="im im-icon-Information me-1"></i> Root module permission only (no sub-permissions).</p>
+            @endif
         </div>
     </div>
 @endforeach

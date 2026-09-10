@@ -28,8 +28,17 @@ class CheckPermission
             return $next($request);
         }
 
-        // Check permission using the existing can() helper
-        if (!can($permissionKey)) {
+        $permissions = explode('|', $permissionKey);
+        $hasPermission = false;
+        foreach ($permissions as $p) {
+            if (can(trim($p))) {
+                $hasPermission = true;
+                break;
+            }
+        }
+
+        // Check permission using the can() helper
+        if (!$hasPermission) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     'success' => false,

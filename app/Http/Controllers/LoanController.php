@@ -33,7 +33,7 @@ class LoanController extends Controller
         $isAdmin = isSuperAdmin() || can('loans');
 
         if ($isAdmin) {
-            $empQuery = User::where('group_id', '!=', 1)->where('status', 'active');
+            $empQuery = User::where('status', '!=', 'retired');
             applyBranchScope($empQuery, 'branch_id');
             $users = $empQuery->get();
         } else {

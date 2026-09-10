@@ -30,11 +30,11 @@
     <div class="form-group">
         {!! Form::label('loan_ceilings', 'Loan Ceilings:') !!}
         <div id="loan-ceilings-container">
-            @if(isset($loanType) && $loanType->loan_ceilings)
+            @if(isset($loanType) && !empty($loanType->loan_ceilings) && is_iterable($loanType->loan_ceilings) && count($loanType->loan_ceilings) > 0)
                 @foreach($loanType->loan_ceilings as $ceiling)
                     <div class="input-group mb-2">
-                        <input type="text" name="loan_ceilings_grade[]" class="form-control" placeholder="Grade (e.g., Grade 1)" value="{{ $ceiling['grade'] ?? '' }}">
-                        <input type="number" name="loan_ceilings_amount[]" class="form-control" placeholder="Amount (e.g., 8500000)" value="{{ $ceiling['amount'] ?? '' }}" step="0.01">
+                        <input type="text" name="loan_ceilings_grade[]" class="form-control" placeholder="Grade (e.g., Grade 1)" value="{{ is_array($ceiling) ? ($ceiling['grade'] ?? '') : '' }}">
+                        <input type="number" name="loan_ceilings_amount[]" class="form-control" placeholder="Amount (e.g., 8500000)" value="{{ is_array($ceiling) ? ($ceiling['amount'] ?? '') : (is_numeric($ceiling) ? $ceiling : '') }}" step="0.01">
                         <div class="input-group-append">
                             <button type="button" class="btn btn-danger remove-loan-ceiling">-</button>
                         </div>

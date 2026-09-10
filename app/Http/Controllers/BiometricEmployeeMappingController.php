@@ -10,6 +10,10 @@ class BiometricEmployeeMappingController extends Controller
 {
     public function index(Request $request)
     {
+        if (!isSuperAdmin() && !can('biometric') && !can('manage_biometric_employee_mappings')) {
+            abort(403, 'Unauthorized access to Biometric Employee Mappings.');
+        }
+
         $query = User::with(['department', 'designation']);
 
         if ($request->filled('search')) {
@@ -29,6 +33,10 @@ class BiometricEmployeeMappingController extends Controller
 
     public function update(Request $request, $id)
     {
+        if (!isSuperAdmin() && !can('biometric') && !can('manage_biometric_employee_mappings')) {
+            abort(403, 'Unauthorized access to update Biometric Employee Mappings.');
+        }
+
         $request->validate([
             'biometric_id' => 'nullable|string|max:255'
         ]);

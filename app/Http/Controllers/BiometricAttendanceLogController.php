@@ -9,6 +9,10 @@ class BiometricAttendanceLogController extends Controller
 {
     public function index(Request $request)
     {
+        if (!isSuperAdmin() && !can('biometric') && !can('view_biometric_attendance_logs')) {
+            abort(403, 'Unauthorized access to Biometric Attendance Logs.');
+        }
+
         $query = BiometricAttendanceLog::with('device')->orderBy('timestamp', 'desc');
 
         if ($request->filled('date')) {

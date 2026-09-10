@@ -70,23 +70,33 @@
 
 
 </style>
-{{-- @dd($salary_reports) --}}
+@php
+    $siteSetting = $siteSetting ?? \App\Models\SiteSetting::first();
+    $siteName    = $siteSetting->site_name ?? 'Palli Sanchay Bank';
+    $siteAddress = $siteSetting->site_address ?? 'Head Office, Dhaka';
+    $siteLogo    = null;
+    if (!empty($siteSetting) && !empty($siteSetting->site_logo)) {
+        $logoPath = ltrim($siteSetting->site_logo, '/');
+        if (file_exists(public_path($logoPath))) {
+            $siteLogo = asset($logoPath);
+        }
+    }
+    if (!$siteLogo) {
+        $siteLogo = asset('salary_logo.jpg');
+    }
+@endphp
 @foreach ($salary_reports as $report)
 <div class="payslip-container">
     <div class="payslip-header">
         <div style="display: flex; align-items: center;justify-content: center;">
-            <img src="{{ asset('salary_logo.jpg') }}" alt="Company Logo" style="max-width: 50px; height: auto;">
+            <img src="{{ $siteLogo }}" alt="Company Logo" style="max-width: 50px; height: auto;">
             <div style="margin-left: 10px;">
-                <h3>Palli Sanchay Bank</h3>
-                <p style="line-height: 0px;">Head Office,Dhaka</p>
+                <h3 style="margin: 0;">{{ $siteName }}</h3>
+                <p style="margin: 5px 0 0 0; line-height: 1.2;">{{ $siteAddress }}</p>
             </div>
         </div>
         <div>
-            <p style="margin-left: 25px;">Red Crescent Borak Tower (Level- 7,8,9 & 10)</p>
-            <p style="margin-left: 25px;">37/3/A Escaton Garden Road, Dhaka-1000</p>
-        </div>
-        <div>
-            <p style="text-decoration: underline;font-weight: bold;">Budget And Accounts Department</p>
+            <p style="text-decoration: underline;font-weight: bold; margin-top: 10px;">Budget And Accounts Department</p>
             <h4 style="margin: 0px;margin-top:10px;margin-bottom:5px">Salary Slip/Pay Slip</h4>
             <hr style="margin: 0px;border: 1px solid black;">
         </div>
@@ -95,7 +105,7 @@
     <table class="employee-info" style="font-size: 12px;">
         <tr>
             <td style="font-weight:bold">EMP ID</td>
-            <td>{{ 'EMP-'.$report->user_id }}</td>
+            <td>{{ !empty($report->emp_id) ? $report->emp_id : 'EMP-'.$report->user_id }}</td>
             <td style="font-weight:bold">EMP Name</td>
             <td>{{ $report->name.' '.$report->last_name }}</td>
         </tr>
@@ -180,8 +190,8 @@
             <tr style="text-align: left">
                 <td>Transport Allowance</td>
                 <td>{{ number_format($report->trans_allow, 2) }}</td>
-                <td>Vehicle Fare</td>
-                <td>{{ "-" }}</td>
+                <td>Vehicle Fare / Other Loans</td>
+                <td>{{ !empty($report->others_deduct) && $report->others_deduct > 0 ? number_format($report->others_deduct, 2) : '-' }}</td>
             </tr>
             <tr style="text-align: left">
                 <td></td>
@@ -191,7 +201,7 @@
             </tr>
             <tr>
                 <td>Total Earning</td>
-                <td>{{ number_format($report->net_salary, 2) }}</td>
+                <td>{{ number_format($report->gross_salary, 2) }}</td>
                 <td>Total Deduction</td>
                 <td>{{ number_format($report->total_deduct, 2) }}</td>
             </tr>

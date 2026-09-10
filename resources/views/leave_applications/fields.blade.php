@@ -25,9 +25,9 @@
     </div>
     <div class="col-md-6">
         <!-- Is Half Day Field -->
-        <div class="form-group">
-            {!! Form::label('is_half_day', 'Half Day:') !!}
-            {!! Form::checkbox('is_half_day', 1, null, ['class' => 'form-check-input']) !!}
+        <div class="form-group d-flex align-items-center" style="margin-top: 28px;">
+            {!! Form::checkbox('is_half_day', 1, null, ['class' => 'form-check-input', 'id' => 'fields_is_half_day', 'style' => 'width: 18px; height: 18px; cursor: pointer; margin-right: 10px;']) !!}
+            {!! Form::label('fields_is_half_day', 'Apply as Half Day (0.5 Day)', ['class' => 'fw-bold mb-0', 'style' => 'cursor: pointer; padding-left: 4px;']) !!}
         </div>
     </div>
 </div>

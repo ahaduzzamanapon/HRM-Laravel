@@ -67,6 +67,16 @@ class SalaryCalculator
         $netSalary = $grossSalary;
         // Apply deductions (tax, provident fund, loans, etc.)
         $netSalary -= $user->welfare_fund_deduction;
+        if ($user->welfare_fund_deduction > 0) {
+            \App\Models\WelfareFundContribution::create([
+                'user_id' => $user->id,
+                'amount' => $user->welfare_fund_deduction,
+                'month' => now()->format('F'),
+                'year' => now()->format('Y'),
+                'contribution_date' => now(),
+                'remarks' => 'Monthly Payroll Deduction',
+            ]);
+        }
 
         if ($user->is_pf_member) {
             $pfSetting = ProvidentFundSetting::first();

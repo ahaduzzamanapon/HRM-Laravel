@@ -43,12 +43,18 @@ class RoleHasPermissionsSeeder extends Seeder
             $hrRole->permissions()->attach(Permission::whereIn('key', $hrPermissions)->pluck('id')->toArray());
         }
 
-        // Assign specific permissions to Employee role
-        if ($employeeRole) {
+        // Assign specific permissions to Employee roles
+        $employeeRoles = RoleAndPermission::where('name', 'Employee')->orWhere('key', 'employee')->get();
+        if ($employeeRoles->count() > 0) {
             $employeePermissions = [
-                'staff_management', 'view_employees', 'apply_leave', 'leave_applications', 'movements' // Added
+                'staff_management', 'view_employees', 'apply_leave', 'leave_applications', 'movements',
+                'loans_and_advances', 'apply_loans', 'edit_loans', 'manage_loans',
+                'disciplinary_actions', 'view_my_departmental_cases'
             ];
-            $employeeRole->permissions()->attach(Permission::whereIn('key', $employeePermissions)->pluck('id')->toArray());
+            $permIds = Permission::whereIn('key', $employeePermissions)->pluck('id')->toArray();
+            foreach ($employeeRoles as $empRole) {
+                $empRole->permissions()->syncWithoutDetaching($permIds);
+            }
         }
     }
 }

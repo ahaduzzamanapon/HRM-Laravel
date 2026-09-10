@@ -20,4 +20,19 @@ class LoanType extends Model
     protected $casts = [
         'loan_ceilings' => 'array',
     ];
+
+    public function getLoanCeilingsAttribute($value)
+    {
+        if (empty($value)) {
+            return [];
+        }
+        if (is_array($value)) {
+            return $value;
+        }
+        $decoded = is_string($value) ? json_decode($value, true) : $value;
+        if (is_string($decoded)) {
+            $decoded = json_decode($decoded, true);
+        }
+        return is_array($decoded) ? $decoded : [];
+    }
 }

@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 use Flash;
 use Response;
 
+use App\Services\PermissionDiscoveryService;
+
 class RoleAndPermissionController extends AppBaseController
 {
     /**
@@ -45,8 +47,10 @@ class RoleAndPermissionController extends AppBaseController
             abort(403, 'You do not have permission to manage roles.');
         }
 
-        $permissions    = Permission::with('children')->whereNull('parent_id')->get();
+        $permissionTree  = PermissionDiscoveryService::getPermissionTree();
+        $permissionMatrix = PermissionDiscoveryService::getPermissionMatrix();
         $permission_have = [];
+        $totalPermissions = Permission::count();
 
         // Branch dropdown: super admin sees all; others only see their own branch
         if (isSuperAdmin()) {
@@ -56,7 +60,7 @@ class RoleAndPermissionController extends AppBaseController
             $branches = Branch::where('id', $branchId)->pluck('branch_name', 'id');
         }
 
-        return view('role_and_permissions.create', compact('permissions', 'permission_have', 'branches'));
+        return view('role_and_permissions.create', compact('permissionTree', 'permissionMatrix', 'permission_have', 'branches', 'totalPermissions'));
     }
 
     /**
@@ -81,6 +85,7 @@ class RoleAndPermissionController extends AppBaseController
 
         $roleAndPermission = RoleAndPermission::create($input1);
 
+        // Recursively include all parent IDs for selected child permissions
         $parentIds = Permission::whereIn('id', $selectedPermissions)
             ->whereNotNull('parent_id')
             ->pluck('parent_id')
@@ -107,7 +112,11 @@ class RoleAndPermissionController extends AppBaseController
 
         enforceBranchOwnership($roleAndPermission);
 
-        return view('role_and_permissions.show')->with('roleAndPermission', $roleAndPermission);
+        $permissionMatrix = PermissionDiscoveryService::getPermissionMatrix();
+        $assignedPermissionIds = $roleAndPermission->permissions->pluck('id')->toArray();
+        $totalPermissions = Permission::count();
+
+        return view('role_and_permissions.show', compact('roleAndPermission', 'permissionMatrix', 'assignedPermissionIds', 'totalPermissions'));
     }
 
     /**
@@ -128,8 +137,10 @@ class RoleAndPermissionController extends AppBaseController
 
         enforceBranchOwnership($roleAndPermission);
 
-        $permissions     = Permission::with('children')->whereNull('parent_id')->get();
+        $permissionTree  = PermissionDiscoveryService::getPermissionTree();
+        $permissionMatrix = PermissionDiscoveryService::getPermissionMatrix();
         $permission_have = $roleAndPermission->permissions->pluck('id')->toArray();
+        $totalPermissions = Permission::count();
 
         if (isSuperAdmin()) {
             $branches = Branch::pluck('branch_name', 'id');
@@ -138,7 +149,7 @@ class RoleAndPermissionController extends AppBaseController
             $branches = Branch::where('id', $branchId)->pluck('branch_name', 'id');
         }
 
-        return view('role_and_permissions.edit', compact('roleAndPermission', 'permission_have', 'permissions', 'branches'));
+        return view('role_and_permissions.edit', compact('roleAndPermission', 'permissionTree', 'permissionMatrix', 'permission_have', 'branches', 'totalPermissions'));
     }
 
     /**
@@ -181,8 +192,66 @@ class RoleAndPermissionController extends AppBaseController
         $allPermissionIds = array_unique(array_merge($selectedPermissions, $parentIds));
         $roleAndPermission->permissions()->sync($allPermissionIds);
 
+        \App\Services\AuthorizationEngine::clearCache();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Role and permissions updated in real-time!',
+                'assigned_count' => count($selectedPermissions),
+                'total_count' => Permission::count()
+            ]);
+        }
+
         Flash::success('Role updated successfully.');
         return redirect(route('roleAndPermissions.index'));
+    }
+
+    /**
+     * Real-time AJAX permission sync endpoint.
+     */
+    public function syncPermissions(Request $request, $id)
+    {
+        if (!can('manage_roles_and_permissions') && !can('manage_roles')) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized access denied.'], 403);
+        }
+
+        $roleAndPermission = RoleAndPermission::find($id);
+        if (!$roleAndPermission) {
+            return response()->json(['status' => 'error', 'message' => 'Role not found.'], 404);
+        }
+
+        enforceBranchOwnership($roleAndPermission);
+
+        if ($request->has('name') && !empty($request->input('name'))) {
+            $roleAndPermission->name = $request->input('name');
+        }
+        if ($request->has('key') && !empty($request->input('key'))) {
+            $roleAndPermission->key = $request->input('key');
+        }
+        if (isSuperAdmin() && $request->has('branch_id')) {
+            $roleAndPermission->branch_id = $request->input('branch_id') ?: null;
+        }
+        $roleAndPermission->save();
+
+        $selectedPermissions = $request->input('permission', []);
+
+        $parentIds = Permission::whereIn('id', $selectedPermissions)
+            ->whereNotNull('parent_id')
+            ->pluck('parent_id')
+            ->toArray();
+
+        $allPermissionIds = array_unique(array_merge($selectedPermissions, $parentIds));
+        $roleAndPermission->permissions()->sync($allPermissionIds);
+
+        \App\Services\AuthorizationEngine::clearCache();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Permissions updated in real-time!',
+            'assigned_count' => count($selectedPermissions),
+            'total_count' => Permission::count()
+        ]);
     }
 
     /**

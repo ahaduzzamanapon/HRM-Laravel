@@ -19,7 +19,7 @@
     </style>
     <div class="user-info text-center py-3 user-panel">
         <img src="{{ asset(Auth::user()->image ?? 'assets/images/avatars/01.png') }}" alt="User Image"
-            class="img-fluid rounded-circle mb-2" style="width: 60px;height: 60px;bject-fit: cover;">
+            class="img-fluid rounded-circle mb-2" style="width: 60px;height: 60px;object-fit: cover;">
         <h5 style="color: white;" class="mb-0">{{ Auth::user()->name }} {{ Auth::user()->last_name }}</h5>
         <p style="color: white;" class="mb-0">{{ Auth::user()->email }}</p>
         <p style="color: white;" class="mb-0"><small>{{ Auth::user()->role->name ?? 'N/A' }}</small></p>
@@ -27,31 +27,27 @@
 @endauth
 
 {{-- Dashboard --}}
-<li class="nav-item">
-    <a class="nav-link {!! Request::is('/') ? 'active' : '' !!}" aria-current="page" href="{{ url('/') }}">
-        <i class="icon im im-icon-Home"></i>
-        <span class="item-name">Dashboard</span>
-    </a>
-</li>
+@if(can('dashboard'))
+    <li class="nav-item">
+        <a class="nav-link {!! Request::is('/') || Request::is('dashboard') ? 'active' : '' !!}" aria-current="page" href="{{ url('/') }}">
+            <i class="icon im im-icon-Home"></i>
+            <span class="item-name">Dashboard</span>
+        </a>
+    </li>
+@endif
 
 {{-- My Profile --}}
-<li class="nav-item">
-    <a class="nav-link {!! Request::is('my-profile') ? 'active' : '' !!}" href="{{ route('profile') }}">
-        <i class="icon im im-icon-ID-Card"></i>
-        <span class="item-name">My Profile</span>
-    </a>
-</li>
+@if(can('my_profile'))
+    <li class="nav-item">
+        <a class="nav-link {!! Request::is('my-profile') ? 'active' : '' !!}" href="{{ route('profile') }}">
+            <i class="icon im im-icon-ID-Card"></i>
+            <span class="item-name">My Profile</span>
+        </a>
+    </li>
+@endif
 
-{{-- My Attendance --}}
-{{-- <li class="nav-item">
-    <a class="nav-link {!! Request::is('my-attendance') ? 'active' : '' !!}" href="{{ route('attendance.my') }}">
-        <i class="icon im im-icon-Clock-Forward"></i>
-        <span class="item-name">My Attendance</span>
-    </a>
-</li> --}}
-
-{{-- Users Management --}}
-@if(can('staff_management'))
+{{-- Staff Management --}}
+@if(can('staff_management') && (can('view_employees') || can('employee_departures') || can('view_employee_departures')))
     <li class="nav-item">
         <a class="nav-link {!! (Request::is('users*') || Request::is('employeeDepartures*') ? 'active' : '') !!}" data-bs-toggle="collapse" href="#users_menu"
             role="button" aria-expanded="false" aria-controls="users_menu">
@@ -69,9 +65,11 @@
                         <span class="item-name">Employees</span>
                     </a>
                 </li>
+            @endif
+            @if(can('employee_departures') || can('view_employee_departures'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('employeeDepartures*') ? 'active' : '' !!}" href="{{ route('employeeDepartures.index') }}">
-                        <i class="icon im im-icon-Exit"></i>
+                        <i class="icon im im-icon-Remove-User"></i>
                         <i class="sidenav-mini-icon"> DE </i>
                         <span class="item-name">Departed Employees</span>
                     </a>
@@ -81,22 +79,17 @@
     </li>
 @endif
 
-
-
-
-
-
-
-@if(can('organization'))
+{{-- Organization --}}
+@if(can('organization') && (can('manage_designations') || can('manage_departments') || can('rewardings') || can('innovations') || can('manage_branches')))
     <li class="nav-item">
-        <a class="nav-link {!! (Request::is('designations*') || Request::is('departments*') || Request::is('branches*') ? 'active' : '') !!}"
+        <a class="nav-link {!! (Request::is('designations*') || Request::is('departments*') || Request::is('branches*') || Request::is('rewardings*') || Request::is('innovations*') ? 'active' : '') !!}"
             data-bs-toggle="collapse" href="#organization_menu" role="button" aria-expanded="false"
-            aria-controls="settings_menu">
+            aria-controls="organization_menu">
             <i class="icon im im-icon-Gear"></i>
             <span class="item-name">Organization</span>
             <i class="right-icon im im-icon-Arrow-Right"></i>
         </a>
-        <ul class="sub-nav collapse  {!!  Request::is('designations*') || Request::is('departments*') || Request::is('branches*') ? 'show' : ''  !!}"
+        <ul class="sub-nav collapse {!! (Request::is('designations*') || Request::is('departments*') || Request::is('branches*') || Request::is('rewardings*') || Request::is('innovations*') ? 'show' : '') !!}"
             id="organization_menu" data-bs-parent="#sidebar-menu">
             @if(can('manage_designations'))
                 <li class="nav-item">
@@ -118,7 +111,7 @@
                     </a>
                 </li>
             @endif
-            @if(can('rewardings'))
+            <!-- @if(can('rewardings'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('rewardings*') ? 'active' : '' !!}"
                         href="{{ route('rewardings.index') }}">
@@ -137,7 +130,7 @@
                         <span class="item-name">Innovations</span>
                     </a>
                 </li>
-            @endif
+            @endif -->
             @if(can('manage_branches'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('branches*') ? 'active' : '' !!}" href="{{ route('branches.index') }}">
@@ -152,15 +145,30 @@
 @endif
 
 {{-- HR --}}
-@if(can('hr'))
+@php
+    $sidebarPendingLeaveCount = 0;
+    if (Auth::check()) {
+        $authUser = Auth::user();
+        $isEmp = \App\Services\AuthorizationEngine::isEmployeeRole($authUser);
+        if (!$isEmp && (isSuperAdmin() || can('approve_leave') || can('manage_leave_types') || can('manage_leaves'))) {
+            $pendingQuery = \App\Models\LeaveApplication::query();
+            applyUserBranchScope($pendingQuery, 'user');
+            $sidebarPendingLeaveCount = $pendingQuery->where('status', 'Pending')->count();
+        }
+    }
+@endphp
+@if(can('hr') && (can('upload_attendance_files') || can('process_attendance') || can('leave_applications') || can('movements') || can('smart_movement') || can('manage_holidays') || can('manage_shifts') || can('manage_leave_types')))
 <li class="nav-item">
-    <a class="nav-link {!! (Request::is('holydays*') || Request::is('shifts*') || Request::is('attendanceFileUploads*') || Request::is('leaveTypes*') || Request::is('leaveApplications*') ? 'active' : '') !!}"
-        data-bs-toggle="collapse" href="#hr_menu" role="button" aria-expanded="false" aria-controls="settings_menu">
+    <a class="nav-link {!! (Request::is('holydays*') || Request::is('shifts*') || Request::is('attendanceFileUploads*') || Request::is('leaveTypes*') || Request::is('leaveApplications*') || Request::is('movements*') || Request::is('new-movement*') ? 'active' : '') !!}"
+        data-bs-toggle="collapse" href="#hr_menu" role="button" aria-expanded="false" aria-controls="hr_menu">
         <i class="icon im im-icon-Gear"></i>
         <span class="item-name">HR</span>
+        @if($sidebarPendingLeaveCount > 0)
+            <span class="badge bg-danger rounded-pill ms-2" style="font-size: 11px; padding: 3px 7px;">{{ $sidebarPendingLeaveCount }}</span>
+        @endif
         <i class="right-icon im im-icon-Arrow-Right"></i>
     </a>
-    <ul class="sub-nav collapse  {!!  Request::is('holydays*') || Request::is('shifts*') || Request::is('attendanceFileUploads*') || Request::is('leaveTypes*') || Request::is('leaveApplications*') ? 'show' : ''  !!}"
+    <ul class="sub-nav collapse {!! (Request::is('holydays*') || Request::is('shifts*') || Request::is('attendanceFileUploads*') || Request::is('leaveTypes*') || Request::is('leaveApplications*') || Request::is('movements*') || Request::is('new-movement*') ? 'show' : '') !!}"
         id="hr_menu" data-bs-parent="#sidebar-menu">
         @if(can('upload_attendance_files'))
             <li class="nav-item">
@@ -172,13 +180,13 @@
                 </a>
             </li>
         @endif
-        @if(can('process_attendance'))
+        @if(can('process_attendance') || can('view_my_attendance') || can('my_attendance'))
             <li class="nav-item">
-                <a class="nav-link {!! Request::is('attendance/process*') ? 'active' : '' !!}"
+                <a class="nav-link {!! Request::is('attendance/process*') || Request::is('my-attendance*') ? 'active' : '' !!}"
                     href="{{ route('attendance.process.index') }}">
                     <i class="icon im im-icon-Clock-Forward"></i>
                     <i class="sidenav-mini-icon"> AP </i>
-                    <span class="item-name">Attendance Process</span>
+                    <span class="item-name">{{ \App\Services\AuthorizationEngine::isEmployeeRole(Auth::user()) ? 'Attendance' : 'Attendance Process' }}</span>
                 </a>
             </li>
         @endif
@@ -189,10 +197,13 @@
                     <i class="icon im im-icon-Calendar-4"></i>
                     <i class="sidenav-mini-icon"> LA </i>
                     <span class="item-name">Leave Applications</span>
+                    @if($sidebarPendingLeaveCount > 0)
+                        <span class="badge bg-danger rounded-pill ms-auto" style="font-size: 11px; padding: 3px 7px;">{{ $sidebarPendingLeaveCount }}</span>
+                    @endif
                 </a>
             </li>
         @endif
-        @if(can('movements'))
+        <!-- @if(can('movements'))
             <li class="nav-item">
                 <a class="nav-link {!! Request::is('movements*') ? 'active' : '' !!}" href="{{ route('movements.index') }}">
                     <i class="icon im im-icon-Location-2"></i>
@@ -200,9 +211,8 @@
                     <span class="item-name">Movements</span>
                 </a>
             </li>
-        @endif
-        {{-- Smart Movement --}}
-        @if(can('smart_movement') || can('movements'))
+        @endif -->
+        <!-- @if(can('smart_movement'))
         <li class="nav-item">
             <a class="nav-link {!! (Request::is('new-movement*') ? 'active' : '') !!}" data-bs-toggle="collapse" href="#smart_movement_menu"
                role="button" aria-expanded="false" aria-controls="smart_movement_menu">
@@ -211,7 +221,7 @@
                 <i class="right-icon im im-icon-Arrow-Right"></i>
             </a>
             <ul class="sub-nav collapse {!! Request::is('new-movement*') ? 'show' : '' !!}" id="smart_movement_menu">
-                @if(can('movements') || can('smart_movement'))
+                @if(can('view_smart_movement_dashboard'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('new-movement') ? 'active' : '' !!}" href="{{ route('new-movement.index') }}">
                         <i class="icon im im-icon-Dashboard"></i>
@@ -220,6 +230,7 @@
                     </a>
                 </li>
                 @endif
+                @if(can('view_my_movements'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('new-movement/my-dashboard*') ? 'active' : '' !!}" href="{{ route('new-movement.my-dashboard') }}">
                         <i class="icon im im-icon-User"></i>
@@ -227,7 +238,8 @@
                         <span class="item-name">My Movements</span>
                     </a>
                 </li>
-                @if(can('movements') || can('smart_movement'))
+                @endif
+                @if(can('view_ta_list'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('new-movement/ta-list*') ? 'active' : '' !!}" href="{{ route('new-movement.ta-list') }}">
                         <i class="icon im im-icon-File-Chart"></i>
@@ -235,6 +247,8 @@
                         <span class="item-name">TA List</span>
                     </a>
                 </li>
+                @endif
+                @if(can('view_ta_summary'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('new-movement/ta-summary*') ? 'active' : '' !!}" href="{{ route('new-movement.ta-summary') }}">
                         <i class="icon im im-icon-File-Chart"></i>
@@ -245,7 +259,7 @@
                 @endif
             </ul>
         </li>
-        @endif
+        @endif -->
         @if(can('manage_holidays'))
             <li class="nav-item">
                 <a class="nav-link {!! Request::is('holydays*') ? 'active' : '' !!}" href="{{ route('holydays.index') }}">
@@ -279,19 +293,37 @@
 @endif
 
 {{-- Payroll --}}
-@if(can('payroll'))
+@if(can('payroll') || can('my_payroll') || \App\Services\AuthorizationEngine::isEmployeeRole(Auth::user()))
     <li class="nav-item">
-        <a class="nav-link {!! (Request::is('payroll*') ? 'active' : '') !!}" data-bs-toggle="collapse" href="#payroll_menu"
+        <a class="nav-link {!! (Request::is('payroll*') || Request::is('my-payroll*') || Request::is('childAllowances*') || Request::is('bonuses*') || Request::is('tax-management*') ? 'active' : '') !!}" data-bs-toggle="collapse" href="#payroll_menu"
             role="button" aria-expanded="false" aria-controls="payroll_menu">
             <i class="icon im im-icon-User"></i>
-            <span class="item-name">Payroll & Compliance Modules</span>
+            <span class="item-name">Payroll & Compliance</span>
             <i class="right-icon im im-icon-Arrow-Right"></i>
         </a>
-        <ul class="sub-nav collapse {!! (Request::is('payroll*') || Request::is('bonuses*') ? 'show' : '') !!}" id="payroll_menu"
+        <ul class="sub-nav collapse {!! (Request::is('payroll*') || Request::is('my-payroll*') || Request::is('childAllowances*') || Request::is('bonuses*') || Request::is('tax-management*') ? 'show' : '') !!}" id="payroll_menu"
             data-bs-parent="#sidebar-menu">
+            @if(can('my_payroll') || \App\Services\AuthorizationEngine::isEmployeeRole(Auth::user()) || isSuperAdmin())
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('my-payroll*') ? 'active' : '' !!}" href="{{ route('my-payroll.index') }}">
+                        <i class="icon im im-icon-Money-Bag"></i>
+                        <i class="sidenav-mini-icon"> MP </i>
+                        <span class="item-name">My Payroll</span>
+                    </a>
+                </li>
+            @endif
+            @if(Route::has('childAllowances.index'))
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('childAllowances*') ? 'active' : '' !!}" href="{{ route('childAllowances.index') }}">
+                        <i class="icon im im-icon-Face-Style"></i>
+                        <i class="sidenav-mini-icon"> CA </i>
+                        <span class="item-name">Child Allowances</span>
+                    </a>
+                </li>
+            @endif
             @if(can('payroll_process'))
                 <li class="nav-item">
-                    <a class="nav-link {!! Request::is('payroll*') ? 'active' : '' !!}" href="{{ route('payroll.index') }}">
+                    <a class="nav-link {!! Request::is('payroll*') && !Request::is('my-payroll*') && !Request::is('childAllowances*') ? 'active' : '' !!}" href="{{ route('payroll.index') }}">
                         <i class="icon im im-icon-Clock-Forward"></i>
                         <i class="sidenav-mini-icon"> P </i>
                         <span class="item-name">Payroll Process</span>
@@ -320,69 +352,139 @@
     </li>
 @endif
 
-@if(can('welfare_fund'))
-    <li class="nav-item">
-        <a class="nav-link {!! (Request::is('employeeChildrenEducationSupports*') || Request::is('funeralSupports*') || Request::is('medicalSupports*') ? 'active' : '') !!}"
-            data-bs-toggle="collapse" href="#welfare_fund_menu" role="button" aria-expanded="false"
-            aria-controls="welfare_fund_menu">
-            <i class="icon im im-icon-Heart"></i>
-            <span class="item-name">Welfare Fund</span>
-            <i class="right-icon im im-icon-Arrow-Right"></i>
-        </a>
-        <ul class="sub-nav collapse  {!!  Request::is('employeeChildrenEducationSupports*') || Request::is('funeralSupports*') || Request::is('medicalSupports*') ? 'show' : ''  !!}"
-            id="welfare_fund_menu" data-bs-parent="#sidebar-menu">
-            @if(can('manage_employee_children_education_supports'))
-                <li class="nav-item">
-                    <a class="nav-link {!! Request::is('employeeChildrenEducationSupports*') ? 'active' : '' !!}"
-                        href="{{ route('employeeChildrenEducationSupports.index') }}">
-                        <i class="icon im im-icon-Student-Female"></i>
-                        <i class="sidenav-mini-icon"> ECES </i>
-                        <span class="item-name">Children Education Support</span>
-                    </a>
-                </li>
-            @endif
-            @if(can('manage_funeral_supports'))
-                <li class="nav-item">
-                    <a class="nav-link {!! Request::is('funeralSupports*') ? 'active' : '' !!}"
-                        href="{{ route('funeralSupports.index') }}">
-                        <i class="icon im im-icon-Coffin"></i>
-                        <i class="sidenav-mini-icon"> FS </i>
-                        <span class="item-name">Funeral Support</span>
-                    </a>
-                </li>
-            @endif
-            @if(can('manage_medical_supports'))
-                <li class="nav-item">
-                    <a class="nav-link {!! Request::is('medicalSupports*') ? 'active' : '' !!}"
-                        href="{{ route('medicalSupports.index') }}">
-                        <i class="icon im im-icon-Medical-Sign"></i>
-                        <i class="sidenav-mini-icon"> MS </i>
-                        <span class="item-name">Medical Support</span>
-                    </a>
-                </li>
-            @endif
-        </ul>
-    </li>
-@endif
+{{-- Welfare Fund --}}
+<li class="nav-item">
+    <a class="nav-link {!! (Request::is('welfare*') || Request::is('employeeChildrenEducationSupports*') || Request::is('funeralSupports*') || Request::is('medicalSupports*') ? 'active' : '') !!}"
+        data-bs-toggle="collapse" href="#welfare_fund_menu" role="button" aria-expanded="false"
+        aria-controls="welfare_fund_menu">
+        <i class="icon im im-icon-Heart"></i>
+        <span class="item-name">Welfare Fund</span>
+        <i class="right-icon im im-icon-Arrow-Right"></i>
+    </a>
+    <ul class="sub-nav collapse {!! Request::is('welfare*') || Request::is('employeeChildrenEducationSupports*') || Request::is('funeralSupports*') || Request::is('medicalSupports*') ? 'show' : '' !!}"
+        id="welfare_fund_menu" data-bs-parent="#sidebar-menu">
+        
+        @if(!\App\Services\AuthorizationEngine::isEmployeeRole() || isSuperAdmin())
+            <li class="nav-item">
+                <a class="nav-link {!! Request::is('welfare/dashboard*') ? 'active' : '' !!}"
+                    href="{{ route('welfare.dashboard') }}">
+                    <i class="icon im im-icon-Bar-Chart"></i>
+                    <i class="sidenav-mini-icon"> D </i>
+                    <span class="item-name">Welfare Dashboard</span>
+                </a>
+            </li>
+        @endif
 
-@if(can('disciplinary_actions'))
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('welfare/my-statement*') ? 'active' : '' !!}"
+                href="{{ route('welfare.myStatement') }}">
+                <i class="icon im im-icon-File-TXT"></i>
+                <i class="sidenav-mini-icon"> S </i>
+                <span class="item-name">My Welfare Statement</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('employeeChildrenEducationSupports*') ? 'active' : '' !!}"
+                href="{{ route('employeeChildrenEducationSupports.index') }}">
+                <i class="icon im im-icon-Student-Female"></i>
+                <i class="sidenav-mini-icon"> ECES </i>
+                <span class="item-name">Children Education Support</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('funeralSupports*') ? 'active' : '' !!}"
+                href="{{ route('funeralSupports.index') }}">
+                <i class="icon im im-icon-Coffin"></i>
+                <i class="sidenav-mini-icon"> FS </i>
+                <span class="item-name">Funeral Support</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link {!! Request::is('medicalSupports*') ? 'active' : '' !!}"
+                href="{{ route('medicalSupports.index') }}">
+                <i class="icon im im-icon-Medical-Sign"></i>
+                <i class="sidenav-mini-icon"> MS </i>
+                <span class="item-name">Medical Support</span>
+            </a>
+        </li>
+
+        @if(!\App\Services\AuthorizationEngine::isEmployeeRole() || isSuperAdmin())
+            <li class="nav-item">
+                <a class="nav-link {!! Request::is('welfare/ledger*') ? 'active' : '' !!}"
+                    href="{{ route('welfare.ledger') }}">
+                    <i class="icon im im-icon-Bank"></i>
+                    <i class="sidenav-mini-icon"> L </i>
+                    <span class="item-name">Fund Ledger</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {!! Request::is('welfare/reports*') ? 'active' : '' !!}"
+                    href="{{ route('welfare.reports') }}">
+                    <i class="icon im im-icon-File-Chart"></i>
+                    <i class="sidenav-mini-icon"> R </i>
+                    <span class="item-name">Welfare Reports</span>
+                </a>
+            </li>
+        @endif
+
+        @if(isSuperAdmin() || can('manage_welfare_settings'))
+            <li class="nav-item">
+                <a class="nav-link {!! Request::is('welfare/settings*') ? 'active' : '' !!}"
+                    href="{{ route('welfare.settings.edit') }}">
+                    <i class="icon im im-icon-Gear"></i>
+                    <i class="sidenav-mini-icon"> C </i>
+                    <span class="item-name">Welfare Settings</span>
+                </a>
+            </li>
+        @endif
+    </ul>
+</li>
+
+{{-- Disciplinary Actions --}}
+@if(can('disciplinary_actions') && (can('view_departmental_cases') || can('view_my_departmental_cases') || can('manage_departmental_cases') || can('manage_penalties')))
+    @php
+        $deptCaseBadgeCount = 0;
+        if (auth()->check()) {
+            $authUser = auth()->user();
+            $isEmpOnly = !can('manage_departmental_cases') && !can('view_departmental_cases') && !isSuperAdmin();
+            $pendingStatuses = ['Pending', 'Under Investigation', 'Show Cause Issued', 'Hearing Scheduled'];
+            if ($isEmpOnly) {
+                $deptCaseBadgeCount = \App\Models\DepartmentalCase::where('employee_id', $authUser->id)
+                    ->whereIn('status', $pendingStatuses)
+                    ->count();
+            } else {
+                $baseDeptQuery = \App\Models\DepartmentalCase::query();
+                applyUserBranchScope($baseDeptQuery, 'employee');
+                $deptCaseBadgeCount = $baseDeptQuery->whereIn('status', $pendingStatuses)->count();
+            }
+        }
+    @endphp
     <li class="nav-item">
         <a class="nav-link {!! (Request::is('departmentalCases*') || Request::is('penalties*') ? 'active' : '') !!}"
             data-bs-toggle="collapse" href="#disciplinary_actions_menu" role="button" aria-expanded="false"
             aria-controls="disciplinary_actions_menu">
             <i class="icon im im-icon-Hammer"></i>
             <span class="item-name">Disciplinary Actions</span>
+            @if($deptCaseBadgeCount > 0)
+                <span class="badge rounded-pill bg-danger ms-auto me-2 px-2 py-1" style="font-size: 0.75rem;">{{ $deptCaseBadgeCount }}</span>
+            @endif
             <i class="right-icon im im-icon-Arrow-Right"></i>
         </a>
-        <ul class="sub-nav collapse  {!!  Request::is('departmentalCases*') || Request::is('penalties*') ? 'show' : ''  !!}"
+        <ul class="sub-nav collapse {!! Request::is('departmentalCases*') || Request::is('penalties*') ? 'show' : '' !!}"
             id="disciplinary_actions_menu" data-bs-parent="#sidebar-menu">
-            @if(can('manage_departmental_cases'))
+            @if(can('manage_departmental_cases') || can('view_departmental_cases') || can('view_my_departmental_cases'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('departmentalCases*') ? 'active' : '' !!}"
                         href="{{ route('departmentalCases.index') }}">
                         <i class="icon im im-icon-Folder-Open"></i>
                         <i class="sidenav-mini-icon"> DC </i>
                         <span class="item-name">Departmental Cases</span>
+                        @if($deptCaseBadgeCount > 0)
+                            <span class="badge rounded-pill bg-danger ms-auto me-1 px-2 py-1" style="font-size: 0.75rem;">{{ $deptCaseBadgeCount }}</span>
+                        @endif
                     </a>
                 </li>
             @endif
@@ -399,7 +501,8 @@
     </li>
 @endif
 
-@if(can('loans_and_advances') || can('manage_loans') || can('apply_loans') || can('approve_loans') || Auth::check())
+{{-- Loans and Advances --}}
+@if(can('loans_and_advances') || \App\Services\AuthorizationEngine::isEmployeeRole(Auth::user()) || isSuperAdmin() || can('manage_loans') || can('apply_loans'))
     <li class="nav-item">
         <a class="nav-link {!! (Request::is('loanTypes*') || Request::is('loans*') || Request::is('employee-loans*') || Request::is('loanRepayments*') ? 'active' : '') !!}"
             data-bs-toggle="collapse" href="#loans_and_advances_menu" role="button" aria-expanded="false"
@@ -408,18 +511,18 @@
             <span class="item-name">Loans and Advances</span>
             <i class="right-icon im im-icon-Arrow-Right"></i>
         </a>
-        <ul class="sub-nav collapse  {!!  Request::is('loanTypes*') || Request::is('loans*') || Request::is('employee-loans*') || Request::is('loanRepayments*') ? 'show' : ''  !!}"
+        <ul class="sub-nav collapse {!! Request::is('loanTypes*') || Request::is('loans*') || Request::is('employee-loans*') || Request::is('loanRepayments*') ? 'show' : '' !!}"
             id="loans_and_advances_menu" data-bs-parent="#sidebar-menu">
-            @if(can('manage_loan_types'))
+            @if(can('manage_loan_types') || isSuperAdmin())
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('loanTypes*') ? 'active' : '' !!}" href="{{ route('loanTypes.index') }}">
-                        <i class="icon im im-icon-Align-Justify-All"></i>
+                        <i class="icon im im-icon-Align-JustifyAll"></i>
                         <i class="sidenav-mini-icon"> LT </i>
                         <span class="item-name">Loan Types</span>
                     </a>
                 </li>
             @endif
-            @if(Auth::check())
+            @if(can('manage_loans') || can('apply_loans') || \App\Services\AuthorizationEngine::isEmployeeRole(Auth::user()) || isSuperAdmin())
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('employee-loans*') || Request::is('loans*') ? 'active' : '' !!}" href="{{ route('employeeLoans.index') }}">
                         <i class="icon im im-icon-Coins"></i>
@@ -432,7 +535,7 @@
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('loanRepayments*') ? 'active' : '' !!}"
                         href="{{ route('loanRepayments.index') }}">
-                        <i class="icon im im-icon-Money-Graph"></i>
+                        <i class="icon im im-icon-Money-2"></i>
                         <i class="sidenav-mini-icon"> LR </i>
                         <span class="item-name">Loan Repayments</span>
                     </a>
@@ -442,9 +545,8 @@
     </li>
 @endif
 
-
 {{-- Provident Fund --}}
-@if(can('provident_fund'))
+@if((can('provident_fund') || \App\Services\AuthorizationEngine::isEmployeeRole()) && (can('pf_dashboard') || can('manage_pf_schemes') || can('manage_pf_employees') || can('process_pf_contributions') || can('view_pf_reports') || can('pf_withdrawals') || can('pf_loans') || can('view_pf_analytics') || \App\Services\AuthorizationEngine::isEmployeeRole()))
     <li class="nav-item">
         <a class="nav-link {!! (Request::is('pf*') ? 'active' : '') !!}"
             data-bs-toggle="collapse" href="#new_pf_menu" role="button" aria-expanded="false"
@@ -453,9 +555,38 @@
             <span class="item-name">Provident Fund</span>
             <i class="right-icon im im-icon-Arrow-Right"></i>
         </a>
-        <ul class="sub-nav collapse  {!!  Request::is('pf*') ? 'show' : ''  !!}"
+        <ul class="sub-nav collapse {!! Request::is('pf*') ? 'show' : '' !!}"
             id="new_pf_menu" data-bs-parent="#sidebar-menu">
-            
+            @if(can('pf_dashboard') || \App\Services\AuthorizationEngine::isEmployeeRole())
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('pf/dashboard*') ? 'active' : '' !!}"
+                        href="{{ route('pf.dashboard') }}">
+                        <i class="icon im im-icon-Bar-Chart"></i>
+                        <i class="sidenav-mini-icon"> D </i>
+                        <span class="item-name">PF Dashboard</span>
+                    </a>
+                </li>
+            @endif
+            @if(can('pf_loans') || \App\Services\AuthorizationEngine::isEmployeeRole())
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('pf/loans*') ? 'active' : '' !!}"
+                        href="{{ route('pf.loans.index') }}">
+                        <i class="icon im im-icon-Money-Bag"></i>
+                        <i class="sidenav-mini-icon"> L </i>
+                        <span class="item-name">Loan Applications</span>
+                    </a>
+                </li>
+            @endif
+            @if(\App\Services\AuthorizationEngine::isEmployeeRole() || can('view_pf_reports'))
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('pf/reports/statement*') ? 'active' : '' !!}"
+                        href="{{ route('pf.reports.statement') }}">
+                        <i class="icon im im-icon-File-TXT"></i>
+                        <i class="sidenav-mini-icon"> S </i>
+                        <span class="item-name">My PF Statement</span>
+                    </a>
+                </li>
+            @endif
             @if(can('manage_pf_schemes'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('pf/schemes*') ? 'active' : '' !!}"
@@ -466,16 +597,16 @@
                     </a>
                 </li>
             @endif
-            
-            <li class="nav-item">
-                <a class="nav-link {!! Request::is('pf/employees*') ? 'active' : '' !!}"
-                    href="{{ route('pf.employees.index') }}">
-                    <i class="icon im im-icon-User"></i>
-                    <i class="sidenav-mini-icon"> E </i>
-                    <span class="item-name">Employee List</span>
-                </a>
-            </li>
-
+            @if(can('manage_pf_employees'))
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('pf/employees*') ? 'active' : '' !!}"
+                        href="{{ route('pf.employees.index') }}">
+                        <i class="icon im im-icon-User"></i>
+                        <i class="sidenav-mini-icon"> E </i>
+                        <span class="item-name">Employee List</span>
+                    </a>
+                </li>
+            @endif
             @if(can('process_pf_contributions'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('pf/contributions*') ? 'active' : '' !!}"
@@ -486,35 +617,27 @@
                     </a>
                 </li>
             @endif
-
-            <li class="nav-item">
-                <a class="nav-link {!! Request::is('pf/reports/yearly*') ? 'active' : '' !!}"
-                    href="{{ route('pf.reports.yearly') }}">
-                    <i class="icon im im-icon-Calendar-4"></i>
-                    <i class="sidenav-mini-icon"> Y </i>
-                    <span class="item-name">Yearly Reports</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {!! Request::is('pf/withdrawals*') ? 'active' : '' !!}"
-                    href="{{ route('pf.withdrawals.index') }}">
-                    <i class="icon im im-icon-Hand-Touch"></i>
-                    <i class="sidenav-mini-icon"> W </i>
-                    <span class="item-name">Withdrawal Requests</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {!! Request::is('pf/loans*') ? 'active' : '' !!}"
-                    href="{{ route('pf.loans.index') }}">
-                    <i class="icon im im-icon-Money-Bag"></i>
-                    <i class="sidenav-mini-icon"> L </i>
-                    <span class="item-name">Loan Applications</span>
-                </a>
-            </li>
-
-            @if(can('view_pf_reports'))
+            @if(can('view_pf_reports') && !\App\Services\AuthorizationEngine::isEmployeeRole())
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('pf/reports/yearly*') ? 'active' : '' !!}"
+                        href="{{ route('pf.reports.yearly') }}">
+                        <i class="icon im im-icon-Calendar-4"></i>
+                        <i class="sidenav-mini-icon"> Y </i>
+                        <span class="item-name">Yearly Reports</span>
+                    </a>
+                </li>
+            @endif
+            @if(can('pf_withdrawals') && !\App\Services\AuthorizationEngine::isEmployeeRole())
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('pf/withdrawals*') ? 'active' : '' !!}"
+                        href="{{ route('pf.withdrawals.index') }}">
+                        <i class="icon im im-icon-Hand-Touch"></i>
+                        <i class="sidenav-mini-icon"> W </i>
+                        <span class="item-name">Withdrawal Requests</span>
+                    </a>
+                </li>
+            @endif
+            @if(can('view_pf_analytics') && !\App\Services\AuthorizationEngine::isEmployeeRole())
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('pf/reports/analytics*') ? 'active' : '' !!}"
                         href="{{ route('pf.reports.analytics') }}">
@@ -529,7 +652,7 @@
 @endif
 
 {{-- Pension Module --}}
-@if(can('pension'))
+@if(can('pension') && (can('manage_pension_policies') || can('manage_pension_eligibility') || can('manage_pension_calculations') || can('manage_pension_disbursements') || can('manage_arrear_bills') || can('view_pension_reports')))
     <li class="nav-item">
         <a class="nav-link {!! (Request::is('admin/pension*') ? 'active' : '') !!}"
             data-bs-toggle="collapse" href="#pension_menu" role="button" aria-expanded="false"
@@ -538,9 +661,9 @@
             <span class="item-name">Pension</span>
             <i class="right-icon im im-icon-Arrow-Right"></i>
         </a>
-        <ul class="sub-nav collapse  {!!  Request::is('admin/pension*') ? 'show' : ''  !!}"
+        <ul class="sub-nav collapse {!! Request::is('admin/pension*') ? 'show' : '' !!}"
             id="pension_menu" data-bs-parent="#sidebar-menu">
-        {{-- <!-- @if(can('manage_pension_policies')) --> --}}
+            @if(can('manage_pension_policies'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('admin/pension/policies*') ? 'active' : '' !!}"
                         href="{{ route('admin.pension.policies.index') }}">
@@ -549,8 +672,8 @@
                         <span class="item-name">Policies & Schemes</span>
                     </a>
                 </li>
-            {{-- <!-- @endif --> --}}
-            {{-- <!-- @if(can('manage_pension_eligibility')) --> --}}
+            @endif
+            @if(can('manage_pension_eligibility'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('admin/pension/eligibility*') ? 'active' : '' !!}"
                         href="{{ route('admin.pension.eligibility.index') }}">
@@ -559,8 +682,8 @@
                         <span class="item-name">Eligibility Checks</span>
                     </a>
                 </li>
-            {{-- <!-- @endif --> --}}
-            {{-- <!-- @if(can('manage_pension_calculations')) --> --}}
+            @endif
+            @if(can('manage_pension_calculations'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('admin/pension/calculations*') ? 'active' : '' !!}"
                         href="{{ route('admin.pension.calculations.index') }}">
@@ -569,8 +692,8 @@
                         <span class="item-name">Calculations</span>
                     </a>
                 </li>
-            {{-- <!-- @endif --> --}}
-            {{-- <!-- @if(can('manage_pension_disbursements')) --> --}}
+            @endif
+            @if(can('manage_pension_disbursements'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('admin/pension/disbursements*') ? 'active' : '' !!}"
                         href="{{ route('admin.pension.disbursements.index') }}">
@@ -579,31 +702,33 @@
                         <span class="item-name">Disbursements</span>
                     </a>
                 </li>
-            {{-- <!-- @endif --> --}}
+            @endif
             @if(can('manage_arrear_bills'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('admin/pension/arrear-bills*') ? 'active' : '' !!}"
                         href="{{ route('admin.pension.arrear-bills.index') }}">
-                        <i class="icon im im-icon-File-Edit"></i>
+                        <i class="icon im im-icon-File-Clipboard"></i>
                         <i class="sidenav-mini-icon"> AB </i>
                         <span class="item-name">Arrear Bills</span>
                     </a>
                 </li>
             @endif
-            <li class="nav-item">
-                <a class="nav-link {!! Request::is('admin/pension/reports*') ? 'active' : '' !!}"
-                    href="{{ route('admin.pension.reports.index') }}">
-                    <i class="icon im im-icon-File-Chart"></i>
-                    <i class="sidenav-mini-icon"> PR </i>
-                    <span class="item-name">Pension Reports</span>
-                </a>
-            </li>
+            @if(can('view_pension_reports'))
+                <li class="nav-item">
+                    <a class="nav-link {!! Request::is('admin/pension/reports*') ? 'active' : '' !!}"
+                        href="{{ route('admin.pension.reports.index') }}">
+                        <i class="icon im im-icon-File-Chart"></i>
+                        <i class="sidenav-mini-icon"> PR </i>
+                        <span class="item-name">Pension Reports</span>
+                    </a>
+                </li>
+            @endif
         </ul>
     </li>
 @endif
 
-{{--Recruitment--}}
-@if(can('recruitment'))
+{{-- Recruitment --}}
+@if(can('recruitment') && (can('manage_recruitment') || can('manage_recruitment_applications') || can('manage_recruitment_posts') || can('manage_career_page')))
     <li class="nav-item">
         <a class="nav-link {!! (Request::is('admin/recruitment/dashboard') || Request::is('recruitment*') || Request::is('recruitments*') || Request::is('admin/applications*') || Request::is('admin/career-page*') ? 'active' : '') !!}"
             data-bs-toggle="collapse" href="#recruitment_menu" role="button" aria-expanded="false"
@@ -612,7 +737,7 @@
             <span class="item-name">Recruitment</span>
             <i class="right-icon im im-icon-Arrow-Right"></i>
         </a>
-        <ul class="sub-nav collapse  {!!  Request::is('admin/recruitment/dashboard') || Request::is('recruitment*') || Request::is('recruitments*') || Request::is('admin/applications*') || Request::is('admin/career-page*') ? 'show' : ''  !!}"
+        <ul class="sub-nav collapse {!! Request::is('admin/recruitment/dashboard') || Request::is('recruitment*') || Request::is('recruitments*') || Request::is('admin/applications*') || Request::is('admin/career-page*') ? 'show' : '' !!}"
             id="recruitment_menu" data-bs-parent="#sidebar-menu">
             @if(can('manage_recruitment'))
                 <li class="nav-item">
@@ -623,6 +748,8 @@
                         <span class="item-name">Dashboard</span>
                     </a>
                 </li>
+            @endif
+            @if(can('manage_recruitment_applications'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('admin/applications*') ? 'active' : '' !!}"
                         href="{{ route('admin.applications.index') }}"> 
@@ -631,6 +758,8 @@
                         <span class="item-name">Applications</span>
                     </a>
                 </li>
+            @endif
+            @if(can('manage_recruitment_posts'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('recruitments*') ? 'active' : '' !!}"
                         href="{{ route('recruitments.index') }}"> 
@@ -639,6 +768,8 @@
                         <span class="item-name">Recruitment</span>
                     </a>
                 </li>
+            @endif
+            @if(can('manage_career_page'))
                 <li class="nav-item">
                     <a class="nav-link {!! Request::is('admin/career-page*') ? 'active' : '' !!}" href="{{ route('admin.career-page.index') }}"> 
                         <i class="icon im im-icon-Globe"></i>
@@ -650,9 +781,9 @@
         </ul>
     </li>
 @endif
-{{--End Recruitment--}}
 
 {{-- Biometric --}}
+@if(can('biometric') && (can('manage_biometric_devices') || can('view_biometric_attendance_logs') || can('manage_biometric_employee_mappings') || can('manage_biometric_commands')))
 <li class="nav-item">
     <a class="nav-link {!! (Request::is('biometricDevices*') || Request::is('biometricAttendanceLogs*') || Request::is('biometricEmployeeMappings*') || Request::is('biometricCommands*') ? 'active' : '') !!}"
         data-bs-toggle="collapse" href="#biometric_menu" role="button" aria-expanded="false"
@@ -663,6 +794,7 @@
     </a>
     <ul class="sub-nav collapse {!! (Request::is('biometricDevices*') || Request::is('biometricAttendanceLogs*') || Request::is('biometricEmployeeMappings*') || Request::is('biometricCommands*') ? 'show' : '') !!}"
         id="biometric_menu" data-bs-parent="#sidebar-menu">
+        @if(can('manage_biometric_devices'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('biometricDevices*') ? 'active' : '' !!}"
                 href="{{ route('biometricDevices.index') }}">
@@ -671,6 +803,8 @@
                 <span class="item-name">Devices</span>
             </a>
         </li>
+        @endif
+        @if(can('view_biometric_attendance_logs'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('biometricAttendanceLogs*') ? 'active' : '' !!}"
                 href="{{ route('biometricAttendanceLogs.index') }}">
@@ -679,6 +813,8 @@
                 <span class="item-name">Attendance Logs</span>
             </a>
         </li>
+        @endif
+        @if(can('manage_biometric_employee_mappings'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('biometricEmployeeMappings*') ? 'active' : '' !!}"
                 href="{{ route('biometricEmployeeMappings.index') }}">
@@ -687,6 +823,8 @@
                 <span class="item-name">Employees Mapping</span>
             </a>
         </li>
+        @endif
+        @if(can('manage_biometric_commands'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('biometricCommands*') ? 'active' : '' !!}"
                 href="{{ route('biometricCommands.index') }}">
@@ -695,11 +833,13 @@
                 <span class="item-name">Commands</span>
             </a>
         </li>
+        @endif
     </ul>
 </li>
+@endif
 
 {{-- Inventory --}}
-@if(can('inventory'))
+@if(can('inventory') && (can('manage_asset_categories') || can('manage_assets') || can('manage_asset_assignments') || can('view_asset_logs') || can('view_inventory_reports') || can('maintenance')))
 <li class="nav-item">
     <a class="nav-link {!! (Request::is('admin/inventory*') || Request::is('admin/maintenance*') ? 'active' : '') !!}"
         data-bs-toggle="collapse" href="#inventory_menu" role="button" aria-expanded="false"
@@ -708,8 +848,9 @@
         <span class="item-name">Inventory</span>
         <i class="right-icon im im-icon-Arrow-Right"></i>
     </a>
-    <ul class="sub-nav collapse  {!!  Request::is('admin/inventory*') || Request::is('admin/maintenance*') ? 'show' : ''  !!}"
+    <ul class="sub-nav collapse {!! Request::is('admin/inventory*') || Request::is('admin/maintenance*') ? 'show' : '' !!}"
         id="inventory_menu" data-bs-parent="#sidebar-menu">
+        @if(can('manage_asset_categories'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('admin/inventory/asset-categories*') ? 'active' : '' !!}"
                 href="{{ route('admin.inventory.asset-categories.index') }}"> 
@@ -718,6 +859,8 @@
                 <span class="item-name">Asset Categories</span>
             </a>
         </li>
+        @endif
+        @if(can('manage_assets'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('admin/inventory/assets*') ? 'active' : '' !!}"
                 href="{{ route('admin.inventory.assets.index') }}"> 
@@ -726,6 +869,8 @@
                 <span class="item-name">Assets Management</span>
             </a>
         </li>
+        @endif
+        @if(can('manage_asset_assignments'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('admin/inventory/asset-assignments*') ? 'active' : '' !!}"
                 href="{{ route('admin.inventory.asset-assignments.index') }}"> 
@@ -734,6 +879,8 @@
                 <span class="item-name">Asset Assignments</span>
             </a>
         </li>
+        @endif
+        @if(can('view_asset_logs'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('admin/inventory/asset-logs*') ? 'active' : '' !!}"
                 href="{{ route('admin.inventory.asset-logs.index') }}"> 
@@ -742,6 +889,8 @@
                 <span class="item-name">Asset Audit Logs</span>
             </a>
         </li>
+        @endif
+        @if(can('view_inventory_reports'))
         <li class="nav-item">
             <a class="nav-link {!! Request::is('admin/inventory/reports*') ? 'active' : '' !!}"
                 data-bs-toggle="collapse" href="#inventory_reports_menu" role="button" aria-expanded="false"
@@ -786,6 +935,7 @@
                 </li>
             </ul>
         </li>
+        @endif
         {{-- Nested Maintenance Menu --}}
         @if(can('maintenance'))
         <li class="nav-item">
@@ -844,17 +994,18 @@
     </ul>
 </li>
 @endif
+
 {{-- Settings --}}
-@if(can('settings'))
+@if(can('settings') && (can('manage_site_settings') || can('manage_roles_and_permissions') || can('manage_salaryGrades') || can('manage_allowance_settings') || can('bankSetups') || can('taxSetups') || can('notices')))
     <li class="nav-item">
-        <a class="nav-link {!! (Request::is('siteSettings*') || Request::is('notices*') || Request::is('roleAndPermissions*') ? 'active' : '') !!}"
+        <a class="nav-link {!! (Request::is('siteSettings*') || Request::is('notices*') || Request::is('roleAndPermissions*') || Request::is('salaryGrades*') || Request::is('allowanceSettings*') || Request::is('bankSetups*') || Request::is('taxSetups*') ? 'active' : '') !!}"
             data-bs-toggle="collapse" href="#settings_menu" role="button" aria-expanded="false"
             aria-controls="settings_menu">
             <i class="icon im im-icon-Gear"></i>
             <span class="item-name">Settings</span>
             <i class="right-icon im im-icon-Arrow-Right"></i>
         </a>
-        <ul class="sub-nav collapse {!! (Request::is('siteSettings*') || Request::is('notices*') || Request::is('roleAndPermissions*') ? 'show' : '') !!}"
+        <ul class="sub-nav collapse {!! (Request::is('siteSettings*') || Request::is('notices*') || Request::is('roleAndPermissions*') || Request::is('salaryGrades*') || Request::is('allowanceSettings*') || Request::is('bankSetups*') || Request::is('taxSetups*') ? 'show' : '') !!}"
             id="settings_menu" data-bs-parent="#sidebar-menu">
             @if(can('manage_site_settings'))
                 <li class="nav-item">
@@ -921,7 +1072,7 @@
                     <a class="nav-link {!! Request::is('notices*') ? 'active' : '' !!}" href="{{ route('notices.index') }}">
                         <i class="icon im im-icon-Money-Bag"></i>
                         <i class="sidenav-mini-icon"> N </i>
-                        <span class="item-name">notices</span>
+                        <span class="item-name">Notices</span>
                     </a>
                 </li>
             @endif

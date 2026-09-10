@@ -6,16 +6,16 @@ use App\Http\Requests\CreateDepartmentRequest;
 use App\Http\Requests\UpdateDepartmentRequest;
 use App\Http\Controllers\AppBaseController;
 use App\Models\Department;
+use App\Models\Branch;
 use Illuminate\Http\Request;
 use Flash;
-use Response;
 
 class DepartmentController extends AppBaseController
 {
     public function index(Request $request)
     {
-        $departments = Department::paginate(10);
-        return view('departments.index')->with('departments', $departments);
+        $departments = Department::orderBy('created_at', 'desc')->paginate(15);
+        return view('departments.index', compact('departments'));
     }
 
     public function create()
@@ -25,7 +25,8 @@ class DepartmentController extends AppBaseController
 
     public function store(CreateDepartmentRequest $request)
     {
-        Department::create($request->all());
+        $input = $request->all();
+        Department::create($input);
 
         Flash::success('Department saved successfully.');
         return redirect(route('departments.index'));
@@ -52,7 +53,7 @@ class DepartmentController extends AppBaseController
             return redirect(route('departments.index'));
         }
 
-        return view('departments.edit')->with('department', $department);
+        return view('departments.edit', compact('department'));
     }
 
     public function update($id, UpdateDepartmentRequest $request)
@@ -64,7 +65,8 @@ class DepartmentController extends AppBaseController
             return redirect(route('departments.index'));
         }
 
-        $department->fill($request->all());
+        $input = $request->all();
+        $department->fill($input);
         $department->save();
 
         Flash::success('Department updated successfully.');
@@ -86,4 +88,3 @@ class DepartmentController extends AppBaseController
         return redirect(route('departments.index'));
     }
 }
-

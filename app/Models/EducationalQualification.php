@@ -13,6 +13,7 @@ class EducationalQualification extends Model
         'degree',
         'institution',
         'passing_year',
-        'grade'
+        'grade',
+        'document'
     ];
 }

@@ -13,17 +13,21 @@ Route::middleware('permission:manage_site_settings')->group(function () {
 Route::middleware('permission:view_employees')->group(function () {
     Route::get('users/sample', 'UserController@downloadSample')->name('users.sample');
     Route::post('users/import', 'UserController@import')->name('users.import');
+    Route::post('users/filter', 'UserController@filterByBranch')->name('users.filter');
     Route::post('users/{id}/leave-assignments', [\App\Http\Controllers\UserController::class, 'saveLeaveAssignments'])->name('users.saveLeaveAssignments');
     Route::resource('users', 'UserController');
     Route::resource('employeeDepartures', 'EmployeeDepartureController');
     Route::get('employeeDepartures/list/{user_id}', [\App\Http\Controllers\EmployeeDepartureController::class, 'list']);
-    Route::resource('childAllowances', 'ChildAllowanceController');
-    Route::get('childAllowances/list/{user_id}', [\App\Http\Controllers\ChildAllowanceController::class, 'list']);
 });
+
+// ── Child Allowances ──────────────────────────────────────────────────────
+Route::resource('childAllowances', 'ChildAllowanceController');
+Route::get('childAllowances/list/{user_id}', [\App\Http\Controllers\ChildAllowanceController::class, 'list']);
 
 // ── Roles & Permissions ───────────────────────────────────────────────────
 Route::middleware('permission:manage_roles_and_permissions')->group(function () {
     Route::resource('permissions', 'PermissionController');
+    Route::post('roleAndPermissions/{id}/sync', [\App\Http\Controllers\RoleAndPermissionController::class, 'syncPermissions'])->name('roleAndPermissions.sync');
     Route::resource('roleAndPermissions', 'RoleAndPermissionController');
 });
 
@@ -66,6 +70,7 @@ Route::middleware('permission:manage_leave_types')->group(function () {
 });
 
 Route::middleware('permission:leave_applications')->group(function () {
+    Route::post('leaveApplications/check-overlap', [\App\Http\Controllers\LeaveApplicationController::class, 'checkOverlap'])->name('leaveApplications.checkOverlap');
     Route::resource('leaveApplications', 'LeaveApplicationController');
     Route::get('leaveApplications/{id}/approve', [App\Http\Controllers\LeaveApplicationController::class, 'approve'])->name('leaveApplications.approveGet')->middleware('permission:approve_leave');
     Route::get('leaveApplications/{id}/reject', [App\Http\Controllers\LeaveApplicationController::class, 'reject'])->name('leaveApplications.rejectGet')->middleware('permission:approve_leave');
@@ -81,6 +86,19 @@ Route::middleware('permission:notices')->group(function () {
 });
 
 // ── Welfare Fund ──────────────────────────────────────────────────────────
+Route::get('welfare/dashboard', 'WelfareFundController@dashboard')->name('welfare.dashboard');
+Route::get('welfare/my-statement', 'WelfareFundController@myStatement')->name('welfare.myStatement');
+Route::get('welfare/ledger', 'WelfareFundController@ledger')->name('welfare.ledger');
+Route::get('welfare/reports', 'WelfareFundController@reports')->name('welfare.reports');
+
+Route::get('welfare/settings', 'WelfareFundSettingController@edit')->name('welfare.settings.edit');
+Route::post('welfare/settings', 'WelfareFundSettingController@update')->name('welfare.settings.update');
+
+Route::post('welfare/approve/{type}/{id}', 'WelfareFundController@approve')->name('welfare.approve');
+Route::post('welfare/reject/{type}/{id}', 'WelfareFundController@reject')->name('welfare.reject');
+Route::post('welfare/disburse/{type}/{id}', 'WelfareFundController@disburse')->name('welfare.disburse');
+Route::get('welfare/download-attachment/{type}/{id}', 'WelfareAttachmentController@download')->name('welfare.downloadAttachment');
+
 Route::middleware('permission:manage_employee_children_education_supports')->group(function () {
     Route::resource('employeeChildrenEducationSupports', 'EmployeeChildrenEducationSupportController');
 });
@@ -98,7 +116,8 @@ Route::middleware('permission:manage_penalties')->group(function () {
     Route::resource('penalties', 'PenaltyController');
 });
 
-Route::middleware('permission:manage_departmental_cases')->group(function () {
+Route::middleware('permission:disciplinary_actions')->group(function () {
+    Route::post('departmentalCases/{id}/notify', 'DepartmentalCaseController@notifyEmployee')->name('departmentalCases.notify');
     Route::resource('departmentalCases', 'DepartmentalCaseController');
 });
 
@@ -156,10 +175,12 @@ Route::middleware('permission:manage_allowance_settings')->group(function () {
 });
 
 // ── Biometric ADMS Admin Routes ───────────────────────────────────────────
-Route::resource('biometricDevices', 'BiometricDeviceController');
-Route::resource('biometricAttendanceLogs', 'BiometricAttendanceLogController');
-Route::resource('biometricEmployeeMappings', 'BiometricEmployeeMappingController')->only(['index', 'update']);
-Route::resource('biometricCommands', 'BiometricCommandController');
+Route::middleware('permission:biometric')->group(function () {
+    Route::resource('biometricDevices', 'BiometricDeviceController');
+    Route::resource('biometricAttendanceLogs', 'BiometricAttendanceLogController');
+    Route::resource('biometricEmployeeMappings', 'BiometricEmployeeMappingController')->only(['index', 'update']);
+    Route::resource('biometricCommands', 'BiometricCommandController');
+});
 
 // ── Recruitment ───────────────────────────────────────────────────────────
 Route::middleware('permission:manage_recruitment')->group(function () {

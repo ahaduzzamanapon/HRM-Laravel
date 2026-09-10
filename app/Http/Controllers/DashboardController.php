@@ -57,23 +57,37 @@ class DashboardController extends Controller
             $totalEmployees   = (clone $empQuery)->count();
             $newEmployees     = (clone $empQuery)->where('created_at', '>=', Carbon::now()->subDays(30))->count();
 
-            // Department count (filtered if branch selected)
+            // Department count (branch-wise)
+            $deptQuery = Department::query();
             if ($selectedBranchId) {
-                $totalDepartments = Department::whereHas('users', function($q) use ($selectedBranchId) {
-                    $q->where('branch_id', $selectedBranchId);
-                })->count();
-                if ($totalDepartments === 0) {
-                    $totalDepartments = Department::count();
-                }
+                $deptQuery->where(function($q) use ($selectedBranchId) {
+                    $q->where('branch_id', $selectedBranchId)
+                      ->orWhereNull('branch_id');
+                });
             } else {
-                $totalDepartments = Department::count();
+                applyBranchScope($deptQuery, 'branch_id');
             }
+            $totalDepartments = $deptQuery->count();
+
+            // Designation count (branch & department wise)
+            $desigQuery = \App\Models\Designation::query();
+            if ($selectedBranchId) {
+                $desigQuery->where(function($q) use ($selectedBranchId) {
+                    $q->where('branch_id', $selectedBranchId)
+                      ->orWhereNull('branch_id');
+                });
+            } else {
+                applyBranchScope($desigQuery, 'branch_id');
+            }
+            $totalDesignations = $desigQuery->count();
 
             // Branch count: super admin sees all branches or 1 if filtered
             if ($selectedBranchId) {
                 $totalBranches = 1;
             } else {
-                $totalBranches = Branch::count();
+                $branchesQuery = Branch::query();
+                applyBranchScope($branchesQuery, 'id');
+                $totalBranches = $branchesQuery->count();
             }
 
             $totalSalaryGrades = SalaryGrade::count();

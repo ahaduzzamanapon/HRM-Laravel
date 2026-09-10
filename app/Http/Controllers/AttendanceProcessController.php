@@ -21,6 +21,11 @@ class AttendanceProcessController extends Controller
 
     public function index(Request $request)
     {
+        $authUser = \Illuminate\Support\Facades\Auth::user();
+        if (\App\Services\AuthorizationEngine::isEmployeeRole($authUser)) {
+            return $this->myAttendance($request);
+        }
+
         $branchesQuery = Branch::query();
         applyBranchScope($branchesQuery, 'id');
         $branches = $branchesQuery->pluck('branch_name', 'id');
@@ -28,18 +33,38 @@ class AttendanceProcessController extends Controller
         $departments = Department::pluck('name', 'id');
         $designations = Designation::pluck('desi_name', 'id');
 
-        $usersQuery = User::where('group_id', '!=', 1)->with(['branch', 'department', 'designation'])
+        $statusFilter = $request->input('status', 'regular');
+
+        $usersQuery = User::select('users.*')
+            ->where(function ($q) {
+                $q->where('users.group_id', 3);
+                if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'role_id')) {
+                    $q->orWhere('users.role_id', 3);
+                }
+            })
+            ->when($statusFilter, function ($query) use ($statusFilter) {
+                if ($statusFilter === 'terminate') {
+                    return $query->whereIn(\DB::raw('LOWER(users.status)'), ['terminate', 'terminated']);
+                }
+                return $query->whereRaw('LOWER(users.status) = ?', [strtolower($statusFilter)]);
+            })
+            ->when($statusFilter === 'regular', function ($query) {
+                return $query->whereDoesntHave('departures');
+            })
+            ->leftJoin('designations', 'users.designation_id', '=', 'designations.id')
+            ->with(['branch', 'department', 'designation'])
             ->when($request->filled('branch_id'), function ($query) use ($request) {
-                return $query->where('branch_id', $request->branch_id);
+                return $query->where('users.branch_id', $request->branch_id);
             })
             ->when($request->filled('department_id'), function ($query) use ($request) {
-                return $query->where('department_id', $request->department_id);
+                return $query->where('users.department_id', $request->department_id);
             })
             ->when($request->filled('designation_id'), function ($query) use ($request) {
-                return $query->where('designation_id', $request->designation_id);
-            });
+                return $query->where('users.designation_id', $request->designation_id);
+            })
+            ->orderByRaw('CAST(NULLIF(users.emp_id, "") AS UNSIGNED) ASC, users.emp_id ASC');
 
-        applyBranchScope($usersQuery, 'branch_id');
+        applyBranchScope($usersQuery, 'users.branch_id');
         $users = $usersQuery->get();
 
         return view('attendance.process', compact('users', 'branches', 'departments', 'designations'));
@@ -73,7 +98,7 @@ class AttendanceProcessController extends Controller
         $userIds = $request->input('user_ids');
 
         $user = \Illuminate\Support\Facades\Auth::user();
-        if ($user->role->name == 'Employee') {
+        if (empty($userIds) || \App\Services\AuthorizationEngine::isEmployeeRole($user) || (optional($user->role)->name == 'Employee')) {
             $userIds = [$user->id];
         }
         $data = $this->attendanceService->getReportData($reportType, $filterType, $fromDate, $toDate, $userIds);
@@ -164,27 +189,213 @@ class AttendanceProcessController extends Controller
 
     public function filterUsers(Request $request)
     {
-        $usersQuery = User::with(['branch', 'department', 'designation'])
-            ->where('group_id', '!=', 1)
+        $statusFilter = $request->input('status', 'regular');
+
+        $usersQuery = User::select('users.id', 'users.name', 'users.last_name', 'users.emp_id', 'users.branch_id', 'users.department_id', 'users.designation_id')
+            ->where(function ($q) {
+                $q->where('users.group_id', 3);
+                if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'role_id')) {
+                    $q->orWhere('users.role_id', 3);
+                }
+            })
+            ->when($statusFilter, function ($query) use ($statusFilter) {
+                if ($statusFilter === 'terminate') {
+                    return $query->whereIn(\DB::raw('LOWER(users.status)'), ['terminate', 'terminated']);
+                }
+                return $query->whereRaw('LOWER(users.status) = ?', [strtolower($statusFilter)]);
+            })
+            ->when($statusFilter === 'regular', function ($query) {
+                return $query->whereDoesntHave('departures');
+            })
+            ->leftJoin('designations', 'users.designation_id', '=', 'designations.id')
+            ->with(['branch', 'department', 'designation'])
             ->when($request->filled('branch_id'), function ($query) use ($request) {
-                return $query->where('branch_id', $request->branch_id);
+                return $query->where('users.branch_id', $request->branch_id);
             })
             ->when($request->filled('department_id'), function ($query) use ($request) {
-                return $query->where('department_id', $request->department_id);
+                return $query->where('users.department_id', $request->department_id);
             })
             ->when($request->filled('designation_id'), function ($query) use ($request) {
-                return $query->where('designation_id', $request->designation_id);
-            });
+                return $query->where('users.designation_id', $request->designation_id);
+            })
+            ->orderByRaw('CAST(NULLIF(users.emp_id, "") AS UNSIGNED) ASC, users.emp_id ASC');
 
-        applyBranchScope($usersQuery, 'branch_id');
-        $users = $usersQuery->get(['id', 'name', 'last_name', 'emp_id', 'branch_id', 'department_id', 'designation_id']);
+        applyBranchScope($usersQuery, 'users.branch_id');
+        $users = $usersQuery->get();
 
         return response()->json($users);
     }
 
     public function myAttendance(Request $request)
     {
-        return view('attendance.my_attendance');
+        $user = \Illuminate\Support\Facades\Auth::user();
+
+        $selectedDate = $request->input('date', date('Y-m-d'));
+        $selectedMonth = $request->input('month', date('m'));
+        $selectedYear = $request->input('year', date('Y'));
+
+        if ($request->filled('date')) {
+            $carbonDate = \Carbon\Carbon::parse($selectedDate);
+            if (!$request->filled('month')) {
+                $selectedMonth = $carbonDate->format('m');
+            }
+            if (!$request->filled('year')) {
+                $selectedYear = $carbonDate->format('Y');
+            }
+        }
+
+        $startDate = \Carbon\Carbon::createFromDate($selectedYear, (int)$selectedMonth, 1)->startOfDay();
+        $endDate = $startDate->copy()->endOfMonth()->endOfDay();
+
+        $today = \Carbon\Carbon::today();
+        $calcEndDate = ($startDate->isSameMonth($today)) ? $today : $endDate;
+
+        // Fetch attendance records from database for this user in selected month
+        $attendanceRecords = \App\Models\AttendanceTime::where('employee_id', $user->id)
+            ->whereBetween('attendance_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->get()
+            ->keyBy(function ($item) {
+                return \Carbon\Carbon::parse($item->attendance_date)->format('Y-m-d');
+            });
+
+        // Fetch leave applications for this user in selected month
+        $leaves = \App\Models\LeaveApplication::where('user_id', $user->id)
+            ->where('status', 'Approved')
+            ->where(function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('start_date', [$startDate, $endDate])
+                  ->orWhereBetween('end_date', [$startDate, $endDate])
+                  ->orWhere(function ($q2) use ($startDate, $endDate) {
+                      $q2->where('start_date', '<=', $startDate)
+                         ->where('end_date', '>=', $endDate);
+                  });
+            })->get();
+
+        // Fetch holidays for all branches
+        $holidays = \App\Models\Holyday::where('status', 'Published')
+            ->where(function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('date', [$startDate, $endDate])
+                  ->orWhereBetween('end_date', [$startDate, $endDate]);
+            })->get();
+
+        // Fetch shift details for employee
+        $shiftId = $user->shift_id ?: 1;
+        $shiftDetails = \App\Models\ShiftDetail::where('shift_id', $shiftId)->get()->keyBy('day_of_week');
+
+        $dailyList = [];
+        $activeCount = 0;
+        $lateCount = 0;
+        $absentCount = 0;
+        $leaveCount = 0;
+
+        $sl = 1;
+        for ($date = $calcEndDate->copy(); $date->gte($startDate); $date->subDay()) {
+            $dateStr = $date->format('Y-m-d');
+            $dayName = $date->format('l');
+            $record = $attendanceRecords->get($dateStr);
+            $shift = $shiftDetails->get($dayName);
+
+            $punchIn = '-';
+            $punchOut = '-';
+            $lateMinutes = 0;
+            $officeHour = '0:0';
+            $status = 'Absent';
+
+            if ($record) {
+                $status = $record->attendance_status ?: $record->status ?: 'Present';
+                if ($record->clock_in) {
+                    $punchIn = \Carbon\Carbon::parse($record->clock_in)->format('h:i A');
+                }
+                if ($record->clock_out) {
+                    $punchOut = \Carbon\Carbon::parse($record->clock_out)->format('h:i A');
+                } elseif ($date->isToday() && $record->clock_in) {
+                    $punchOut = 'Continue';
+                }
+
+                $lateMinutes = (int) $record->late_time;
+
+                if ($record->clock_in && $record->clock_out) {
+                    $cIn = \Carbon\Carbon::parse($record->clock_in);
+                    $cOut = \Carbon\Carbon::parse($record->clock_out);
+                    $diffMins = $cIn->diffInMinutes($cOut);
+                    $hrs = floor($diffMins / 60);
+                    $mins = $diffMins % 60;
+                    $officeHour = "{$hrs}:" . sprintf('%02d', $mins);
+                }
+
+                if (in_array(strtolower($status), ['present', 'late'])) {
+                    $activeCount++;
+                    if ($record->late_status == 1 || $lateMinutes > 0) {
+                        $lateCount++;
+                    }
+                } elseif (strtolower($status) == 'absent') {
+                    $absentCount++;
+                }
+            } else {
+                $isLeave = $leaves->contains(function ($l) use ($dateStr) {
+                    return $dateStr >= \Carbon\Carbon::parse($l->start_date)->format('Y-m-d') &&
+                           $dateStr <= \Carbon\Carbon::parse($l->end_date)->format('Y-m-d');
+                });
+
+                if ($isLeave) {
+                    $status = 'Leave';
+                    $punchIn = 'Taking Leave';
+                    $punchOut = 'Taking Leave';
+                    $leaveCount++;
+                } else {
+                    $isHoliday = $holidays->contains(function ($h) use ($dateStr) {
+                        $hStart = \Carbon\Carbon::parse($h->date)->format('Y-m-d');
+                        $hEnd = $h->end_date ? \Carbon\Carbon::parse($h->end_date)->format('Y-m-d') : $hStart;
+                        return $dateStr >= $hStart && $dateStr <= $hEnd;
+                    });
+
+                    if ($isHoliday) {
+                        $status = 'Holiday';
+                        $punchIn = 'Off Day';
+                        $punchOut = 'Off Day';
+                    } elseif ($shift && $shift->is_weekend) {
+                        $status = 'Off Day';
+                        $punchIn = 'Off Day';
+                        $punchOut = 'Off Day';
+                    } else {
+                        $status = 'Absent';
+                        $punchIn = 'Absent';
+                        $punchOut = 'Absent';
+                        $absentCount++;
+                    }
+                }
+            }
+
+            $dailyList[] = [
+                'sl' => $sl++,
+                'date' => $dateStr,
+                'punch_in' => $punchIn,
+                'punch_out' => $punchOut,
+                'late' => $lateMinutes,
+                'office_hour' => $officeHour,
+                'status' => $status,
+            ];
+        }
+
+        if ($request->ajax()) {
+            return response()->json([
+                'active_days' => $activeCount,
+                'late_days' => $lateCount,
+                'absent_days' => $absentCount,
+                'leave_days' => $leaveCount,
+                'daily_list' => $dailyList,
+            ]);
+        }
+
+        return view('attendance.my_attendance', compact(
+            'selectedDate',
+            'selectedMonth',
+            'selectedYear',
+            'activeCount',
+            'lateCount',
+            'absentCount',
+            'leaveCount',
+            'dailyList'
+        ));
     }
 
     public function getDailyReportData(Request $request)

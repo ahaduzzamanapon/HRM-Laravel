@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Permission; // Assuming Permission model handles permissions
+use App\Models\Permission;
 
 class PermissionSeeder extends Seeder
 {
@@ -15,86 +14,392 @@ class PermissionSeeder extends Seeder
      */
     public function run()
     {
-        // Clear existing permissions to avoid duplicates on re-seeding
-        Permission::truncate();
+        $permissionsTree = [
+            'staff_management' => [
+                'name' => 'Staff Management',
+                'children' => [
+                    'view_employees' => [
+                        'name' => 'Employees',
+                        'children' => [
+                            'add_employee' => 'Add Employee',
+                            'edit_employee' => 'Edit Employee',
+                            'delete_employee' => 'Delete Employee',
+                            'import_employees' => 'Import Employees',
+                        ]
+                    ],
+                    'employee_departures' => [
+                        'name' => 'Departed Employees',
+                        'children' => [
+                            'view_employee_departures' => 'View Departed Employees',
+                            'manage_employee_departures' => 'Manage Departed Employees',
+                        ]
+                    ],
+                ]
+            ],
+            'organization' => [
+                'name' => 'Organization',
+                'children' => [
+                    'manage_designations' => [
+                        'name' => 'Designations',
+                        'children' => [
+                            'view_designations' => 'View Designations',
+                            'add_designation' => 'Add Designation',
+                            'edit_designation' => 'Edit Designation',
+                            'delete_designation' => 'Delete Designation',
+                        ]
+                    ],
+                    'manage_departments' => [
+                        'name' => 'Departments',
+                        'children' => [
+                            'view_departments' => 'View Departments',
+                            'add_department' => 'Add Department',
+                            'edit_department' => 'Edit Department',
+                            'delete_department' => 'Delete Department',
+                        ]
+                    ],
+                    'rewardings' => [
+                        'name' => 'Rewarding',
+                        'children' => [
+                            'view_rewardings' => 'View Rewarding',
+                            'add_rewarding' => 'Add Rewarding',
+                            'edit_rewarding' => 'Edit Rewarding',
+                            'delete_rewarding' => 'Delete Rewarding',
+                        ]
+                    ],
+                    'innovations' => [
+                        'name' => 'Innovations',
+                        'children' => [
+                            'view_innovations' => 'View Innovations',
+                            'add_innovation' => 'Add Innovation',
+                            'edit_innovation' => 'Edit Innovation',
+                            'delete_innovation' => 'Delete Innovation',
+                        ]
+                    ],
+                    'manage_branches' => [
+                        'name' => 'Branch Management',
+                        'children' => [
+                            'view_branches' => 'View Branches',
+                            'add_branch' => 'Add Branch',
+                            'edit_branch' => 'Edit Branch',
+                            'delete_branch' => 'Delete Branch',
+                        ]
+                    ],
+                ]
+            ],
+            'hr' => [
+                'name' => 'HR',
+                'children' => [
+                    'upload_attendance_files' => [
+                        'name' => 'Attendance File Upload',
+                    ],
+                    'process_attendance' => [
+                        'name' => 'Attendance Process',
+                    ],
+                    'leave_applications' => [
+                        'name' => 'Leave Applications',
+                        'children' => [
+                            'apply_leave' => 'Apply Leave',
+                            'approve_leave' => 'Approve Leave',
+                            'reject_leave' => 'Reject Leave',
+                        ]
+                    ],
+                    'movements' => [
+                        'name' => 'Movements',
+                    ],
+                    'smart_movement' => [
+                        'name' => 'Smart Movement',
+                        'children' => [
+                            'view_smart_movement_dashboard' => 'View Movement Dashboard',
+                            'view_my_movements' => 'View My Movements',
+                            'view_ta_list' => 'View TA List',
+                            'view_ta_summary' => 'View TA Summary',
+                            'approve_ta' => 'Approve TA',
+                        ]
+                    ],
+                    'manage_holidays' => [
+                        'name' => 'Holyday Management',
+                    ],
+                    'manage_shifts' => [
+                        'name' => 'Shift Management',
+                    ],
+                    'manage_leave_types' => [
+                        'name' => 'Leave Types',
+                    ],
+                ]
+            ],
+            'payroll' => [
+                'name' => 'Payroll & Compliance',
+                'children' => [
+                    'payroll_process' => [
+                        'name' => 'Payroll Process',
+                        'children' => [
+                            'run_payroll_process' => 'Run Payroll Process',
+                            'view_payslips' => 'View Payslips & Reports',
+                        ]
+                    ],
+                    'manage_bonuses' => [
+                        'name' => 'Bonus Management',
+                        'children' => [
+                            'process_bonus' => 'Process Bonus',
+                            'bonus_disbursements' => 'Bonus Disbursements',
+                        ]
+                    ],
+                    'tax_management' => [
+                        'name' => 'Tax Management',
+                        'children' => [
+                            'manage_tax_configuration' => 'Manage Tax Configuration',
+                            'manage_tax_slabs' => 'Manage Tax Slabs',
+                            'employee_tax_profiles' => 'Employee Tax Profiles',
+                            'tax_reports' => 'Tax Reports',
+                        ]
+                    ],
+                ]
+            ],
+            'welfare_fund' => [
+                'name' => 'Welfare Fund',
+                'children' => [
+                    'manage_employee_children_education_supports' => [
+                        'name' => 'Children Education Support',
+                    ],
+                    'manage_funeral_supports' => [
+                        'name' => 'Funeral Support',
+                    ],
+                    'manage_medical_supports' => [
+                        'name' => 'Medical Support',
+                    ],
+                ]
+            ],
+            'disciplinary_actions' => [
+                'name' => 'Disciplinary Actions',
+                'children' => [
+                    'view_my_departmental_cases' => 'View My Disciplinary Cases & Penalties',
+                    'view_departmental_cases' => [
+                        'name' => 'Departmental Cases',
+                        'children' => [
+                            'manage_departmental_cases' => 'Manage Departmental Cases',
+                            'add_departmental_cases' => 'Add Departmental Case',
+                            'edit_departmental_cases' => 'Edit Departmental Case',
+                            'delete_departmental_cases' => 'Delete Departmental Case',
+                            'notify_departmental_cases' => 'Notify Employee',
+                        ]
+                    ],
+                    'manage_penalties' => [
+                        'name' => 'Penalties',
+                    ],
+                ]
+            ],
+            'loans_and_advances' => [
+                'name' => 'Loans and Advances',
+                'children' => [
+                    'manage_loan_types' => [
+                        'name' => 'Loan Types',
+                    ],
+                    'manage_loans' => [
+                        'name' => 'Employee Loans',
+                        'children' => [
+                            'apply_loans' => 'Apply Loans',
+                            'edit_loans' => 'Edit Employee Loans',
+                            'approve_loans' => 'Approve Loans',
+                            'disburse_loans' => 'Disburse Loans',
+                            'reject_loans' => 'Reject Loans',
+                            'loan_reports' => 'Loan Reports',
+                        ]
+                    ],
+                    'manage_loan_repayments' => [
+                        'name' => 'Loan Repayments',
+                    ],
+                ]
+            ],
+            'provident_fund' => [
+                'name' => 'Provident Fund',
+                'children' => [
+                    'pf_dashboard' => [
+                        'name' => 'PF Dashboard',
+                        'children' => [
+                            'view_pf_dashboard' => 'View PF Dashboard',
+                        ]
+                    ],
+                    'manage_pf_schemes' => [
+                        'name' => 'PF Settings',
+                        'children' => [
+                            'manage_provident_fund_settings' => 'Manage PF Settings',
+                        ]
+                    ],
+                    'manage_pf_employees' => [
+                        'name' => 'PF Employee List',
+                    ],
+                    'process_pf_contributions' => [
+                        'name' => 'Monthly Contributions',
+                    ],
+                    'view_pf_reports' => [
+                        'name' => 'Yearly Reports',
+                        'children' => [
+                            'view_provident_fund_statements' => 'View PF Statements',
+                        ]
+                    ],
+                    'pf_withdrawals' => [
+                        'name' => 'Withdrawal Requests',
+                        'children' => [
+                            'manage_pf_withdrawals' => 'Manage PF Withdrawals',
+                            'manage_pf_settlements' => 'Manage PF Settlements',
+                        ]
+                    ],
+                    'pf_loans' => [
+                        'name' => 'PF Loan Applications',
+                        'children' => [
+                            'approve_pf_loans' => 'Approve PF Loans',
+                        ]
+                    ],
+                    'view_pf_analytics' => [
+                        'name' => 'Reports & Analytics',
+                        'children' => [
+                            'view_all_branches_pf' => 'View All Branches PF',
+                        ]
+                    ],
+                ]
+            ],
+            'pension' => [
+                'name' => 'Pension',
+                'children' => [
+                    'manage_pension_policies' => [
+                        'name' => 'Policies & Schemes',
+                    ],
+                    'manage_pension_eligibility' => [
+                        'name' => 'Eligibility Checks',
+                    ],
+                    'manage_pension_calculations' => [
+                        'name' => 'Pension Calculations',
+                    ],
+                    'manage_pension_disbursements' => [
+                        'name' => 'Pension Disbursements',
+                    ],
+                    'manage_arrear_bills' => [
+                        'name' => 'Arrear Bills',
+                    ],
+                    'view_pension_reports' => [
+                        'name' => 'Pension Reports',
+                    ],
+                ]
+            ],
+            'recruitment' => [
+                'name' => 'Recruitment',
+                'children' => [
+                    'manage_recruitment' => [
+                        'name' => 'Recruitment Dashboard',
+                    ],
+                    'manage_recruitment_applications' => [
+                        'name' => 'Applications',
+                    ],
+                    'manage_recruitment_posts' => [
+                        'name' => 'Recruitment Posts',
+                    ],
+                    'manage_career_page' => [
+                        'name' => 'Career Page Setup',
+                    ],
+                ]
+            ],
+            'biometric' => [
+                'name' => 'Biometric',
+                'children' => [
+                    'manage_biometric_devices' => [
+                        'name' => 'Biometric Devices',
+                    ],
+                    'view_biometric_attendance_logs' => [
+                        'name' => 'Attendance Logs',
+                    ],
+                    'manage_biometric_employee_mappings' => [
+                        'name' => 'Employees Mapping',
+                    ],
+                    'manage_biometric_commands' => [
+                        'name' => 'Commands',
+                    ],
+                ]
+            ],
+            'inventory' => [
+                'name' => 'Inventory',
+                'children' => [
+                    'manage_asset_categories' => [
+                        'name' => 'Asset Categories',
+                    ],
+                    'manage_assets' => [
+                        'name' => 'Assets Management',
+                    ],
+                    'manage_asset_assignments' => [
+                        'name' => 'Asset Assignments',
+                    ],
+                    'view_asset_logs' => [
+                        'name' => 'Asset Audit Logs',
+                    ],
+                    'view_inventory_reports' => [
+                        'name' => 'Inventory Reports',
+                    ],
+                    'maintenance' => [
+                        'name' => 'Maintenance',
+                        'children' => [
+                            'maintenance_dashboard' => 'Maintenance Dashboard',
+                            'manage_maintenance_vendors' => 'Vendors',
+                            'manage_maintenance_types' => 'Maintenance Types',
+                            'manage_maintenance_requests' => 'Maintenance Requests',
+                            'view_maintenance_reports' => 'Maintenance Reports',
+                        ]
+                    ],
+                ]
+            ],
+            'settings' => [
+                'name' => 'Settings',
+                'children' => [
+                    'manage_site_settings' => [
+                        'name' => 'Site Settings',
+                    ],
+                    'manage_roles_and_permissions' => [
+                        'name' => 'Role Management',
+                    ],
+                    'manage_salaryGrades' => [
+                        'name' => 'Salary Grades',
+                    ],
+                    'manage_allowance_settings' => [
+                        'name' => 'Allowance Settings',
+                    ],
+                    'bankSetups' => [
+                        'name' => 'Bank Setups',
+                    ],
+                    'taxSetups' => [
+                        'name' => 'Tax Setups',
+                    ],
+                    'notices' => [
+                        'name' => 'Notices',
+                        'children' => [
+                            'add_notices' => 'Add Notices',
+                        ]
+                    ],
+                ]
+            ],
+        ];
 
-        // Main Categories (Parents)
-        $staffManagement = Permission::create(['name' => 'Staff Management', 'key' => 'staff_management']);
-        $organization = Permission::create(['name' => 'Organization', 'key' => 'organization']);
-        $hr = Permission::create(['name' => 'HR', 'key' => 'hr']);
-        $settings = Permission::create(['name' => 'Settings', 'key' => 'settings']);
+        foreach ($permissionsTree as $rootKey => $rootData) {
+            $rootPerm = Permission::updateOrCreate(
+                ['key' => $rootKey],
+                ['name' => $rootData['name'], 'parent_id' => null]
+            );
 
-        // Staff Management Sub-permissions
-        Permission::create(['name' => 'View Employees', 'key' => 'view_employees', 'parent_id' => $staffManagement->id]);
-        Permission::create(['name' => 'Add Employee', 'key' => 'add_employee', 'parent_id' => $staffManagement->id]);
-        Permission::create(['name' => 'Edit Employee', 'key' => 'edit_employee', 'parent_id' => $staffManagement->id]);
-        Permission::create(['name' => 'Delete Employee', 'key' => 'delete_employee', 'parent_id' => $staffManagement->id]);
+            if (isset($rootData['children'])) {
+                foreach ($rootData['children'] as $childKey => $childData) {
+                    $childName = is_array($childData) ? $childData['name'] : $childData;
+                    $childPerm = Permission::updateOrCreate(
+                        ['key' => $childKey],
+                        ['name' => $childName, 'parent_id' => $rootPerm->id]
+                    );
 
-        // Organization Sub-permissions
-        Permission::create(['name' => 'Manage Designations', 'key' => 'manage_designations', 'parent_id' => $organization->id]);
-        Permission::create(['name' => 'Manage Departments', 'key' => 'manage_departments', 'parent_id' => $organization->id]);
-        Permission::create(['name' => 'Manage Branches', 'key' => 'manage_branches', 'parent_id' => $organization->id]);
-        Permission::create(['name' => 'Rewardings', 'key' => 'rewardings', 'parent_id' => $organization->id]);
-        Permission::create(['name' => 'Innovations', 'key' => 'innovations', 'parent_id' => $organization->id]); // Added Innovation permission
-
-        // HR Sub-permissions
-        Permission::create(['name' => 'Manage Holidays', 'key' => 'manage_holidays', 'parent_id' => $hr->id]);
-        Permission::create(['name' => 'Manage Shifts', 'key' => 'manage_shifts', 'parent_id' => $hr->id]);
-        Permission::create(['name' => 'Upload Attendance Files', 'key' => 'upload_attendance_files', 'parent_id' => $hr->id]);
-        Permission::create(['name' => 'Manage Leave Types', 'key' => 'manage_leave_types', 'parent_id' => $hr->id]);
-        Permission::create(['name' => 'Apply Leave', 'key' => 'apply_leave', 'parent_id' => $hr->id]);
-        Permission::create(['name' => 'Approve Leave', 'key' => 'approve_leave', 'parent_id' => $hr->id]);
-        Permission::create(['name' => 'Leave Applications', 'key' => 'leave_applications', 'parent_id' => $hr->id]);
-        Permission::create(['name' => 'Movements', 'key' => 'movements', 'parent_id' => $hr->id]);
-        Permission::create(['name' => 'Smart Movement', 'key' => 'smart_movement', 'parent_id' => $hr->id]);
-        Permission::create(['name' => 'process_attendance', 'key' => 'process_attendance', 'parent_id' => $hr->id]);
-
-        // Welfare Fund Permissions
-        $welfareFund = Permission::create(['name' => 'Welfare Fund', 'key' => 'welfare_fund']);
-        Permission::create(['name' => 'Manage Employee Children Education Supports', 'key' => 'manage_employee_children_education_supports', 'parent_id' => $welfareFund->id]);
-        Permission::create(['name' => 'Manage Funeral Supports', 'key' => 'manage_funeral_supports', 'parent_id' => $welfareFund->id]);
-        Permission::create(['name' => 'Manage Medical Supports', 'key' => 'manage_medical_supports', 'parent_id' => $welfareFund->id]);
-
-        // Disciplinary Actions Permissions
-        $disciplinaryActions = Permission::create(['name' => 'Disciplinary Actions', 'key' => 'disciplinary_actions']);
-        Permission::create(['name' => 'Manage Departmental Cases', 'key' => 'manage_departmental_cases', 'parent_id' => $disciplinaryActions->id]);
-        Permission::create(['name' => 'Manage Penalties', 'key' => 'manage_penalties', 'parent_id' => $disciplinaryActions->id]);
-
-        // Loans and Advances Permissions
-        $loansAndAdvances = Permission::create(['name' => 'Loans and Advances', 'key' => 'loans_and_advances']);
-        Permission::create(['name' => 'Manage Loan Types', 'key' => 'manage_loan_types', 'parent_id' => $loansAndAdvances->id]);
-        Permission::create(['name' => 'Manage Loans', 'key' => 'manage_loans', 'parent_id' => $loansAndAdvances->id]);
-        Permission::create(['name' => 'Apply Loans', 'key' => 'apply_loans', 'parent_id' => $loansAndAdvances->id]);
-        Permission::create(['name' => 'Approve Loans', 'key' => 'approve_loans', 'parent_id' => $loansAndAdvances->id]);
-        Permission::create(['name' => 'Disburse Loans', 'key' => 'disburse_loans', 'parent_id' => $loansAndAdvances->id]);
-        Permission::create(['name' => 'Loan Reports', 'key' => 'loan_reports', 'parent_id' => $loansAndAdvances->id]);
-        Permission::create(['name' => 'Manage Loan Repayments', 'key' => 'manage_loan_repayments', 'parent_id' => $loansAndAdvances->id]);
-
-        // Tax Management Permissions
-        $taxManagement = Permission::create(['name' => 'Tax Management', 'key' => 'tax_management']);
-        Permission::create(['name' => 'Manage Tax Configuration', 'key' => 'manage_tax_configuration', 'parent_id' => $taxManagement->id]);
-        Permission::create(['name' => 'Manage Tax Slabs', 'key' => 'manage_tax_slabs', 'parent_id' => $taxManagement->id]);
-        Permission::create(['name' => 'Employee Tax Profiles', 'key' => 'employee_tax_profiles', 'parent_id' => $taxManagement->id]);
-        Permission::create(['name' => 'Tax Reports', 'key' => 'tax_reports', 'parent_id' => $taxManagement->id]);
-
-        // Settings Sub-permissions
-        Permission::create(['name' => 'Manage Site Settings', 'key' => 'manage_site_settings', 'parent_id' => $settings->id]);
-        Permission::create(['name' => 'Manage Roles and Permissions', 'key' => 'manage_roles_and_permissions', 'parent_id' => $settings->id]);
-        Permission::create(['name' => 'Manage Allowance Settings', 'key' => 'manage_allowance_settings', 'parent_id' => $settings->id]);
-        Permission::create(['name' => 'Manage salaryGrades', 'key' => 'manage_salaryGrades', 'parent_id' => $settings->id]);
-        Permission::create(['name' => 'Manage notices', 'key' => 'notices', 'parent_id' => $settings->id]);
-        Permission::create(['name' => 'Add notices', 'key' => 'add_notices', 'parent_id' => $settings->id]);
-        Permission::create(['name' => 'bankSetups', 'key' => 'bankSetups', 'parent_id' => $settings->id]);
-        Permission::create(['name' => 'taxSetups', 'key' => 'taxSetups', 'parent_id' => $settings->id]);
-
-
-        $provident_fund = Permission::create(['name' => 'provident_fund', 'key' => 'provident_fund']);
-        Permission::create(['name' => 'manage_provident_fund_settings', 'key' => 'manage_provident_fund_settings', 'parent_id' => $provident_fund->id]);
-        Permission::create(['name' => 'view_provident_fund_statements', 'key' => 'view_provident_fund_statements', 'parent_id' => $provident_fund->id]);
-
-        $payroll = Permission::create(['name' => 'payroll', 'key' => 'payroll']);
-        Permission::create(['name' => 'payroll_process', 'key' => 'payroll_process', 'parent_id' => $payroll->id]);
-
-
+                    if (is_array($childData) && isset($childData['children'])) {
+                        foreach ($childData['children'] as $subKey => $subName) {
+                            Permission::updateOrCreate(
+                                ['key' => $subKey],
+                                ['name' => $subName, 'parent_id' => $childPerm->id]
+                            );
+                        }
+                    }
+                }
+            }
+        }
     }
 }

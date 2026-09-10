@@ -100,13 +100,15 @@ class SalaryService
 
                 // dynamic tax deduction
                 $tax_deduct = $this->get_tax_deduction($emp_id, $total_gross);
-                // auto mobile deduction
-                $loans = $this->get_loans_deduction($emp_id);
-                $h_loan_deduct = isset($loans['Housing Loan']) ? (float)$loans['Housing Loan'] : 0.00;
-                $p_loan_deduct = isset($loans['Personal Loan']) ? (float)$loans['Personal Loan'] : 0.00;
-                $auto_mobile_d = isset($loans['Motorcycle/Scooter Loan']) ? (float)$loans['Motorcycle/Scooter Loan'] : 0.00;
-                $total_deduct = $total_ab_deduct + $tax_deduct + $h_loan_deduct + $p_loan_deduct + $auto_mobile_d + $pf_emp;
+                // loan deduction calculation
+                $loansData = $this->get_loans_deduction($emp_id, $first_date);
+                $h_loan_deduct = isset($loansData['Housing Loan']) ? (float)$loansData['Housing Loan'] : 0.00;
+                $p_loan_deduct = isset($loansData['Personal Loan']) ? (float)$loansData['Personal Loan'] : 0.00;
+                $auto_mobile_d = isset($loansData['Motorcycle/Scooter Loan']) ? (float)$loansData['Motorcycle/Scooter Loan'] : 0.00;
+                $other_loan_d = isset($loansData['Other Loan']) ? (float)$loansData['Other Loan'] : 0.00;
+                $total_loan_deduct = isset($loansData['total_loan_deduction']) ? (float)$loansData['total_loan_deduction'] : ($h_loan_deduct + $p_loan_deduct + $auto_mobile_d + $other_loan_d);
 
+                $total_deduct = $total_ab_deduct + $tax_deduct + $total_loan_deduct + $pf_emp;
 
                 // ------- Deduction Calculation end ------- //
                 // ======= salary calculation end ========== //
@@ -153,22 +155,67 @@ class SalaryService
                     'auto_mobile_d'     => $auto_mobile_d > 0 ? $auto_mobile_d : 0,
 
                     'stump_deduct'      => 10,
-                    'others_deduct'     => 0,
+                    'others_deduct'     => $other_loan_d > 0 ? $other_loan_d : 0,
                     'total_deduct'      => $total_deduct > 0 ? $total_deduct : 0,
                     'net_salary'        => $net_salary > 0 ? $net_salary : 0,
 
                     'created_at'        => date('d-m-Y h:i:s'),
                     'updated_at'        => date('d-m-Y h:i:s'),
-                    'updated_by'        => auth()->user()->id
+                    'updated_by'        => auth()->check() ? auth()->id() : 1
                 );
 
-                Payroll::updateOrCreate(
+                $payrollRecord = Payroll::updateOrCreate(
                     [
                         'user_id' => $emp_id,
                         'salary_month' => $first_date
                     ],
                     $data
                 );
+
+                // Record Loan Repayment Entries and update Loan Balances
+                if (!empty($loansData['loan_details'])) {
+                    foreach ($loansData['loan_details'] as $lDetail) {
+                        $loanModel = Loan::find($lDetail['loan_id']);
+                        if (!$loanModel) continue;
+
+                        $deduction = (float)$lDetail['installment'];
+                        $oldBalance = (float)$loanModel->outstanding_balance;
+                        $newBalance = max(0, $oldBalance - $deduction);
+                        $newPaidAmount = (float)$loanModel->paid_amount + $deduction;
+                        $newPaidInstallments = (int)$loanModel->paid_installments + 1;
+                        $nextMonth = ($newBalance > 0) ? Carbon::parse($first_date)->addMonth()->format('Y-m-01') : null;
+                        $newStatus = ($newBalance <= 0) ? 'Completed' : 'Active Repayment';
+
+                        \App\Models\LoanRepayment::updateOrCreate(
+                            [
+                                'loan_id' => $loanModel->id,
+                                'payroll_month' => $first_date,
+                            ],
+                            [
+                                'employee_id' => $emp_id,
+                                'installment_amount' => $deduction,
+                                'principal_paid' => $deduction,
+                                'interest_paid' => 0,
+                                'remaining_balance' => $newBalance,
+                                'amount' => $deduction,
+                                'repayment_date' => $first_date,
+                                'salary_sheet_reference' => $payrollRecord ? $payrollRecord->id : null,
+                                'payroll_batch_id' => 'BATCH-' . $process_month,
+                                'created_by' => auth()->check() ? auth()->id() : 1,
+                                'remarks' => 'Deducted via payroll for ' . Carbon::parse($first_date)->format('F Y'),
+                            ]
+                        );
+
+                        $loanModel->update([
+                            'outstanding_balance' => $newBalance,
+                            'paid_amount' => $newPaidAmount,
+                            'paid_installments' => $newPaidInstallments,
+                            'last_deduction_month' => $first_date,
+                            'next_deduction_month' => $nextMonth,
+                            'status' => $newStatus,
+                        ]);
+                    }
+                }
             } catch (\Exception $e) {
                 $errors[] = "Error processing employee {$emp_id} : " . $e->getMessage();
             }
@@ -180,24 +227,56 @@ class SalaryService
         ];
     }
 
-    // loan deduction cal
-    function get_loans_deduction($emp_id)
+    // loan deduction calculation with effective month and status checks
+    public function get_loans_deduction($emp_id, $salary_month = null)
     {
-        $loans = DB::table('loans')
+        $query = DB::table('loans')
             ->join('loan_types', 'loan_types.id', '=', 'loans.loan_type_id')
-            ->select('loans.*', 'loan_types.name')
+            ->select('loans.*', 'loan_types.name as loan_type_name')
             ->where('loans.employee_id', $emp_id)
-            ->where('loans.status', 'Disbursed')
-            ->get();
-            // to day work
+            ->whereIn('loans.status', ['Approved', 'Disbursed', 'Active Repayment'])
+            ->where('loans.outstanding_balance', '>', 0);
 
-        $array = array();
-        if (!empty($loans[0])) {
-            foreach ($loans as $key => $value) {
-                $array[$value->name] = $value->monthly_installment;
-            }
+        if ($salary_month) {
+            $formattedMonth = Carbon::parse($salary_month)->format('Y-m-01');
+            $query->where(function ($q) use ($formattedMonth) {
+                $q->whereNull('loans.effective_month')
+                  ->orWhere('loans.effective_month', '<=', $formattedMonth);
+            });
         }
-        return $array;
+
+        $loans = $query->get();
+
+        $result = [
+            'Housing Loan' => 0.00,
+            'Personal Loan' => 0.00,
+            'Motorcycle/Scooter Loan' => 0.00,
+            'Other Loan' => 0.00,
+            'total_loan_deduction' => 0.00,
+            'loan_details' => []
+        ];
+
+        foreach ($loans as $loan) {
+            $installment = min((float)$loan->monthly_installment, (float)$loan->outstanding_balance);
+            if ($installment <= 0) continue;
+
+            $typeName = trim($loan->loan_type_name);
+            if (array_key_exists($typeName, $result)) {
+                $result[$typeName] += $installment;
+            } else {
+                $result['Other Loan'] += $installment;
+            }
+
+            $result['total_loan_deduction'] += $installment;
+            $result['loan_details'][] = [
+                'loan_id' => $loan->id,
+                'type_name' => $typeName,
+                'installment' => $installment,
+                'outstanding_balance' => (float)$loan->outstanding_balance
+            ];
+        }
+
+        return $result;
     }
 
     // dynamic tax deduction calculation

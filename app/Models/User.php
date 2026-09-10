@@ -126,6 +126,11 @@ class User extends Authenticatable
         return $this->belongsTo(Department::class);
     }
 
+    public function salaryGrade()
+    {
+        return $this->belongsTo(SalaryGrade::class, 'salary_grade_id');
+    }
+
     public function role()
     {
         return $this->belongsTo(RoleAndPermission::class, 'group_id');

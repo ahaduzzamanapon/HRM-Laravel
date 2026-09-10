@@ -53,28 +53,94 @@ class UserController extends Controller
             ->whereYear('start_date', now()->year)
             ->sum('requested_days');
 
-        return view('users.profile', compact('user', 'recentLeaves', 'leaveBalance'));
+        // Disciplinary actions against this employee
+        $disciplinaryCases = \App\Models\DepartmentalCase::with('penalty')
+            ->where('employee_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('users.profile', compact('user', 'recentLeaves', 'leaveBalance', 'disciplinaryCases'));
     }
 
     public function index(Request $request)
     {
         /** @var User $users */
-        $usersQuery = User::select('users.*', 'roles.name as role', 'designations.desi_name as designation', 'shifts.shift_name as shift')
+        $usersQuery = User::select(
+                'users.id',
+                'users.emp_id',
+                'users.name',
+                'users.last_name',
+                'users.branch_id',
+                'roles.name as role',
+                'designations.desi_name as designation',
+                'shifts.shift_name as shift',
+                'branchs.branch_name as branch_name'
+            )
             ->leftjoin('roles', 'users.group_id', '=', 'roles.id')
             ->leftjoin('designations', 'users.designation_id', '=', 'designations.id')
             ->leftjoin('shifts', 'users.shift_id', '=', 'shifts.id')
+            ->leftjoin('branchs', 'users.branch_id', '=', 'branchs.id')
             ->where('users.status', '!=', 'admin');
+
+        // Branch-wise filtering
+        if ($request->filled('branch_id')) {
+            $usersQuery->where('users.branch_id', $request->branch_id);
+        }
 
         applyBranchScope($usersQuery, 'users.branch_id');
         $users = $usersQuery->get();
 
+        // Branches dropdown for filter & transfer modal
         $branchesQuery = \App\Models\Branch::query();
-        applyBranchScope($branchesQuery, 'id');
-        $branches = $branchesQuery->pluck('branch_name', 'id'); // Get branches for dropdown
+        if (!isSuperAdmin()) {
+            $bId = userBranchId();
+            if ($bId) {
+                $branchesQuery->where('id', $bId);
+            }
+        }
+        $branches = $branchesQuery->pluck('branch_name', 'id');
 
         return view('users.index')
             ->with('users', $users)
-            ->with('branches', $branches);
+            ->with('branches', $branches)
+            ->with('selectedBranchId', $request->branch_id);
+    }
+
+    /**
+     * AJAX Branch Filter Endpoint (POST)
+     */
+    public function filterByBranch(Request $request)
+    {
+        $usersQuery = User::select(
+                'users.id',
+                'users.emp_id',
+                'users.name',
+                'users.last_name',
+                'users.branch_id',
+                'roles.name as role',
+                'designations.desi_name as designation',
+                'shifts.shift_name as shift',
+                'branchs.branch_name as branch_name'
+            )
+            ->leftjoin('roles', 'users.group_id', '=', 'roles.id')
+            ->leftjoin('designations', 'users.designation_id', '=', 'designations.id')
+            ->leftjoin('shifts', 'users.shift_id', '=', 'shifts.id')
+            ->leftjoin('branchs', 'users.branch_id', '=', 'branchs.id')
+            ->where('users.status', '!=', 'admin');
+
+        if ($request->filled('branch_id')) {
+            $usersQuery->where('users.branch_id', $request->branch_id);
+        }
+
+        applyBranchScope($usersQuery, 'users.branch_id');
+        $users = $usersQuery->get();
+
+        $html = view('users.table', compact('users'))->render();
+
+        return response()->json([
+            'status' => 'success',
+            'html' => $html
+        ]);
     }
 
     /**

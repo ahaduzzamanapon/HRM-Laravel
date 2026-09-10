@@ -56,9 +56,9 @@
                             </div>
 
                             <div class="col-md-2">
-                                <label class="form-label fw-bold text-primary">Approved Days</label>
-                                <input type="number" step="0.5" min="0.5" max="365" name="requested_days" class="form-control border-primary fw-bold" value="{{ old('requested_days', $leaveApplication->requested_days) }}">
-                                <small class="text-muted">Override days</small>
+                                <label class="form-label fw-bold text-primary">{{ !empty($canManageLeaves) ? 'Approved Days' : 'Requested Days' }}</label>
+                                <input type="number" step="0.5" min="0.5" max="365" name="requested_days" class="form-control border-primary fw-bold" value="{{ old('requested_days', $leaveApplication->requested_days) }}" {{ empty($canManageLeaves) ? 'readonly' : '' }}>
+                                <small class="text-muted">{{ !empty($canManageLeaves) ? 'Override days' : 'Calculated days' }}</small>
                             </div>
                         </div>
 

@@ -442,6 +442,68 @@
         </div>
     </div>
     @endif
+
+    {{-- Disciplinary Actions Section (Visible if user has disciplinary cases recorded) --}}
+    @if(isset($disciplinaryCases) && $disciplinaryCases->count() > 0)
+    <div class="row mt-2">
+        <div class="col-md-12 mb-4">
+            <div class="card info-card border-start border-4 border-danger shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center bg-danger bg-opacity-10 text-danger">
+                    <span class="fw-bold"><i class="im im-icon-Hammer me-2"></i> Disciplinary Actions & Case Records Against Me</span>
+                    <span class="badge bg-danger">{{ $disciplinaryCases->count() }} Record(s)</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #f0f0f0;">
+                                    <th>Case Ref</th>
+                                    <th>Incident Date</th>
+                                    <th>Allegation & Category</th>
+                                    <th>Status</th>
+                                    <th>Imposed Penalty</th>
+                                    <th>Action / Order Taken</th>
+                                    <th class="text-end">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($disciplinaryCases as $dCase)
+                                    <tr>
+                                        <td class="fw-bold text-dark">{{ $dCase->case_no ?? ('DC-' . str_pad($dCase->id, 4, '0', STR_PAD_LEFT)) }}</td>
+                                        <td class="small">{{ $dCase->incident_date ? \Carbon\Carbon::parse($dCase->incident_date)->format('d M, Y') : $dCase->created_at->format('d M, Y') }}</td>
+                                        <td>
+                                            <span class="fw-bold text-dark d-block">{{ $dCase->allegation_type }}</span>
+                                            <span class="badge bg-light text-dark border">{{ $dCase->allegation_category }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge {{ $dCase->status_badge_class }}">{{ $dCase->status ?? 'Pending' }}</span>
+                                        </td>
+                                        <td>
+                                            @if($dCase->penalty)
+                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">{{ $dCase->penalty->name }}</span>
+                                                @if($dCase->penalty_amount && $dCase->penalty_amount > 0)
+                                                    <div class="small fw-bold text-danger mt-1">Amount: {{ number_format($dCase->penalty_amount, 2) }}</div>
+                                                @endif
+                                            @else
+                                                <span class="text-muted small">None</span>
+                                            @endif
+                                        </td>
+                                        <td class="small text-secondary">{{ \Illuminate\Support\Str::limit($dCase->final_action_taken ?? $dCase->disciplinary_issue_details, 60) }}</td>
+                                        <td class="text-end">
+                                            <a href="{{ route('departmentalCases.show', [$dCase->id]) }}" class="btn btn-sm btn-outline-info">
+                                                <i class="fa fa-eye me-1"></i>View File
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
 
 @endsection

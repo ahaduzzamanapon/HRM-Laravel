@@ -99,8 +99,8 @@
 <!-- Department Id Field -->
 <div class="col-md-3">
     <div class="form-group">
-        {!! Form::label('department_id', 'Department:',['class'=>'control-label']) !!}
-        {!! Form::select('department_id',$departments, null, ['class' => 'form-control','required']) !!}
+        {!! Form::label('department_id', 'Department (Optional):',['class'=>'control-label']) !!}
+        {!! Form::select('department_id',$departments, null, ['class' => 'form-control']) !!}
     </div>
 </div>
 

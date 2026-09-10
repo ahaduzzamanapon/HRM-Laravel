@@ -50,19 +50,33 @@
     text-align: center;
 }
 </style>
+@php
+    $siteSetting = $siteSetting ?? \App\Models\SiteSetting::first();
+    $siteName    = $siteSetting->site_name ?? 'Palli Sanchay Bank';
+    $siteAddress = $siteSetting->site_address ?? 'Head Office, Dhaka';
+    $siteLogo    = null;
+    if (!empty($siteSetting) && !empty($siteSetting->site_logo)) {
+        $logoPath = ltrim($siteSetting->site_logo, '/');
+        if (file_exists(public_path($logoPath))) {
+            $siteLogo = asset($logoPath);
+        }
+    }
+    if (!$siteLogo) {
+        $siteLogo = asset('salary_logo.jpg');
+    }
+@endphp
 <button onclick="exportExcel()">Export to Excel</button>
 <div class="table-responsive">
     <div class="payslip-header">
         <div style="display: flex; align-items: center;justify-content: center;">
-            <img src="{{ asset('salary_logo.jpg') }}" alt="Company Logo" style="max-width: 50px; height: auto;">
+            <img src="{{ $siteLogo }}" alt="Company Logo" style="max-width: 50px; height: auto;">
             <div style="margin-left: 10px;">
-                <h3>Palli Sanchay Bank</h3>
-            <p style="line-height: 0px;">Head Office,Dhaka</p>
+                <h3 style="margin: 0;">{{ $siteName }}</h3>
+                <p style="margin: 5px 0 0 0; line-height: 1.2;">{{ $siteAddress }}</p>
             </div>
         </div>
-        <div style="display: flex; flex-direction: row; align-items: center;justify-content: center; line-height: 0px;">
-            <h5>প্রধান কার্যালয়ে কর্মরত {{count($salary_reports)}}  জন কর্মকর্তা-কর্মচারীদের {{ \Carbon\Carbon::parse($salary_month)->format('F, Y') }} মাসের ট্যাক্স বিবরণীঃ</h5>
-            {{-- <h5 style="margin-left: 954px;position: absolute;line-height: 0px;">পতাকা-ক</h5> --}}
+        <div style="display: flex; flex-direction: row; align-items: center;justify-content: center; margin-top: 10px;">
+            <h5>Tax Statement of {{ count($salary_reports) }} Employees for {{ \Carbon\Carbon::parse($salary_month)->format('F, Y') }}</h5>
         </div>
     </div>
     <table class="table">
@@ -84,7 +98,7 @@
         {{-- @dd($report) --}}
             <tr>
                 <td>{{ @$i = $i + 1 }}</td>
-                <td style="white-space: nowrap">{{ "Emp-".$report->user_id }}</td>
+                <td style="white-space: nowrap">{{ !empty($report->emp_id) ? $report->emp_id : ('EMP-'.$report->user_id) }}</td>
                 <td>{{ $report->name.' '.$report->last_name }}</td>
                 <td>{{ $report->dept_name }}</td>
                 <td>{{ $report->desi_name }}</td>

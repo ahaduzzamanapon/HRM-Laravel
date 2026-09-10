@@ -21,6 +21,7 @@ class HolydayApiController extends BaseApiController
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:date',
             'description' => 'nullable|string',
         ]);
         $item = Holyday::create($validated);
@@ -43,6 +44,7 @@ class HolydayApiController extends BaseApiController
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'date' => 'sometimes|required|date',
+            'end_date' => 'nullable|date|after_or_equal:date',
             'description' => 'nullable|string',
         ]);
         $item->update($validated);

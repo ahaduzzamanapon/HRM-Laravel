@@ -31,10 +31,14 @@
 <tr>
     <th scopre="row">{!! Form::label('loan_ceilings', 'Loan Ceilings:') !!}</th>
     <td>
-        @if($loanType->loan_ceilings)
+        @if(!empty($loanType->loan_ceilings) && is_iterable($loanType->loan_ceilings) && count($loanType->loan_ceilings) > 0)
             <ul>
                 @foreach($loanType->loan_ceilings as $ceiling)
-                    <li>Grade: {{ $ceiling['grade'] ?? 'N/A' }}, Amount: {{ $ceiling['amount'] ?? 'N/A' }}</li>
+                    @if(is_array($ceiling))
+                        <li>Grade: {{ $ceiling['grade'] ?? 'N/A' }}, Amount: {{ $ceiling['amount'] ?? 'N/A' }}</li>
+                    @else
+                        <li>{{ $ceiling }}</li>
+                    @endif
                 @endforeach
             </ul>
         @else

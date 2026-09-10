@@ -1,26 +1,14 @@
-<!-- Branch Id Field -->
-<div class="col-md-3">
-    <div class="form-group">
-        {!! Form::label('branch_id', 'Branch:',['class'=>'control-label']) !!}
-        @php
-            $branches = \App\Models\Branch::all()->pluck('branch_name','id')->prepend('All Branches', '')->toArray();
-        @endphp
-        {!! Form::select('branch_id', $branches, null, ['class' => 'form-control']) !!}
-    </div>
-</div>
-
-
 <!-- Title Field -->
-<div class="col-md-3">
+<div class="col-md-4">
     <div class="form-group">
         {!! Form::label('title', 'Title:',['class'=>'control-label']) !!}
-        {!! Form::text('title', null, ['class' => 'form-control']) !!}
+        {!! Form::text('title', null, ['class' => 'form-control', 'required']) !!}
     </div>
 </div>
 
 
 <!-- Status Field -->
-<div class="col-md-3">
+<div class="col-md-2">
     <div class="form-group">
         {!! Form::label('status', 'Status:',['class'=>'control-label']) !!}
         {!! Form::select('status', ['Published' => 'Published', 'Unpublished' => 'Unpublished'], null, ['class' => 'form-control']) !!}
@@ -28,11 +16,19 @@
 </div>
 
 
-<!-- Date Field -->
+<!-- From Date Field -->
 <div class="col-md-3">
     <div class="form-group">
-        {!! Form::label('date', 'Date:',['class'=>'control-label']) !!}
+        {!! Form::label('date', 'From Date:',['class'=>'control-label']) !!}
         {!! Form::date('date', isset($holyday) && $holyday->date ? \Carbon\Carbon::parse($holyday->date)->format('Y-m-d') : null, ['class' => 'form-control', 'id' => 'date', 'required']) !!}
+    </div>
+</div>
+
+<!-- To Date Field -->
+<div class="col-md-3">
+    <div class="form-group">
+        {!! Form::label('end_date', 'To Date (Optional):',['class'=>'control-label']) !!}
+        {!! Form::date('end_date', isset($holyday) && $holyday->end_date ? \Carbon\Carbon::parse($holyday->end_date)->format('Y-m-d') : null, ['class' => 'form-control', 'id' => 'end_date']) !!}
     </div>
 </div>
 

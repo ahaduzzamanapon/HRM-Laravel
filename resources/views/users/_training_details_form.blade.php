@@ -1,85 +1,90 @@
 <div class="row">
     <div class="col-md-12">
 
-        <div class="d-flex justify-content-between align-items-center">
-            <h4 class="col-md-10">Training Details</h4>
-            <button class="btn btn-primary btn-sm col-md-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-             <i class="im im-icon-Add"></i>  Add New</button>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="m-0 fw-bold text-primary"><i class="im im-icon-Bookmark me-2"></i>Training Details</h4>
+            <button class="btn btn-primary btn-sm px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                <i class="im im-icon-Add me-1"></i> Add New
+            </button>
         </div>
 
-        <!-- Accordion Form for Add/Edit (moved to top) -->
+        <!-- Accordion Form for Add/Edit -->
         <div class="accordion mb-4" id="trainingAccordion">
-            <div class="accordion-item">
+            <div class="accordion-item border shadow-sm rounded">
                 <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#trainingAccordion">
-                    <div class="accordion-body">
+                    <div class="accordion-body bg-light p-4">
+                        <h5 class="fw-bold mb-3 text-dark" id="training-form-title">Add / Edit Training Detail</h5>
                         <form id="training-detail-form" enctype="multipart/form-data">
                             @csrf
                             <input type="hidden" name="id" id="training-detail-id">
                             <input type="hidden" name="user_id" value="{{ $users->id }}">
 
-                            <div class="row">
+                            <div class="row g-3">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="training_name">Training Name:</label>
-                                        <input type="text" name="training_name" id="training_name" class="form-control">
+                                        <label for="training_name" class="fw-bold mb-1">Training Name <span class="text-danger">*</span></label>
+                                        <input type="text" name="training_name" id="training_name" class="form-control" required placeholder="e.g. Advanced Laravel & Web Architecture">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="training_provider">Training Provider:</label>
-                                        <input type="text" name="training_provider" id="training_provider" class="form-control">
+                                        <label for="training_provider" class="fw-bold mb-1">Training Provider <span class="text-danger">*</span></label>
+                                        <input type="text" name="training_provider" id="training_provider" class="form-control" required placeholder="e.g. BASIS Institute of Technology">
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-6">
+
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="training_type">Training Type:</label>
-                                        <select name="training_type" id="training_type" class="form-control">
+                                        <label for="training_type" class="fw-bold mb-1">Training Type</label>
+                                        <select name="training_type" id="training_type" class="form-select form-control">
                                             <option value="Domestic">Domestic</option>
                                             <option value="Foreign">Foreign</option>
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="start_date">Start Date:</label>
+                                        <label for="start_date" class="fw-bold mb-1">Start Date</label>
                                         <input type="date" name="start_date" id="start_date" class="form-control">
                                     </div>
                                 </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="end_date">End Date:</label>
+                                        <label for="end_date" class="fw-bold mb-1">End Date</label>
                                         <input type="date" name="end_date" id="end_date" class="form-control">
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="document_training">Document:</label>
-                                        <input type="file" name="document" id="document_training" class="form-control">
-                                        <span id="current-document-link-training"></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="description">Description:</label>
-                                <textarea name="description" id="description" class="form-control" rows="3"></textarea>
                             </div>
 
-                            <button type="submit" class="btn btn-success" id="save-training-detail-btn">Save Training</button>
-                            <button type="button" class="btn btn-secondary" id="cancel-training-edit-btn" data-toggle="collapse" data-target="#collapseOne">Cancel</button>
+                            <div class="form-group mt-3">
+                                <label for="document_training" class="fw-bold mb-1">Training Certificate / Document:</label>
+                                <input type="file" name="document" id="document_training" class="form-control">
+                                <small class="text-muted d-block mt-1" id="current-document-link-training"></small>
+                            </div>
+
+                            <div class="form-group mt-3">
+                                <label for="description" class="fw-bold mb-1">Description / Outcome:</label>
+                                <textarea name="description" id="description" class="form-control" rows="3" placeholder="Summary of skills acquired..."></textarea>
+                            </div>
+
+                            <div class="mt-4 text-end">
+                                <button type="button" class="btn btn-secondary me-2" id="cancel-training-btn">Cancel</button>
+                                <button type="submit" class="btn btn-success px-4" id="save-training-detail-btn">
+                                    <i class="im im-icon-Save me-1"></i> Save Training
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Display Existing Training Details in a Table (moved to bottom) -->
+        <!-- Display Existing Training Details in a Table -->
         <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead>
+            <table class="table table-hover align-middle border mb-0">
+                <thead class="table-light">
                     <tr>
                         <th>Training Name</th>
                         <th>Provider</th>
@@ -87,35 +92,43 @@
                         <th>Start Date</th>
                         <th>End Date</th>
                         <th>Document</th>
-                        <th>Actions</th>
+                        <th class="text-end pe-3" style="width: 220px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="training-details-table-body">
-                    {{-- @dd($users) --}}
-                    @if( isset($users) && $users->trainingDetails->count() > 0 )
+                    @if(isset($users) && $users->trainingDetails->count() > 0)
                         @foreach($users->trainingDetails as $trainingDetail)
                             <tr data-id="{{ $trainingDetail->id }}">
-                                <td>{{ $trainingDetail->training_name }}</td>
+                                <td class="fw-bold text-dark">{{ $trainingDetail->training_name }}</td>
                                 <td>{{ $trainingDetail->training_provider }}</td>
-                                <td>{{ $trainingDetail->training_type }}</td>
-                                <td>{{ $trainingDetail->start_date }}</td>
-                                <td>{{ $trainingDetail->end_date }}</td>
+                                <td><span class="badge bg-secondary">{{ $trainingDetail->training_type }}</span></td>
+                                <td>{{ $trainingDetail->start_date ?? 'N/A' }}</td>
+                                <td>{{ $trainingDetail->end_date ?? 'N/A' }}</td>
                                 <td>
                                     @if($trainingDetail->document)
-                                        <a href="{{ asset($trainingDetail->document) }}" target="_blank">View</a>
+                                        <a href="{{ asset($trainingDetail->document) }}" target="_blank" class="badge bg-info text-decoration-none">
+                                            <i class="fa fa-file-text-o me-1"></i> View File
+                                        </a>
                                     @else
-                                        N/A
+                                        <span class="text-muted small">N/A</span>
                                     @endif
                                 </td>
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-info edit-training-detail" data-id="{{ $trainingDetail->id }}">Edit</button>
-                                    <button type="button" class="btn btn-sm btn-danger delete-training-detail" data-id="{{ $trainingDetail->id }}">Delete</button>
+                                <td class="text-end pe-3">
+                                    <button type="button" class="btn btn-sm btn-info text-white me-1 view-training-detail" data-id="{{ $trainingDetail->id }}" title="View Details">
+                                        <i class="fa fa-eye"></i> View
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-warning text-dark me-1 edit-training-detail" data-id="{{ $trainingDetail->id }}" title="Edit Training">
+                                        <i class="fa fa-pencil"></i> Edit
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger delete-training-detail" data-id="{{ $trainingDetail->id }}" title="Delete Training">
+                                        <i class="fa fa-trash"></i> Delete
+                                    </button>
                                 </td>
                             </tr>
                         @endforeach
                     @else
                         <tr>
-                            <td colspan="7" class="text-center">No training details found.</td>
+                            <td colspan="7" class="text-center py-4 text-muted">No training details found.</td>
                         </tr>
                     @endif
                 </tbody>
@@ -124,170 +137,257 @@
     </div>
 </div>
 
-@push('scripts')
+<!-- View Training Detail Modal -->
+<div class="modal fade" id="viewTrainingDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-info text-white py-3">
+                <h5 class="modal-title fw-bold text-white"><i class="im im-icon-Bookmark me-2"></i>Training Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <table class="table table-bordered align-middle mb-0">
+                    <tbody>
+                        <tr>
+                            <th class="bg-light" style="width: 35%;">Training Name:</th>
+                            <td class="fw-bold text-primary" id="view_train_name">Loading...</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Provider:</th>
+                            <td id="view_train_provider">Loading...</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Type:</th>
+                            <td id="view_train_type">Loading...</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Start Date:</th>
+                            <td id="view_train_start">Loading...</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">End Date:</th>
+                            <td id="view_train_end">Loading...</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Description:</th>
+                            <td id="view_train_desc">Loading...</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Certificate File:</th>
+                            <td id="view_train_doc">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <script>
+@push('scripts')
+<script>
+    $(document).ready(function() {
         const userId = "{{ $users->id }}";
+        const trainingDetailForm = $('#training-detail-form');
+
+        function toggleTrainingCollapse(show) {
+            if (show) {
+                $('#collapseOne').collapse('show');
+            } else {
+                $('#collapseOne').collapse('hide');
+            }
+        }
+
         function loadTrainingDetails() {
             $.ajax({
-                url: `/trainingDetails/list/${userId}`, // Laravel route
+                url: `/trainingDetails/list/${userId}`,
                 type: 'GET',
                 dataType: 'json',
                 success: function(res) {
-                    // console.log(res.trainingDetail[0]);
                     let tableData = '';
-                    res.trainingDetail.forEach(trainingDetail => {
-                        tableData += `<tr data-id="${trainingDetail.id}">
-                            <td>${trainingDetail.training_name}</td>
-                            <td>${trainingDetail.training_provider}</td>
-                            <td>${trainingDetail.training_type}</td>
-                            <td>${trainingDetail.start_date}</td>
-                            <td>${trainingDetail.end_date}</td>
-                            <td>${trainingDetail.document ? `<a href="${trainingDetail.document}" target="_blank">View</a>` : 'N/A'}</td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-info edit-training-detail" data-id="${trainingDetail.id}">Edit</button>
-                                <button type="button" class="btn btn-sm btn-danger delete-training-detail" data-id="${trainingDetail.id}">Delete</button>
-                            </td>
-                        </tr>`;
-                    });
+                    if (res.trainingDetail && res.trainingDetail.length > 0) {
+                        res.trainingDetail.forEach(t => {
+                            let docHtml = t.document 
+                                ? `<a href="/${t.document}" target="_blank" class="badge bg-info text-decoration-none"><i class="fa fa-file-text-o me-1"></i> View File</a>` 
+                                : '<span class="text-muted small">N/A</span>';
+
+                            tableData += `<tr data-id="${t.id}">
+                                <td class="fw-bold text-dark">${t.training_name || 'N/A'}</td>
+                                <td>${t.training_provider || 'N/A'}</td>
+                                <td><span class="badge bg-secondary">${t.training_type || 'N/A'}</span></td>
+                                <td>${t.start_date || 'N/A'}</td>
+                                <td>${t.end_date || 'N/A'}</td>
+                                <td>${docHtml}</td>
+                                <td class="text-end pe-3">
+                                    <button type="button" class="btn btn-sm btn-info text-white me-1 view-training-detail" data-id="${t.id}" title="View Details">
+                                        <i class="fa fa-eye"></i> View
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-warning text-dark me-1 edit-training-detail" data-id="${t.id}" title="Edit Training">
+                                        <i class="fa fa-pencil"></i> Edit
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger delete-training-detail" data-id="${t.id}" title="Delete Training">
+                                        <i class="fa fa-trash"></i> Delete
+                                    </button>
+                                </td>
+                            </tr>`;
+                        });
+                    } else {
+                        tableData = '<tr><td colspan="7" class="text-center py-4 text-muted">No training details found.</td></tr>';
+                    }
                     $('#training-details-table-body').html(tableData);
                 },
                 error: function(xhr) {
-                    console.error('Error loading table:', xhr.responseText);
+                    console.error('Error loading training table:', xhr.responseText);
                 }
             });
         }
-    </script>
 
-    <script>
-        $(document).ready(function() {
-        // Select all buttons that toggle collapse
-            $('button[data-bs-toggle="collapse"]').each(function() {
-                $(this).on('click', function() {
-                        // Get the target accordion from data-bs-target
-                    var targetSelector = $(this).data('bs-target');
-                    var $collapseElement = $(targetSelector);
+        loadTrainingDetails();
 
-                    // Find a form inside the collapse element (if any)
-                    var $form = $collapseElement.find('form');
+        $('#cancel-training-btn').click(function() {
+            trainingDetailForm[0].reset();
+            $('#training-detail-id').val('');
+            $('#current-document-link-training').html('');
+            $('#training-form-title').text('Add / Edit Training Detail');
+            toggleTrainingCollapse(false);
+        });
 
-                    // Reset the form if it exists
-                    if ($form.length) {
-                        $form[0].reset();
+        trainingDetailForm.submit(function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const tId = $('#training-detail-id').val();
+            const url = tId ? `/trainingDetails/${tId}` : '/trainingDetails';
+
+            if (tId) {
+                formData.append('_method', 'PATCH');
+            }
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    loadTrainingDetails();
+                    if(response.error){
+                        alert(response.message || 'Error saving training detail');
+                        return;
                     }
-                });
+                    alert(response.message || 'Training detail saved successfully');
+                    trainingDetailForm[0].reset();
+                    $('#training-detail-id').val('');
+                    $('#current-document-link-training').html('');
+                    $('#training-form-title').text('Add / Edit Training Detail');
+                    toggleTrainingCollapse(false);
+                },
+                error: function(xhr) {
+                    alert('Error saving training detail: ' + (xhr.responseJSON ? xhr.responseJSON.message : xhr.responseText));
+                }
             });
         });
 
-    </script>
-    <script>
-        $(document).ready(function() {
-            const trainingForm = $('#training-detail-form');
-            const trainingAccordionCollapse = new bootstrap.Collapse($('#collapseOne'), { toggle: false });
+        // View Training Detail
+        $(document).on('click', '.view-training-detail', function() {
+            const tId = $(this).data('id');
+            $('#view_train_name').text('Loading...');
+            $('#view_train_provider').text('Loading...');
+            $('#view_train_type').text('Loading...');
+            $('#view_train_start').text('Loading...');
+            $('#view_train_end').text('Loading...');
+            $('#view_train_desc').text('Loading...');
+            $('#view_train_doc').html('Loading...');
 
-            // Cancel button for form
-            $('#cancel-training-edit-btn').click(function() {
-                trainingForm[0].reset();
-                trainingAccordionCollapse.hide(); // Hide accordion
-            });
+            $('#viewTrainingDetailModal').modal('show');
 
+            $.ajax({
+                url: `/trainingDetails/${tId}/edit`,
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    const t = response.trainingDetail;
+                    if (t) {
+                        $('#view_train_name').text(t.training_name || 'N/A');
+                        $('#view_train_provider').text(t.training_provider || 'N/A');
+                        $('#view_train_type').text(t.training_type || 'N/A');
+                        $('#view_train_start').text(t.start_date || 'N/A');
+                        $('#view_train_end').text(t.end_date || 'N/A');
+                        $('#view_train_desc').text(t.description || 'No description provided');
 
-            // Save Training Detail (Add/Edit)
-            trainingForm.submit(function(e) {
-                e.preventDefault();
-                const formData = new FormData(this);
-                const trainingDetailId = $('#training-detail-id').val();
-                const url = trainingDetailId ? `/trainingDetails/${trainingDetailId}` : '/trainingDetails';
-                const method = trainingDetailId ? 'POST' : 'POST'; // Laravel uses POST for PUT/PATCH with _method field
-
-                if (trainingDetailId) {
-                    formData.append('_method', 'PATCH'); // Spoof PATCH method for Laravel
-                }
-
-                $.ajax({
-                    url: url,
-                    type: method,
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        loadTrainingDetails();
-
-                        if(response.error){
-                            alert('Error: ' + response.message + ' !!!!');
-                            return;
-                        }else{
-                            alert(response.message);
-                            trainingAccordionCollapse.hide();
-                            // location.reload();
+                        if (t.document) {
+                            $('#view_train_doc').html(`<a href="/${t.document}" target="_blank" class="btn btn-sm btn-outline-info"><i class="fa fa-external-link me-1"></i> Open Certificate Document</a>`);
+                        } else {
+                            $('#view_train_doc').html('<span class="text-muted">No document attached</span>');
                         }
-                    },
-                    error: function(xhr) {
-                        alert('Error saving training detail: ' + xhr.responseText);
                     }
-                });
+                },
+                error: function(xhr) {
+                    $('#view_train_name').text('Error loading details');
+                }
             });
+        });
 
-            // Edit Training Detail
-            $(document).on('click', '.edit-training-detail', function() {
-                const trainingDetailId = $(this).data('id');
-                $.ajax({
-                    url: `/trainingDetails/${trainingDetailId}/edit`, // Laravel's edit route returns data for form
-                    type: 'GET',
-                    success: function(response) {
-                        loadTrainingDetails();
+        // Edit Training Detail
+        $(document).on('click', '.edit-training-detail', function() {
+            const tId = $(this).data('id');
+            $.ajax({
+                url: `/trainingDetails/${tId}/edit`,
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    const t = response.trainingDetail;
+                    if (t) {
+                        $('#training-detail-id').val(t.id);
+                        $('#training_name').val(t.training_name);
+                        $('#training_provider').val(t.training_provider);
+                        $('#training_type').val(t.training_type);
+                        $('#start_date').val(t.start_date);
+                        $('#end_date').val(t.end_date);
+                        $('#description').val(t.description);
 
-                        $('#training-detail-id').val(response.trainingDetail.id);
-                        $('#training_name').val(response.trainingDetail.training_name);
-                        $('#training_provider').val(response.trainingDetail.training_provider);
-                        $('#training_type').val(response.trainingDetail.training_type);
-                        $('#start_date').val(response.trainingDetail.start_date);
-                        $('#end_date').val(response.trainingDetail.end_date);
-                        $('#description').val(response.trainingDetail.description);
-                        if (response.trainingDetail.document) {
-                            $('#current-document-link-training').html(`<a href="{{asset('${response.trainingDetail.document}')}}" target="_blank">View Current Document</a>`);
+                        if (t.document) {
+                            $('#current-document-link-training').html(`<a href="/${t.document}" target="_blank" class="text-info fw-bold"><i class="fa fa-file-text-o me-1"></i> View Current Document</a>`);
                         } else {
                             $('#current-document-link-training').html('');
                         }
-                        trainingAccordionCollapse.show(); // Show accordion
-                    },
-                    error: function(xhr) {
-                        alert('Error fetching training detail: ' + xhr.responseText);
+
+                        $('#training-form-title').text('Edit Training Detail #' + t.id);
+                        toggleTrainingCollapse(true);
+
+                        $('html, body').animate({
+                            scrollTop: $('#trainingAccordion').offset().top - 100
+                        }, 300);
                     }
-                });
-            });
-
-            // Delete Training Detail
-            $(document).on('click', '.delete-training-detail', function() {
-                if (confirm('Are you sure you want to delete this training detail?')) {
-                    const trainingDetailId = $(this).data('id');
-                    $.ajax({
-                        url: `/trainingDetails/${trainingDetailId}`,
-                        type: 'POST', // Laravel uses POST for DELETE with _method field
-                        data: {
-                            _method: 'DELETE',
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function(response) {
-                            loadTrainingDetails();
-
-                            alert(response.message);
-                            // Remove row from table
-                            $(`tr[data-id="${trainingDetailId}"]`).remove();
-                            // If no rows left, display "No training details found."
-                            if ($('#training-details-table-body tr').length === 0) {
-                                $('#training-details-table-body').html('<tr><td colspan="7" class="text-center">No training details found.</td></tr>');
-                            }
-                        },
-                        error: function(xhr) {
-                            alert('Error deleting training detail: ' + xhr.responseText);
-                        }
-                    });
+                },
+                error: function(xhr) {
+                    alert('Error fetching training detail: ' + (xhr.responseJSON ? xhr.responseJSON.message : xhr.responseText));
                 }
             });
         });
-    </script>
 
-
-
+        // Delete Training Detail
+        $(document).on('click', '.delete-training-detail', function() {
+            const tId = $(this).data('id');
+            if (confirm('Are you sure you want to delete this training detail?')) {
+                $.ajax({
+                    url: `/trainingDetails/${tId}`,
+                    type: 'POST',
+                    data: {
+                        _method: 'DELETE',
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        alert(response.message || 'Deleted successfully.');
+                        loadTrainingDetails();
+                    },
+                    error: function(xhr) {
+                        alert('Error deleting training detail: ' + (xhr.responseJSON ? xhr.responseJSON.message : xhr.responseText));
+                    }
+                });
+            }
+        });
+    });
+</script>
 @endpush

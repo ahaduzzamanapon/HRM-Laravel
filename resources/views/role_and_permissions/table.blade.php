@@ -4,7 +4,6 @@
             <tr>
                 <th style="width: 70px;" class="ps-3">ID</th>
                 <th>Role Name</th>
-                <th>Key</th>
                 <th>Permissions Assigned</th>
                 <th>Branch Scope</th>
                 <th style="width: 160px;" class="text-end pe-3">Actions</th>
@@ -17,13 +16,6 @@
                 <td class="fw-bold text-dark">
                     <i class="im im-icon-Shield me-1 text-primary"></i>
                     {{ $roleAndPermission->name }}
-                </td>
-                                <td>
-                    @include('layouts.partials.action_buttons', [
-                        'viewRoute' => route('roleAndPermissions.show', [$roleAndPermission->id]),
-                        'editRoute' => route('roleAndPermissions.edit', [$roleAndPermission->id]),
-                        'deleteRoute' => route('roleAndPermissions.destroy', [$roleAndPermission->id]),
-                    ])
                 </td>
                 <td>
                     @php
@@ -39,22 +31,18 @@
                     </span>
                 </td>
                 <td class="text-end pe-3">
-                    {!! Form::open(['route' => ['roleAndPermissions.destroy', $roleAndPermission->id], 'method' => 'delete', 'style' => 'display:inline']) !!}
-                    <div class='btn-group btn-group-sm' role="group">
-                        <a href="{{ route('roleAndPermissions.show', [$roleAndPermission->id]) }}" class='btn btn-outline-info' data-bs-toggle="tooltip" title="View Details">
-                            <i class="im im-icon-Eye"></i>
-                        </a>
-                        <a href="{{ route('roleAndPermissions.edit', [$roleAndPermission->id]) }}" class='btn btn-outline-primary' data-bs-toggle="tooltip" title="Edit Role">
-                            <i class="im im-icon-Pen"></i>
-                        </a>
-                        {!! Form::button('<i class="im im-icon-Remove"></i>', ['type' => 'submit', 'class' => 'btn btn-outline-danger', 'data-bs-toggle' => 'tooltip', 'title' => 'Delete Role', 'onclick' => "return confirm('Are you sure you want to delete this role?')"]) !!}
+                    <div class="d-flex justify-content-end">
+                        @include('layouts.partials.action_buttons', [
+                            'viewRoute' => route('roleAndPermissions.show', [$roleAndPermission->id]),
+                            'editRoute' => route('roleAndPermissions.edit', [$roleAndPermission->id]),
+                            'deleteRoute' => route('roleAndPermissions.destroy', [$roleAndPermission->id]),
+                        ])
                     </div>
-                    {!! Form::close() !!}
                 </td>
             </tr>
         @empty
             <tr>
-                <td colspan="6" class="text-center py-4 text-muted">
+                <td colspan="5" class="text-center py-4 text-muted">
                     <i class="im im-icon-Information display-6 d-block mb-2"></i>
                     No roles found. Click <strong>Add New Role</strong> to create one.
                 </td>

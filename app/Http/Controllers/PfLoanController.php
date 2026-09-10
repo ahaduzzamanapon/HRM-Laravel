@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\ProvidentFundLoan;
 use App\Models\PfApprovalWorkflow;
 use App\Models\PfLedger;
+use App\Services\AuthorizationEngine;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,7 +19,10 @@ class PfLoanController extends Controller
         $loansQuery = ProvidentFundLoan::with(['employee'])->orderBy('created_at', 'desc');
         $employeesQuery = \App\Models\User::where('is_pf_member', 1)->where('status', '!=', 'admin');
 
-        if ($user->role && $user->role->name !== 'Super Admin') {
+        if (AuthorizationEngine::isEmployeeRole($user)) {
+            $loansQuery->where('employee_id', $user->id);
+            $employeesQuery->where('id', $user->id);
+        } elseif ($user->role && $user->role->name !== 'Super Admin') {
             $loansQuery->whereHas('employee', function ($q) use ($user) {
                 $q->where('branch_id', $user->branch_id);
             });
@@ -38,6 +42,11 @@ class PfLoanController extends Controller
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+        if (AuthorizationEngine::isEmployeeRole($user)) {
+            $request->merge(['employee_id' => $user->id]);
+        }
+
         $request->validate([
             'employee_id' => 'required|exists:users,id',
             'amount' => 'required|numeric|min:1000',
@@ -74,8 +83,64 @@ class PfLoanController extends Controller
         return redirect()->back()->with('success', 'PF Loan application submitted successfully.');
     }
 
+    public function update(Request $request, ProvidentFundLoan $loan)
+    {
+        $user = Auth::user();
+        $isEmployee = AuthorizationEngine::isEmployeeRole($user);
+
+        if ($isEmployee) {
+            if ($loan->employee_id != $user->id || $loan->status !== 'Pending') {
+                abort(403, 'Unauthorized action. You can only edit your own pending loan applications.');
+            }
+        }
+
+        $request->validate([
+            'amount' => 'required|numeric|min:1000',
+            'installments' => 'required|integer|min:1',
+            'remarks' => 'nullable|string',
+            'status' => 'nullable|string'
+        ]);
+
+        $amount = (float) $request->amount;
+        $installments = (int) $request->installments;
+
+        $loan->amount = $amount;
+        $loan->installments = $installments;
+        $loan->monthly_installment = $amount / $installments;
+        if ($loan->status === 'Pending') {
+            $loan->outstanding_balance = $amount;
+        }
+        if ($request->filled('status') && !$isEmployee) {
+            $loan->status = $request->status;
+        }
+        if ($request->has('remarks')) {
+            $loan->remarks = $request->remarks;
+        }
+        $loan->save();
+
+        return redirect()->back()->with('success', 'PF Loan details updated successfully.');
+    }
+
+    public function destroy(ProvidentFundLoan $loan)
+    {
+        $user = Auth::user();
+        if (AuthorizationEngine::isEmployeeRole($user)) {
+            if ($loan->employee_id != $user->id || $loan->status !== 'Pending') {
+                abort(403, 'Unauthorized action. You can only cancel your own pending loan applications.');
+            }
+        }
+
+        $loan->delete();
+        return redirect()->back()->with('success', 'PF Loan record deleted successfully.');
+    }
+
     public function approve(Request $request, ProvidentFundLoan $loan)
     {
+        $user = Auth::user();
+        if (AuthorizationEngine::isEmployeeRole($user)) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'approved_amount' => 'required|numeric|min:0|max:'.$loan->amount
         ]);
@@ -97,6 +162,11 @@ class PfLoanController extends Controller
 
     public function disburse(Request $request, ProvidentFundLoan $loan)
     {
+        $user = Auth::user();
+        if (AuthorizationEngine::isEmployeeRole($user)) {
+            abort(403, 'Unauthorized action.');
+        }
+
         DB::beginTransaction();
         try {
             if (!$loan->employee || $loan->employee->is_pf_member != 1) {
@@ -104,34 +174,14 @@ class PfLoanController extends Controller
             }
 
             $loan->status = 'Disbursed';
+            $loan->workflow_status = 'Disbursed';
             $loan->save();
 
-            $disburseAmount = $loan->approved_amount ?? $loan->amount;
-            $lastBalance = $this->getCurrentBalance($loan->employee_id);
-            PfLedger::create([
-                'employee_id' => $loan->employee_id,
-                'branch_id' => $loan->branch_id,
-                'transaction_type' => 'loan_disbursement',
-                'credit' => 0,
-                'debit' => $disburseAmount,
-                'balance' => $lastBalance - $disburseAmount,
-                'description' => 'PF Loan Disbursement',
-                'reference_type' => get_class($loan),
-                'reference_id' => $loan->id,
-                'created_by' => auth()->id()
-            ]);
-
             DB::commit();
-            return redirect()->back()->with('success', 'Loan disbursed and ledger updated.');
+            return redirect()->back()->with('success', 'Loan disbursed successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Disbursement failed: ' . $e->getMessage());
         }
-    }
-
-    private function getCurrentBalance($employeeId)
-    {
-        $lastLedger = PfLedger::where('employee_id', $employeeId)->orderBy('id', 'desc')->first();
-        return $lastLedger ? $lastLedger->balance : 0;
     }
 }

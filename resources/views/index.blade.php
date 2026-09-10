@@ -57,32 +57,44 @@ Dashboard @parent
 
     <div class="row">
         {{-- Daily Attendance --}}
-        @include('dashboard.daily_attendance')
+        @if(can('dashboard_daily_attendance'))
+            @include('dashboard.daily_attendance')
+        @endif
 
         {{-- Monthly Attendance --}}
-        @include('dashboard.monthly_attendance')
-        <!-- ./col -->
+        @if(can('dashboard_monthly_attendance'))
+            @include('dashboard.monthly_attendance')
+        @endif
     </div>
 
     <div class="row">
-        {{-- office info  --}}
-        @include('dashboard.office_info')
-        {{-- Leave info  --}}
-        @include('dashboard.leave_info')
+        {{-- Organization / Office info --}}
+        @if(can('dashboard_organization_info'))
+            @include('dashboard.office_info')
+        @endif
+
+        {{-- Leave info --}}
+        @if(can('dashboard_leave_info'))
+            @include('dashboard.leave_info')
+        @endif
     </div>
 
     <div class="row">
         {{-- Payroll Info --}}
-        @include('dashboard.payroll_info')
+        @if(can('dashboard_payroll_info'))
+            @include('dashboard.payroll_info')
+        @endif
 
-        {{-- allowance & Provident Fund info --}}
-
-        @include('dashboard.allow_provident_fund_info')
+        {{-- Allowance & Provident Fund info --}}
+        @if(can('dashboard_provident_fund_info'))
+            @include('dashboard.allow_provident_fund_info')
+        @endif
     </div>
 
-
     <div class="row">
-        @include('dashboard.new_join_info')
+        @if(can('dashboard_new_join_info'))
+            @include('dashboard.new_join_info')
+        @endif
     </div>
 </section>
 @push('scripts')

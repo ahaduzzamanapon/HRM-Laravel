@@ -68,14 +68,14 @@
     <div class="report-header">
         <h2>Daily Attendance Report — {{ ucfirst($filterType) }}</h2>
         <div class="meta">
-            <span>📅 {{ date('l, d F Y', strtotime($date)) }}</span>
+            <span>📅 {{ (!empty($toDate) && $toDate !== $fromDate) ? date('d M Y', strtotime($fromDate)) . ' - ' . date('d M Y', strtotime($toDate)) : date('l, d F Y', strtotime($fromDate ?: $date)) }}</span>
             <span>👥 {{ count($attendanceDatas) }} Records</span>
             <span>⏱ Generated: {{ date('h:i A') }}</span>
         </div>
     </div>
 
     @php
-        $presentCnt  = collect($attendanceDatas)->where('status','Present')->count();
+        $presentCnt  = collect($attendanceDatas)->filter(function($i){ return in_array($i->status ?? '', ['Present','HalfDay','Continue']); })->count();
         $absentCnt   = collect($attendanceDatas)->where('status','Absent')->count();
         $leaveCnt    = collect($attendanceDatas)->whereIn('status',['Leave','HLeave'])->count();
         $lateCnt     = collect($attendanceDatas)->where('late_status',1)->count();

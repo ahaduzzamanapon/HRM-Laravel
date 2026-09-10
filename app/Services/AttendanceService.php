@@ -159,12 +159,14 @@ class AttendanceService
 
     protected function get_employees($emp_ids)
     {
-
+        $query = User::whereNotIn('status', ['retired', 'left', 'resign', 'departed', 'terminated'])
+            ->whereDoesntHave('departures')
+            ->where('id', '!=', 1);
 
         if (is_array($emp_ids)) {
-            return User::whereIn('id', $emp_ids)->where('id', '!=', 1)->get();
+            return $query->whereIn('id', $emp_ids)->get();
         } else {
-            return User::where('id', $emp_ids)->where('id', '!=', 1)->get();
+            return $query->where('id', $emp_ids)->get();
         }
     }
 
@@ -215,48 +217,51 @@ class AttendanceService
         }
         return $leave;
     }
-    public function holiday_check($process_date, $branch_id)
+    public function holiday_check($process_date, $branch_id = null)
     {
-        $query = Holyday::where('date', '=', $process_date)
-            ->where('branch_id', $branch_id)
-            ->where('status', 'Published')
+        $query = Holyday::where('status', 'Published')
+            ->where(function($q) use ($process_date) {
+                $q->where(function($sub) use ($process_date) {
+                    $sub->whereNull('end_date')
+                        ->where('date', '=', $process_date);
+                })->orWhere(function($sub) use ($process_date) {
+                    $sub->whereNotNull('end_date')
+                        ->where('date', '<=', $process_date)
+                        ->where('end_date', '>=', $process_date);
+                });
+            })
             ->first();
 
-        if(empty($query)){
-            return false;
-        } else {
-            return true;
-        }
+        return !empty($query);
     }
 
     public function getReportData($reportType, $filterType, $fromDate, $toDate, $userIds)
     {
         $query = AttendanceTime::with('user');
 
+        if (!empty($fromDate) && !empty($toDate) && $fromDate !== $toDate) {
+            $query->whereBetween('attendance_date', [$fromDate, $toDate]);
+        } elseif (!empty($fromDate)) {
+            $query->where('attendance_date', $fromDate);
+        }
+
         if ($reportType == 'daily') {
-            if($filterType == 'all'){
-                $query->where('attendance_date', $fromDate);
-            }elseif($filterType == 'present'){
-                $query->where('attendance_date', $fromDate);
-                $query->where('attendance_status', 'Present');
-                $query->where('status', 'Present');
-            }elseif($filterType == 'absent'){
-                $query->where('attendance_date', $fromDate);
-                $query->where('attendance_status', 'Absent');
+            if ($filterType == 'present') {
+                $query->whereIn('status', ['Present', 'HalfDay', 'Continue']);
+            } elseif ($filterType == 'absent') {
                 $query->where('status', 'Absent');
-            }elseif($filterType == 'late'){
-                $query->where('attendance_date', $fromDate);
+            } elseif ($filterType == 'late') {
                 $query->where('late_status', 1);
-            }elseif($filterType == 'leave'){
-                $query->where('attendance_date', $fromDate);
+            } elseif ($filterType == 'leave') {
                 $query->whereIn('status', ['Leave', 'HLeave']);
             }
         }
+
         if (!empty($userIds)) {
             $query->whereIn('employee_id', $userIds);
         }
-        // dd($query->get());
-        return $query->get();
+
+        return $query->orderBy('attendance_date', 'asc')->get();
     }
 
     public function getDailyReportData($date){
@@ -285,12 +290,13 @@ class AttendanceService
             'clock_in',
             'clock_out',
             'late_status',
+            'late_time',
             'attendance_status',
             'status'
         )
         ->whereBetween('attendance_date', [$fromDate, $toDate])
         ->whereIn('employee_id', $userIds)
-        ->with(['user:id,name,last_name,emp_id,department_id,designation_id', 'user.department:id,name', 'user.designation:id,desi_name'])
+        ->with(['user:id,name,last_name,emp_id,department_id,designation_id,date_of_birth,date_of_join', 'user.department:id,name', 'user.designation:id,desi_name'])
         ->orderBy('employee_id')
         ->orderBy('attendance_date')
         ->get();

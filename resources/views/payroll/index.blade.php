@@ -92,23 +92,31 @@
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-body">
-                        <table class="table table-bordered" id="user-table">
-                            <thead>
-                                <tr>
-                                    <th><input type="checkbox" id="select-all"></th>
-                                    <th>Name</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($users as $user)
+                        <div class="mb-3">
+                            <input type="text" id="payroll-employee-search" class="form-control" placeholder="Search by Employee Name or ID...">
+                        </div>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-bordered align-middle" id="user-table">
+                                <thead style="position: sticky; top: 0; background-color: #fff; z-index: 1;">
                                     <tr>
-                                        <td><input type="checkbox" name="users[]" value="{{ $user->id }}" class="user-checkbox">
-                                        </td>
-                                        <td>{{ $user->name }} {{ $user->last_name ?? '' }}</td>
+                                        <th style="width: 40px;"><input type="checkbox" id="select-all"></th>
+                                        <th>Employee (Name / ID)</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach($users as $user)
+                                        <tr>
+                                            <td><input type="checkbox" name="users[]" value="{{ $user->id }}" class="user-checkbox"></td>
+                                            <td>
+                                                <strong>{{ $user->name }} {{ $user->last_name ?? '' }}</strong>
+                                                <br>
+                                                <small class="text-muted"><i class="fa fa-id-badge me-1"></i>ID: {{ $user->emp_id ?? 'N/A' }}</small>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -121,7 +129,19 @@
             $(function () {
 
                 $('#select-all').on('click', function () {
-                    $('.user-checkbox').prop('checked', $(this).prop('checked'));
+                    $('.user-checkbox:visible').prop('checked', $(this).prop('checked'));
+                });
+
+                $('#payroll-employee-search').on('keyup input', function () {
+                    var query = $(this).val().toLowerCase().trim();
+                    $('#user-table tbody tr').each(function () {
+                        var text = $(this).text().toLowerCase();
+                        if (text.indexOf(query) !== -1) {
+                            $(this).show();
+                        } else {
+                            $(this).hide();
+                        }
+                    });
                 });
 
                 $('#process-salary-btn').on('click', function (e) {

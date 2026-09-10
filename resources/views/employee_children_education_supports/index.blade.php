@@ -1,41 +1,39 @@
 @extends('layouts.default')
 
-{{-- Page title --}}
 @section('title')
 Employee Children Education Supports @parent
 @stop
 
 @section('content')
-<!-- Content Header (Page header) -->
-<section class="content-header">
-    {{--<div aria-label="breadcrumb" class="card-breadcrumb">
-        <h1>Employee Children Education Supports</h1>
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h2 class="mb-0 text-dark fw-bold">Children Education Supports</h2>
+        </div>
+        <div class="col-auto">
+            <a class="btn btn-primary rounded-pill px-4 shadow-sm" href="{{ route('employeeChildrenEducationSupports.create') }}">
+                <i class="im im-icon-Add me-1"></i> Add New Application
+            </a>
+        </div>
     </div>
-    <div class="separator-breadcrumb border-top"></div>--}}
-</section>
-
-<!-- Main content -->
-<div class="content">
-    <div class="clearfix"></div>
 
     @include('flash::message')
 
-    <div class="clearfix"></div>
-    <div class="card" width="88vw;">
-        <section class="card-header">
-            <h5 class="card-title d-inline">Employee Children Education Supports</h5>
-            <span class="float-right">
-                <a class="btn btn-primary pull-right" href="{{ route('employeeChildrenEducationSupports.create') }}">Add New</a>
-            </span>
-        </section>
-        <div class="card-body table-responsive" >
+    <!-- Main Content Card -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white py-3 border-0">
+            <h5 class="card-title fw-bold text-dark mb-0">
+                <i class="im im-icon-File-TXT text-primary me-2"></i>Education Support Applications
+            </h5>
+        </div>
+        <div class="card-body p-0 table-responsive">
             @include('employee_children_education_supports.table')
         </div>
     </div>
-    <div class="text-center">
-        
-        @include('adminlte-templates::common.paginate', ['records' => $employeeChildrenEducationSupports])
 
+    <div class="text-center mt-3">
+        @include('adminlte-templates::common.paginate', ['records' => $employeeChildrenEducationSupports])
     </div>
 </div>
 @endsection

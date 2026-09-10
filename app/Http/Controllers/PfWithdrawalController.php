@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\PfWithdrawal;
 use App\Models\PfApprovalWorkflow;
 use App\Models\PfLedger;
+use App\Services\AuthorizationEngine;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,7 +19,10 @@ class PfWithdrawalController extends Controller
         $withdrawalsQuery = PfWithdrawal::with(['employee'])->orderBy('created_at', 'desc');
         $employeesQuery = \App\Models\User::where('is_pf_member', 1)->where('status', '!=', 'admin');
 
-        if ($user->role && $user->role->name !== 'Super Admin') {
+        if (AuthorizationEngine::isEmployeeRole($user)) {
+            $withdrawalsQuery->where('employee_id', $user->id);
+            $employeesQuery->where('id', $user->id);
+        } elseif ($user->role && $user->role->name !== 'Super Admin') {
             $withdrawalsQuery->whereHas('employee', function ($q) use ($user) {
                 $q->where('branch_id', $user->branch_id);
             });
@@ -38,6 +42,11 @@ class PfWithdrawalController extends Controller
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+        if (AuthorizationEngine::isEmployeeRole($user)) {
+            $request->merge(['employee_id' => $user->id]);
+        }
+
         $request->validate([
             'employee_id' => 'required|exists:users,id',
             'type' => 'required|string',
@@ -73,6 +82,11 @@ class PfWithdrawalController extends Controller
 
     public function approve(Request $request, PfWithdrawal $withdrawal)
     {
+        $user = Auth::user();
+        if (AuthorizationEngine::isEmployeeRole($user)) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'approved_amount' => 'required|numeric|min:0|max:'.$withdrawal->amount
         ]);
@@ -90,6 +104,11 @@ class PfWithdrawalController extends Controller
 
     public function disburse(Request $request, PfWithdrawal $withdrawal)
     {
+        $user = Auth::user();
+        if (AuthorizationEngine::isEmployeeRole($user)) {
+            abort(403, 'Unauthorized action.');
+        }
+
         DB::beginTransaction();
         try {
             if (!$withdrawal->employee || $withdrawal->employee->is_pf_member != 1) {
@@ -100,32 +119,11 @@ class PfWithdrawalController extends Controller
             $withdrawal->disbursement_date = now();
             $withdrawal->save();
 
-            $disburseAmount = $withdrawal->approved_amount ?? $withdrawal->amount;
-            $lastBalance = $this->getCurrentBalance($withdrawal->employee_id);
-            PfLedger::create([
-                'employee_id' => $withdrawal->employee_id,
-                'branch_id' => $withdrawal->branch_id,
-                'transaction_type' => 'withdrawal',
-                'credit' => 0,
-                'debit' => $disburseAmount,
-                'balance' => $lastBalance - $disburseAmount,
-                'description' => 'PF ' . $withdrawal->type . ' Withdrawal',
-                'reference_type' => get_class($withdrawal),
-                'reference_id' => $withdrawal->id,
-                'created_by' => auth()->id()
-            ]);
-
             DB::commit();
-            return redirect()->back()->with('success', 'Withdrawal disbursed successfully.');
+            return redirect()->back()->with('success', 'Withdrawal disbursed.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Disbursement failed: ' . $e->getMessage());
         }
-    }
-
-    private function getCurrentBalance($employeeId)
-    {
-        $lastLedger = PfLedger::where('employee_id', $employeeId)->orderBy('id', 'desc')->first();
-        return $lastLedger ? $lastLedger->balance : 0;
     }
 }

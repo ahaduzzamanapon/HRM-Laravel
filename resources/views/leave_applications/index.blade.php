@@ -51,6 +51,9 @@
         </div>
     </div>
 
+    @include('flash::message')
+    @include('adminlte-templates::common.errors')
+
     {{-- Employee Leave Balance Cards & Stats Cards (Shown ONLY for Employee view) --}}
     @if(!$canManageLeaves)
         @if(!empty($userLeaveBalances))
@@ -316,7 +319,14 @@
             <form action="{{ route('leaveApplications.store') }}" method="POST">
                 @csrf
                 <div class="modal-body p-4">
-                    @if($canManageLeaves && !empty($employees))
+                    <div id="modal_overlap_alert" class="alert alert-danger shadow-sm border-danger rounded-3 mb-3 p-3 d-none">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="im im-icon-Danger fs-4 me-2"></i>
+                            <span id="modal_overlap_message" class="fw-bold"></span>
+                        </div>
+                    </div>
+
+                    @if(!empty($canSelectEmployee) && $canSelectEmployee && !empty($employees))
                         <div class="mb-3">
                             <label class="form-label fw-bold">Select Employee <span class="text-danger">*</span></label>
                             <select name="user_id" class="form-select" required>
@@ -328,10 +338,12 @@
                                 @endforeach
                             </select>
                         </div>
+                    @else
+                        <input type="hidden" name="user_id" value="{{ auth()->id() }}">
                     @endif
 
                     <div class="row g-3 mb-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label fw-bold">Leave Type <span class="text-danger">*</span></label>
                             <select name="leave_type_id" class="form-select" required>
                                 <option value="">-- Select Leave Type --</option>
@@ -343,18 +355,23 @@
 
                         <div class="col-md-3">
                             <label class="form-label fw-bold">Start Date <span class="text-danger">*</span></label>
-                            <input type="date" name="start_date" class="form-control" value="{{ date('Y-m-d') }}" required>
+                            <input type="date" name="start_date" id="create_start_date" class="form-control" value="{{ date('Y-m-d') }}" required>
                         </div>
 
                         <div class="col-md-3">
                             <label class="form-label fw-bold">End Date <span class="text-danger">*</span></label>
-                            <input type="date" name="end_date" class="form-control" value="{{ date('Y-m-d') }}" required>
+                            <input type="date" name="end_date" id="create_end_date" class="form-control" value="{{ date('Y-m-d') }}" required>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold text-primary">Total Days</label>
+                            <input type="number" step="0.5" min="0.5" max="365" name="requested_days" id="create_requested_days" class="form-control border-primary fw-bold" value="1">
                         </div>
                     </div>
 
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" name="is_half_day" id="modal_is_half_day" value="1">
-                        <label class="form-check-label fw-bold" for="modal_is_half_day">
+                    <div class="form-check mb-3 d-flex align-items-center" style="padding-left: 1.5rem;">
+                        <input class="form-check-input" type="checkbox" name="is_half_day" id="modal_is_half_day" value="1" style="width: 18px; height: 18px; cursor: pointer; margin-right: 10px;">
+                        <label class="form-check-label fw-bold mb-0" for="modal_is_half_day" style="cursor: pointer; padding-left: 4px;">
                             Apply as Half Day (0.5 Day)
                         </label>
                     </div>
@@ -376,7 +393,7 @@
                 </div>
                 <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-4"><i class="im im-icon-Paper-Plane me-1"></i> Submit Application</button>
+                    <button type="submit" id="apply_leave_submit_btn" class="btn btn-primary px-4"><i class="im im-icon-Paper-Plane me-1"></i> Submit Application</button>
                 </div>
             </form>
         </div>
@@ -479,7 +496,7 @@
                     @endif
 
                     <div class="row g-3 mb-3">
-                        <div class="col-md-5">
+                        <div class="col-md-4">
                             <label class="form-label fw-bold">Leave Type <span class="text-danger">*</span></label>
                             <select name="leave_type_id" id="edit_leave_type_id" class="form-select" required>
                                 @foreach($leaveTypes as $type)
@@ -493,15 +510,15 @@
                             <input type="date" name="start_date" id="edit_start_date" class="form-control" required>
                         </div>
 
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <label class="form-label fw-bold">End Date <span class="text-danger">*</span></label>
                             <input type="date" name="end_date" id="edit_end_date" class="form-control" required>
                         </div>
 
                         <div class="col-md-2">
-                            <label class="form-label fw-bold text-primary">Approved Days</label>
-                            <input type="number" step="0.5" min="0.5" max="365" name="requested_days" id="edit_requested_days" class="form-control border-primary fw-bold">
-                            <small class="text-muted">Override days</small>
+                            <label class="form-label fw-bold text-primary">{{ $canManageLeaves ? 'Approved Days' : 'Requested Days' }}</label>
+                            <input type="number" step="0.5" min="0.5" max="365" name="requested_days" id="edit_requested_days" class="form-control border-primary fw-bold" {{ !$canManageLeaves ? 'readonly' : '' }}>
+                            <small class="text-muted d-block" style="font-size: 11px;">{{ $canManageLeaves ? 'Override days' : 'Dynamic days' }}</small>
                         </div>
                     </div>
 
@@ -554,46 +571,36 @@
                     $('#view_employee_name').text(d.user_name);
                     $('#view_emp_id').text(d.emp_id);
                     $('#view_branch_name').text(d.branch_name);
-
-                    let badgeClass = 'badge fs-6 ';
-                    if (d.status === 'Approved') badgeClass += 'bg-success';
-                    else if (d.status === 'Rejected') badgeClass += 'bg-danger';
-                    else badgeClass += 'bg-warning text-dark';
-
-                    $('#view_status').text(d.status).attr('class', badgeClass);
                     $('#view_leave_type').text(d.leave_type_name);
-                    $('#view_period').text(d.start_date_formatted + ' to ' + d.end_date_formatted);
-                    $('#view_days').text(d.requested_days + ' Days ' + (d.is_half_day ? '(Half Day)' : ''));
+                    $('#view_period').text(d.start_date_formatted + ' - ' + d.end_date_formatted);
+                    $('#view_days').text(d.requested_days + ' Days' + (d.is_half_day ? ' (Half Day)' : ''));
                     $('#view_reason').text(d.reason || 'No reason provided.');
 
-                    // Smart approver display: only show who actually took action
-                    let hasAny = false;
-                    let a1 = d.approver_name && d.approver_name !== 'N/A' && d.approver_name !== 'Pending';
-                    let a2 = d.final_approver_name && d.final_approver_name !== 'N/A' && d.final_approver_name !== 'Pending Admin';
+                    let badgeClass = d.status === 'Approved' ? 'bg-success' : (d.status === 'Rejected' ? 'bg-danger' : (d.status === 'First Level Approved' ? 'bg-info text-dark' : 'bg-warning text-dark'));
+                    $('#view_status').html('<span class="badge fs-6 ' + badgeClass + '">' + d.status + '</span>');
 
-                    if (a1) {
-                        $('#view_approver_1').text(d.approver_name);
+                    if(d.status === 'First Level Approved') {
                         $('#view_approver_1_col').show();
-                        hasAny = true;
+                        $('#view_approver_1').text(d.approver_name);
+                        $('#view_approver_2_col').hide();
+                        $('#view_no_approver').hide();
+                    } else if(d.status === 'Approved') {
+                        $('#view_approver_1_col').show();
+                        $('#view_approver_1').text(d.approver_name);
+                        $('#view_approver_2_col').show();
+                        $('#view_approver_2').text(d.final_approver_name);
+                        $('#view_no_approver').hide();
                     } else {
                         $('#view_approver_1_col').hide();
-                    }
-
-                    if (a2) {
-                        $('#view_approver_2').text(d.final_approver_name);
-                        $('#view_approver_2_col').show();
-                        hasAny = true;
-                    } else {
                         $('#view_approver_2_col').hide();
+                        $('#view_no_approver').show();
                     }
-
-                    $('#view_no_approver').toggle(!hasAny);
-                    // Hide entire section if pending
-                    $('#view_approval_section').toggle(d.status !== 'Pending' || hasAny);
                 }
             },
-            error: function() {
-                alert('Could not fetch leave application details.');
+            error: function(xhr) {
+                $('#viewLeaveModal').modal('hide');
+                let msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Could not fetch leave application details.';
+                alert(msg);
             }
         });
     }
@@ -618,13 +625,107 @@
                     $('#edit_leave_type_id').val(d.leave_type_id);
                     $('#edit_status').val(d.status);
                     $('#edit_is_half_day').prop('checked', d.is_half_day == 1);
+                    autoCalcLeaveDays('#edit_start_date', '#edit_end_date', '#edit_is_half_day', '#edit_requested_days');
                 }
             },
-            error: function() {
-                alert('Could not fetch leave application for editing.');
+            error: function(xhr) {
+                $('#editLeaveModal').modal('hide');
+                let msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Could not fetch leave application for editing.';
+                alert(msg);
             }
         });
     }
+
+    function autoCalcLeaveDays(startSelector, endSelector, halfDaySelector, targetSelector) {
+        let startVal = $(startSelector).val();
+        let endVal = $(endSelector).val();
+        let isHalfDay = $(halfDaySelector).is(':checked');
+
+        if (isHalfDay) {
+            $(targetSelector).val(0.5);
+            return;
+        }
+
+        if (startVal && endVal) {
+            let d1 = new Date(startVal);
+            let d2 = new Date(endVal);
+
+            if (!isNaN(d1.getTime()) && !isNaN(d2.getTime())) {
+                if (d2 < d1) {
+                    $(endSelector).val(startVal);
+                    d2 = new Date(startVal);
+                }
+                let diffTime = Math.abs(d2 - d1);
+                let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                $(targetSelector).val(diffDays);
+            }
+        }
+    }
+
+    let overlapTimer = null;
+    function checkDateOverlap() {
+        let startDate = $('#create_start_date').val();
+        let endDate = $('#create_end_date').val();
+        let userId = $('select[name="user_id"]').length && $('select[name="user_id"]').val() ? $('select[name="user_id"]').val() : $('input[name="user_id"]').val();
+
+        if (!startDate || !endDate) return;
+
+        $.ajax({
+            url: "{{ route('leaveApplications.checkOverlap') }}",
+            type: "POST",
+            data: {
+                _token: "{{ csrf_token() }}",
+                start_date: startDate,
+                end_date: endDate,
+                user_id: userId
+            },
+            success: function(response) {
+                if (response.overlap) {
+                    $('#modal_overlap_message').text(response.message);
+                    $('#modal_overlap_alert').removeClass('d-none').hide().stop(true, true).slideDown();
+                    $('#apply_leave_submit_btn').prop('disabled', true);
+
+                    clearTimeout(overlapTimer);
+                    overlapTimer = setTimeout(function() {
+                        $('#modal_overlap_alert').stop(true, true).slideUp(600, function() {
+                            $(this).addClass('d-none');
+                        });
+                    }, 5000);
+                } else {
+                    clearTimeout(overlapTimer);
+                    $('#modal_overlap_alert').stop(true, true).slideUp(300, function() {
+                        $(this).addClass('d-none');
+                    });
+                    $('#apply_leave_submit_btn').prop('disabled', false);
+                }
+            },
+            error: function(xhr) {
+                console.error('Overlap check failed', xhr);
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        $('#applyLeaveModal').on('hidden.bs.modal', function () {
+            clearTimeout(overlapTimer);
+            $('#modal_overlap_alert').addClass('d-none').hide();
+            $('#modal_overlap_message').text('');
+            $('#apply_leave_submit_btn').prop('disabled', false);
+        });
+
+        $(document).on('change input', '#create_start_date, #create_end_date, #modal_is_half_day', function() {
+            autoCalcLeaveDays('#create_start_date', '#create_end_date', '#modal_is_half_day', '#create_requested_days');
+            checkDateOverlap();
+        });
+
+        $(document).on('change', 'select[name="user_id"]', function() {
+            checkDateOverlap();
+        });
+
+        $(document).on('change input', '#edit_start_date, #edit_end_date, #edit_is_half_day', function() {
+            autoCalcLeaveDays('#edit_start_date', '#edit_end_date', '#edit_is_half_day', '#edit_requested_days');
+        });
+    });
 </script>
 @endpush
 @endsection

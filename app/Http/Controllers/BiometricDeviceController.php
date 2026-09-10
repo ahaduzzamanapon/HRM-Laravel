@@ -10,17 +10,29 @@ class BiometricDeviceController extends Controller
 {
     public function index()
     {
+        if (!isSuperAdmin() && !can('biometric') && !can('manage_biometric_devices')) {
+            abort(403, 'Unauthorized access to Biometric Devices.');
+        }
+
         $devices = BiometricDevice::paginate(10);
         return view('biometric_devices.index', compact('devices'));
     }
 
     public function create()
     {
+        if (!isSuperAdmin() && !can('biometric') && !can('manage_biometric_devices')) {
+            abort(403, 'Unauthorized access to add Biometric Device.');
+        }
+
         return view('biometric_devices.create');
     }
 
     public function store(Request $request)
     {
+        if (!isSuperAdmin() && !can('biometric') && !can('manage_biometric_devices')) {
+            abort(403, 'Unauthorized access to save Biometric Device.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'serial_number' => 'required|string|max:255|unique:biometric_devices'
@@ -35,6 +47,10 @@ class BiometricDeviceController extends Controller
 
     public function destroy($id)
     {
+        if (!isSuperAdmin() && !can('biometric') && !can('manage_biometric_devices')) {
+            abort(403, 'Unauthorized access to delete Biometric Device.');
+        }
+
         $device = BiometricDevice::find($id);
 
         if (empty($device)) {

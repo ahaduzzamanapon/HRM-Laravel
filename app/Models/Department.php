@@ -4,46 +4,36 @@ namespace App\Models;
 
 use Eloquent as Model;
 
-/**
- * Class Department
- * @package App\Models
- * @version September 1, 2025, 11:53 am UTC
- *
- * @property string $name
- * @property string $status
- */
 class Department extends Model
 {
-
     public $table = 'departments';
-    
-
-
 
     public $fillable = [
         'name',
+        'branch_id',
         'status'
     ];
 
-    /**
-     * The attributes that should be casted to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'id' => 'integer',
+        'branch_id' => 'integer',
         'name' => 'string',
         'status' => 'string'
     ];
 
-    /**
-     * Validation rules
-     *
-     * @var array
-     */
     public static $rules = [
-        
+        'name' => 'required',
     ];
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
+    public function designations()
+    {
+        return $this->hasMany(Designation::class, 'department_id');
+    }
 
     public function users()
     {

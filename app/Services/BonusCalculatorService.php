@@ -19,7 +19,8 @@ class BonusCalculatorService
     {
         $query = User::with(['branch', 'designation', 'department'])
             ->where('group_id', '!=', 1)
-            ->where('status', 'active');
+            ->whereNotIn('status', ['retired', 'left', 'resign', 'departed', 'terminated'])
+            ->whereDoesntHave('departures');
 
         // Apply branch filter: targetBranchId > setting branch_id
         $branchId = $targetBranchId ?: $bonusSetting->branch_id;
@@ -29,7 +30,8 @@ class BonusCalculatorService
 
         // Apply religion filter if configured
         if (!empty($bonusSetting->religion) && strtolower($bonusSetting->religion) !== 'all') {
-            $query->where('religion', $bonusSetting->religion);
+            $rel = strtolower($bonusSetting->religion);
+            $query->whereRaw('LOWER(religion) = ?', [$rel]);
         }
 
         $users = $query->get();
@@ -39,10 +41,11 @@ class BonusCalculatorService
         return $users->filter(function ($user) use ($bonusSetting, $targetDate) {
             // Check minimum service months requirement
             if ($bonusSetting->min_service_months > 0) {
-                if (!$user->date_of_join) {
-                    return false;
+                $joiningDateStr = $user->date_of_join ?: $user->date_of_joining;
+                if (!$joiningDateStr) {
+                    return true; // Don't exclude employee if joining date is unassigned unless strict
                 }
-                $joinDate = Carbon::parse($user->date_of_join);
+                $joinDate = Carbon::parse($joiningDateStr);
                 $serviceMonths = $joinDate->diffInMonths($targetDate);
                 if ($serviceMonths < $bonusSetting->min_service_months) {
                     return false;
@@ -53,9 +56,9 @@ class BonusCalculatorService
             // Determine base amount
             $baseAmount = 0.00;
             if ($bonusSetting->calculation_base === 'basic_salary') {
-                $baseAmount = (float)($user->basic_salary ?: 0);
+                $baseAmount = (float)($user->basic_salary ?: ($user->b_salary ?: 0));
             } elseif ($bonusSetting->calculation_base === 'gross_salary') {
-                $baseAmount = (float)($user->gross_salary ?: 0);
+                $baseAmount = (float)($user->gross_salary ?: ($user->basic_salary ?: 0));
             }
 
             // Calculate bonus amount

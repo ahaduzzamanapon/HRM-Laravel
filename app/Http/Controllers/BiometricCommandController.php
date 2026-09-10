@@ -11,12 +11,20 @@ class BiometricCommandController extends Controller
 {
     public function index()
     {
+        if (!isSuperAdmin() && !can('biometric') && !can('manage_biometric_commands')) {
+            abort(403, 'Unauthorized access to Biometric Commands.');
+        }
+
         $commands = BiometricCommand::with('device')->orderBy('id', 'desc')->paginate(20);
         return view('biometric_commands.index', compact('commands'));
     }
 
     public function create()
     {
+        if (!isSuperAdmin() && !can('biometric') && !can('manage_biometric_commands')) {
+            abort(403, 'Unauthorized access to queue Biometric Command.');
+        }
+
         $devices = BiometricDevice::pluck('name', 'id');
         // If names are not present, fallback to serial numbers
         if ($devices->isEmpty() || $devices->filter()->isEmpty()) {
@@ -33,6 +41,10 @@ class BiometricCommandController extends Controller
 
     public function store(Request $request)
     {
+        if (!isSuperAdmin() && !can('biometric') && !can('manage_biometric_commands')) {
+            abort(403, 'Unauthorized access to save Biometric Command.');
+        }
+
         $request->validate([
             'biometric_device_id' => 'required|exists:biometric_devices,id',
             'command_type' => 'required|string',
@@ -57,16 +69,20 @@ class BiometricCommandController extends Controller
 
     public function destroy($id)
     {
+        if (!isSuperAdmin() && !can('biometric') && !can('manage_biometric_commands')) {
+            abort(403, 'Unauthorized access to delete Biometric Command.');
+        }
+
         $command = BiometricCommand::find($id);
 
         if (empty($command)) {
-            Flash::error('Command not found');
+            Flash::error('Biometric command not found');
             return redirect(route('biometricCommands.index'));
         }
 
         $command->delete();
 
-        Flash::success('Command deleted successfully.');
+        Flash::success('Biometric command deleted successfully.');
 
         return redirect(route('biometricCommands.index'));
     }

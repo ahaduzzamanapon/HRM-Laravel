@@ -1,5 +1,8 @@
 <?php
+
 use Illuminate\Support\Facades\File;
+use App\Services\AuthorizationEngine;
+use App\Services\AuditService;
 
 if (!function_exists('uploadFile')) {
     /**
@@ -14,62 +17,27 @@ if (!function_exists('uploadFile')) {
     {
         $path = public_path($folder);
 
-        // Ensure the directory exists
         if (!File::exists($path)) {
             File::makeDirectory($path, 0775, true, true);
         }
 
-        // Generate a unique file name if not provided
         $filename = $name
             ? $name . '.' . $file->getClientOriginalExtension()
             : time() . '_' . $file->getClientOriginalName();
 
-        // Move the file to the desired folder
         $file->move($path, $filename);
 
-        // Return the relative path
         return $folder . '/' . $filename;
     }
 }
 
 if (!function_exists('can')) {
-
-    function can($key)
+    /**
+     * Dynamic Permission Check powered by AuthorizationEngine.
+     */
+    function can($key, $user = null)
     {
-        if (!auth()->check()) {
-            return false;
-        }
-
-        static $permCache = [];
-        $user = auth()->user();
-        $userId = $user->id;
-
-        if (!isset($permCache[$userId])) {
-            $role = $user->role;
-            if (!$role) {
-                $permCache[$userId] = [];
-            } elseif ($role->key === 'super_admin' || $role->name === 'Super Admin' || $role->permissions->contains('key', 'all_permissions')) {
-                $permCache[$userId] = 'ALL';
-            } else {
-                $keys = [];
-                $permissions = $role->permissions()->with('parent')->get();
-                foreach ($permissions as $p) {
-                    if ($p->key) {
-                        $keys[$p->key] = true;
-                    }
-                    if ($p->parent && $p->parent->key) {
-                        $keys[$p->parent->key] = true;
-                    }
-                }
-                $permCache[$userId] = $keys;
-            }
-        }
-
-        if ($permCache[$userId] === 'ALL') {
-            return true;
-        }
-
-        return isset($permCache[$userId][$key]);
+        return AuthorizationEngine::can($key, $user);
     }
 }
 
@@ -79,41 +47,17 @@ if (!function_exists('isSuperAdmin')) {
      */
     function isSuperAdmin($user = null)
     {
-        $user = $user ?: auth()->user();
-        if (!$user) {
-            return false;
-        }
-        $role = $user->role;
-        if (!$role) {
-            return false;
-        }
-        return $role->key === 'super_admin' || $role->name === 'Super Admin' || $role->permissions->contains('key', 'all_permissions');
+        return AuthorizationEngine::isSuperAdmin($user);
     }
 }
 
 if (!function_exists('userBranchId')) {
     /**
-     * Get assigned branch ID for the authenticated (or given) user.
-     * Prioritizes explicit user branch_id, then role assigned branch_id.
+     * Get assigned branch ID for user.
      */
     function userBranchId($user = null)
     {
-        static $userBranchCache = [];
-        $user = $user ?: auth()->user();
-        if (!$user) {
-            return null;
-        }
-        $userId = $user->id;
-        if (!isset($userBranchCache[$userId])) {
-            if ($user->branch_id) {
-                $userBranchCache[$userId] = (int) $user->branch_id;
-            } elseif ($user->role && $user->role->branch_id) {
-                $userBranchCache[$userId] = (int) $user->role->branch_id;
-            } else {
-                $userBranchCache[$userId] = null;
-            }
-        }
-        return $userBranchCache[$userId];
+        return AuthorizationEngine::getUserBranchId($user);
     }
 }
 
@@ -123,12 +67,12 @@ if (!function_exists('hasBranchAccess')) {
      */
     function hasBranchAccess($targetBranchId, $user = null)
     {
-        if (isSuperAdmin($user)) {
+        if (isSuperAdmin($user) || AuthorizationEngine::isHRRole($user)) {
             return true;
         }
         $bId = userBranchId($user);
         if (!$bId) {
-            return true; // If user has no branch set, default allow or handled elsewhere
+            return true;
         }
         return (int)$bId === (int)$targetBranchId;
     }
@@ -152,13 +96,7 @@ if (!function_exists('applyBranchScope')) {
      */
     function applyBranchScope($query, $column = 'branch_id', $user = null)
     {
-        if (!isSuperAdmin($user)) {
-            $bId = userBranchId($user);
-            if ($bId) {
-                $query->where($column, $bId);
-            }
-        }
-        return $query;
+        return AuthorizationEngine::applyScope($query, $user);
     }
 }
 
@@ -168,30 +106,22 @@ if (!function_exists('applyUserBranchScope')) {
      */
     function applyUserBranchScope($query, $userRelation = 'user', $user = null)
     {
-        if (!isSuperAdmin($user)) {
-            $bId = userBranchId($user);
-            if ($bId) {
-                $query->whereHas($userRelation, function ($q) use ($bId) {
-                    $q->where('branch_id', $bId);
-                });
-            }
-        }
-        return $query;
+        return AuthorizationEngine::applyScope($query, $user);
     }
 }
 
 if (!function_exists('canManageBranch')) {
     /**
-     * Returns true if the current user is a Super Admin OR belongs to the given branch.
+     * Returns true if the current user is a Super Admin, HR, OR belongs to the given branch.
      */
     function canManageBranch($branchId, $user = null)
     {
-        if (isSuperAdmin($user)) {
+        if (isSuperAdmin($user) || AuthorizationEngine::isHRRole($user)) {
             return true;
         }
         $myBranch = userBranchId($user);
         if (!$myBranch) {
-            return true; // No branch restriction set on this user
+            return true;
         }
         return (int) $myBranch === (int) $branchId;
     }
@@ -200,15 +130,15 @@ if (!function_exists('canManageBranch')) {
 if (!function_exists('enforceBranchOwnership')) {
     /**
      * Abort 403 if the current user does not have access to the given branch-owned record.
-     * Accepts either a branch_id integer or a model instance with a branch_id or user.branch_id.
      */
     function enforceBranchOwnership($branchIdOrModel, $branchColumn = 'branch_id', $user = null)
     {
-        if (isSuperAdmin($user)) {
+        if (isSuperAdmin($user) || AuthorizationEngine::isHRRole($user)) {
             return;
         }
+
+        $targetBranchId = null;
         if (is_object($branchIdOrModel)) {
-            // Support both direct branch_id and nested user->branch_id
             if (isset($branchIdOrModel->$branchColumn)) {
                 $targetBranchId = $branchIdOrModel->$branchColumn;
             } elseif (isset($branchIdOrModel->user) && isset($branchIdOrModel->user->branch_id)) {
@@ -216,14 +146,14 @@ if (!function_exists('enforceBranchOwnership')) {
             } elseif (isset($branchIdOrModel->employee) && isset($branchIdOrModel->employee->branch_id)) {
                 $targetBranchId = $branchIdOrModel->employee->branch_id;
             } else {
-                return; // Cannot determine branch — allow (fail open, not fail closed for unknown structures)
+                return;
             }
         } else {
             $targetBranchId = $branchIdOrModel;
         }
 
         if ($targetBranchId === null) {
-            return; // Global record accessible by all
+            return;
         }
 
         $myBranch = userBranchId($user);
@@ -236,7 +166,6 @@ if (!function_exists('enforceBranchOwnership')) {
 if (!function_exists('applyBranchScopeWithGlobal')) {
     /**
      * Apply branch scope but ALSO include records where branch_id IS NULL (global records).
-     * Useful for leave types, salary grades, etc. that can be global or branch-specific.
      */
     function applyBranchScopeWithGlobal($query, $column = 'branch_id', $user = null)
     {
@@ -260,9 +189,7 @@ if (!function_exists('getEmployeeDropdownOptions')) {
     function getEmployeeDropdownOptions($query = null)
     {
         $q = $query ?: \App\Models\User::query();
-        if (function_exists('applyBranchScope')) {
-            applyBranchScope($q, 'branch_id');
-        }
+        applyBranchScope($q, 'branch_id');
         return $q->get()->mapWithKeys(function ($u) {
             $name = trim(($u->name ?? '') . ' ' . ($u->last_name ?? ''));
             if ($u->emp_id) {
@@ -270,5 +197,55 @@ if (!function_exists('getEmployeeDropdownOptions')) {
             }
             return [$u->id => $name];
         });
+    }
+}
+
+if (!function_exists('canPerformAction')) {
+    /**
+     * Evaluate action-level permission and ownership for a record.
+     */
+    function canPerformAction($action, $permissionKey = null, $record = null, $user = null)
+    {
+        return AuthorizationEngine::canPerformAction($action, $permissionKey, $record, $user);
+    }
+}
+
+if (!function_exists('canViewMenu')) {
+    /**
+     * Check menu authorization for module.
+     */
+    function canViewMenu($moduleKey, $user = null)
+    {
+        return AuthorizationEngine::canViewMenu($moduleKey, $user);
+    }
+}
+
+if (!function_exists('canViewWidget')) {
+    /**
+     * Check widget authorization.
+     */
+    function canViewWidget($widgetKey, $user = null)
+    {
+        return AuthorizationEngine::canViewWidget($widgetKey, $user);
+    }
+}
+
+if (!function_exists('canViewReport')) {
+    /**
+     * Check report authorization.
+     */
+    function canViewReport($reportKey, $user = null)
+    {
+        return AuthorizationEngine::canViewReport($reportKey, $user);
+    }
+}
+
+if (!function_exists('auditLog')) {
+    /**
+     * Log permission-controlled audit action.
+     */
+    function auditLog($module, $action, $permissionKey = null, $record = null, $oldValues = null, $newValues = null)
+    {
+        AuditService::log($module, $action, $permissionKey, $record, $oldValues, $newValues);
     }
 }

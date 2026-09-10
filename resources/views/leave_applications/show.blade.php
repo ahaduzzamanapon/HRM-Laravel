@@ -76,7 +76,7 @@
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 mt-4">
-                        @if($canManageLeaves)
+                        @if(!empty($canManageLeaves) || ($leaveApplication->user_id == Auth::id() && $leaveApplication->status === 'Pending'))
                             <a href="{{ route('leaveApplications.edit', $leaveApplication->id) }}" class="btn btn-primary">
                                 <i class="im im-icon-Edit me-1"></i> Modify / Edit Leave
                             </a>

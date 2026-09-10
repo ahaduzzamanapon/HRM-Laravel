@@ -113,8 +113,9 @@ Employee PF Dashboard @parent
                         <h4>Quick Actions</h4>
                     </div>
                     <div class="card-body text-center p-0 pt-2 pb-2">
-                        <a href="{{ route('pf.loans.create') }}" class="btn btn-primary btn-block mb-3" style="border-radius: 20px; font-weight: bold; font-size: 16px;">Apply for PF Loan</a>
-                        <a href="{{ route('pf.withdrawals.create') }}" class="btn btn-warning btn-block" style="border-radius: 20px; font-weight: bold; font-size: 16px; color: #fff;">Apply for Withdrawal</a>
+                        <a href="{{ route('pf.loans.index') }}" class="btn btn-primary btn-block mb-3" style="border-radius: 20px; font-weight: bold; font-size: 15px;"><i class="fa fa-plus-circle me-1"></i> Apply for PF Loan</a>
+                        <a href="{{ route('pf.loans.index') }}" class="btn btn-info btn-block mb-3 text-white" style="border-radius: 20px; font-weight: bold; font-size: 15px;"><i class="fa fa-list me-1"></i> My Loan Applications</a>
+                        <a href="{{ route('pf.reports.statement') }}" class="btn btn-success btn-block" style="border-radius: 20px; font-weight: bold; font-size: 15px; color: #fff;"><i class="fa fa-file-text-o me-1"></i> View PF Statement</a>
                     </div>
                 </div>
             </div>

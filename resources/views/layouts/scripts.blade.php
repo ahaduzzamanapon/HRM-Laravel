@@ -34,7 +34,22 @@
 <script src="{{ asset('assets/js/hope-ui.js') }}" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
+        var appBaseUrl = "{{ url('/') }}";
+        if (options.url && !options.url.match(/^https?:\/\//i) && !options.url.startsWith('//')) {
+            if (options.url.charAt(0) === '/') {
+                options.url = appBaseUrl.replace(/\/$/, '') + options.url;
+            }
+        }
+    });
+
     $(document).ready(function () {
+        // Automatically hide alert notifications after 5 seconds (excluding modal_overlap_alert)
+        setTimeout(function() {
+            $('div.alert').not('#modal_overlap_alert, .alert-important').fadeOut(800, function() {
+                $(this).addClass('d-none');
+            });
+        }, 5000);
 
         $('.table-responsive').on('show.bs.dropdown', function () {
             $('.btn-group').css('position', 'static');
@@ -49,6 +64,8 @@
                 icon: 'success',
                 title: 'Success',
                 text: '{{ Session::get('success') }}',
+                timer: 5000,
+                timerProgressBar: true
             });
         @endif
 
@@ -57,6 +74,8 @@
                 icon: 'error',
                 title: 'Error',
                 text: '{{ Session::get('error') }}',
+                timer: 5000,
+                timerProgressBar: true
             });
         @endif
     });

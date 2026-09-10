@@ -22,6 +22,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
+                @if(!\App\Services\AuthorizationEngine::isEmployeeRole())
                 <div class="card-header border-bottom">
                     <form action="{{ route('pf.reports.calculate_interest') }}" method="POST" class="d-flex align-items-center">
                         @csrf
@@ -31,6 +32,7 @@
                         <button type="submit" class="btn btn-success">Process Year {{ $year }} Interest</button>
                     </form>
                 </div>
+                @endif
                 <div class="card-body">
                     <div class="table-responsive">
                         <table id="datatable" class="table table-bordered dt-responsive nowrap w-100">
@@ -48,8 +50,8 @@
                                 @foreach($interests as $index => $interest)
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
-                                    <td>{{ $interest->employee->name }} {{ $interest->employee->last_name }}</td>
-                                    <td>{{ $interest->employee->pf_account_number }}</td>
+                                    <td>{{ $interest->employee->name ?? 'N/A' }} {{ $interest->employee->last_name ?? '' }}</td>
+                                    <td>{{ $interest->employee->pf_account_number ?? 'N/A' }}</td>
                                     <td>{{ number_format($interest->balance_before, 2) }}</td>
                                     <td><span class="text-success">+{{ number_format($interest->interest_amount, 2) }}</span></td>
                                     <td class="fw-bold">{{ number_format($interest->balance_after, 2) }}</td>
@@ -63,15 +65,4 @@
         </div>
     </div>
 </div>
-@endsection
-
-@section('scripts')
-<script>
-    $(document).ready(function() {
-        if ($.fn.DataTable.isDataTable('#datatable')) {
-            $('#datatable').DataTable().destroy();
-        }
-        $('#datatable').DataTable();
-    });
-</script>
 @endsection
